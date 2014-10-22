@@ -1,5 +1,5 @@
-#ifndef __rho_ml_kmeans_h__
-#define __rho_ml_kmeans_h__
+#ifndef __ml_kmeans_h__
+#define __ml_kmeans_h__
 
 
 #include <rho/algo/tLCG.h>
@@ -8,8 +8,6 @@
 #include <vector>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -71,7 +69,6 @@ std::vector< std::vector<u32> > kmeans(const std::vector< std::vector<f64> >& po
 
 
 }   // namespace ml
-}   // namespace rho
 
 
-#endif   // __rho_ml_kmeans_h__
+#endif   // __ml_kmeans_h__

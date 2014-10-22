@@ -1,17 +1,16 @@
-#ifndef __rho_ml_tANN_h__
-#define __rho_ml_tANN_h__
+#ifndef __ml_tANN_h__
+#define __ml_tANN_h__
 
+
+#include <ml/common.h>
+#include <ml/iLearner.h>
 
 #include <rho/bNonCopyable.h>
 #include <rho/eRho.h>
 #include <rho/iPackable.h>
 #include <rho/img/tImage.h>
-#include <rho/ml/common.h>
-#include <rho/ml/iLearner.h>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -370,7 +369,6 @@ class tANN : public rho::iPackable, public iLearner, public rho::bNonCopyable
 
 
 }    // namespace ml
-}    // namespace rho
 
 
-#endif // __rho_ml_tANN_h__
+#endif // __ml_tANN_h__

@@ -1,17 +1,16 @@
-#ifndef __rho_ml_tLearnerCommittee_h__
-#define __rho_ml_tLearnerCommittee_h__
+#ifndef __ml_tLearnerCommittee_h__
+#define __ml_tLearnerCommittee_h__
 
+
+#include <ml/common.h>
+#include <ml/iLearner.h>
 
 #include <rho/refc.h>
-#include <rho/ml/common.h>
-#include <rho/ml/iLearner.h>
 #include <rho/sync/tThreadPool.h>
 
 #include <vector>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -124,7 +123,6 @@ class tLearnerCommittee : public iLearner, public bNonCopyable
 
 
 }   // namespace ml
-}   // namespace rho
 
 
-#endif   // __rho_ml_tLearnerCommittee_h__
+#endif   // __ml_tLearnerCommittee_h__

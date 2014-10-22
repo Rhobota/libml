@@ -1,5 +1,5 @@
-#ifndef __rho_ml_iLearner_h__
-#define __rho_ml_iLearner_h__
+#ifndef __ml_iLearner_h__
+#define __ml_iLearner_h__
 
 
 #include <rho/types.h>
@@ -8,8 +8,6 @@
 #include <vector>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -142,7 +140,6 @@ class iLearner
 
 
 }   // namespace ml
-}   // namespace rho
 
 
-#endif  // __rho_ml_iLearner_h__
+#endif  // __ml_iLearner_h__

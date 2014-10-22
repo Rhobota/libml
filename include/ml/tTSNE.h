@@ -1,14 +1,12 @@
-#ifndef __rho_ml_tTSNE_h__
-#define __rho_ml_tTSNE_h__
+#ifndef __ml_tTSNE_h__
+#define __ml_tTSNE_h__
 
 
-#include <rho/ml/common.h>
+#include <ml/common.h>
 
 #include <vector>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -60,7 +58,6 @@ void plotImages(const std::vector<tIO>& images, bool color, u32 width,
 
 
 }  // namespace ml
-}  // namespace rho
 
 
-#endif   // __rho_ml_tTSNE_h__
+#endif   // __ml_tTSNE_h__

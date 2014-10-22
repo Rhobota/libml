@@ -1,8 +1,9 @@
-#ifndef __rho_ml_common_h__
-#define __rho_ml_common_h__
+#ifndef __ml_common_h__
+#define __ml_common_h__
 
 
-#include <rho/ml/iLearner.h>
+#include <ml/iLearner.h>
+
 #include <rho/eRho.h>
 #include <rho/types.h>
 #include <rho/img/tImage.h>
@@ -14,8 +15,6 @@
 #include <vector>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -765,7 +764,6 @@ class tLoggingWrapper : public tBestRememberingWrapper
 
 
 }    // namespace ml
-}    // namespace rho
 
 
-#endif   // __rho_ml_common_h__
+#endif   // __ml_common_h__

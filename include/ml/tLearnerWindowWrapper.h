@@ -1,19 +1,18 @@
-#ifndef __rho_ml_tLearnerWindowWrapper_h__
-#define __rho_ml_tLearnerWindowWrapper_h__
+#ifndef __ml_tLearnerWindowWrapper_h__
+#define __ml_tLearnerWindowWrapper_h__
 
+
+#include <ml/common.h>
 
 #include <rho/app/tMainLoopGLFW.h>
 #include <rho/app/tSimpleImageWindow.h>
 #include <rho/algo/string_util.h>
-#include <rho/ml/common.h>
 
 #include <iostream>
 #include <sstream>
 #include <string>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -120,7 +119,6 @@ class tLearnerWindowWrapper : public iEZTrainObserver
 
 
 }   // namespace ml
-}   // namespace rho
 
 
-#endif   // __rho_ml_tLearnerWindowWrapper_h__
+#endif   // __ml_tLearnerWindowWrapper_h__
