@@ -16,7 +16,7 @@ namespace ml
 {
 
 
-class tCNN : public rho::iPackable, public iLearner, public rho::bNonCopyable
+class tCNN : public iPackable, public iLearner, public bNonCopyable
 {
     public:
 
