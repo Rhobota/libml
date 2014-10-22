@@ -2,6 +2,7 @@
 #define __ml_tLearnerWindowWrapper_h__
 
 
+#include <ml/rhocompat.h>
 #include <ml/common.h>
 
 #include <rho/app/tMainLoopGLFW.h>

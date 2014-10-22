@@ -2,6 +2,8 @@
 #define __ml_iLearner_h__
 
 
+#include <ml/rhocompat.h>
+
 #include <rho/types.h>
 #include <rho/iPackable.h>
 

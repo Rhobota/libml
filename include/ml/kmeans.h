@@ -2,6 +2,8 @@
 #define __ml_kmeans_h__
 
 
+#include <ml/rhocompat.h>
+
 #include <rho/algo/tLCG.h>
 #include <rho/types.h>
 

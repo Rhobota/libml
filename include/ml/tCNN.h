@@ -2,6 +2,7 @@
 #define __ml_tCNN_h__
 
 
+#include <ml/rhocompat.h>
 #include <ml/common.h>
 #include <ml/iLearner.h>
 

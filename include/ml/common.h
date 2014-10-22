@@ -2,6 +2,7 @@
 #define __ml_common_h__
 
 
+#include <ml/rhocompat.h>
 #include <ml/iLearner.h>
 
 #include <rho/eRho.h>
