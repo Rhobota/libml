@@ -2,7 +2,8 @@
 #pragma GCC optimize 3
 #endif
 
-#include <rho/ml/tANN.h>
+#include <ml/tANN.h>
+
 #include <rho/algo/tLCG.h>
 
 #if NDEBUG
@@ -21,8 +22,6 @@ using std::string;
 using std::endl;
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -1160,7 +1159,6 @@ void tANN::unpack(iReadable* in)
 
 
 }   // namespace ml
-}   // namespace rho
 
 
 #include "tCNN.ipp"    // this is done because tCNN uses tLayer, and this will

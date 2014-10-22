@@ -1,12 +1,10 @@
-#include <rho/ml/kmeans.h>
+#include <ml/kmeans.h>
 
 #include <cassert>
 
 using std::vector;
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -168,4 +166,3 @@ vector< vector<u32> > kmeans(const vector< vector<f64> >& points, u32 k,
 
 
 }   // namespace ml
-}   // namespace rho

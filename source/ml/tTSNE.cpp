@@ -1,11 +1,10 @@
-#include <rho/ml/tTSNE.h>
+#include <ml/tTSNE.h>
+
 #include <rho/img/tCanvas.h>
 
 #include "bh_tsne/tsne.h"
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -105,4 +104,3 @@ void plotImages(const std::vector<tIO>& images, bool color, u32 width,
 
 
 }  // namespace ml
-}  // namespace rho

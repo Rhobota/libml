@@ -2,9 +2,10 @@
 #pragma GCC optimize 3
 #endif
 
-#include <rho/ml/common.h>
-#include <rho/ml/tANN.h>
-#include <rho/ml/tCNN.h>
+#include <ml/common.h>
+#include <ml/tANN.h>
+#include <ml/tCNN.h>
+
 #include <rho/img/tCanvas.h>
 #include <rho/algo/vector_util.h>
 #include <rho/sync/tTimer.h>
@@ -14,8 +15,6 @@
 #include <sstream>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -1784,4 +1783,3 @@ void tLoggingWrapper::m_save(std::string filebasename,
 
 
 }   // namespace ml
-}   // namespace rho

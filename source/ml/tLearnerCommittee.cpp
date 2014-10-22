@@ -1,8 +1,6 @@
-#include <rho/ml/tLearnerCommittee.h>
+#include <ml/tLearnerCommittee.h>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -237,4 +235,3 @@ void tLearnerCommittee::reset()
 
 
 }   // namespace ml
-}   // namespace rho

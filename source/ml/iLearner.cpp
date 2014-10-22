@@ -1,11 +1,9 @@
-#include <rho/ml/iLearner.h>
+#include <ml/iLearner.h>
 
-#include <rho/ml/tANN.h>
-#include <rho/ml/tCNN.h>
+#include <ml/tANN.h>
+#include <ml/tCNN.h>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -63,4 +61,3 @@ void iLearner::serializeLearner(iLearner* learner, iWritable* writable)
 
 
 }   // namespace ml
-}   // namespace rho

@@ -1,10 +1,8 @@
-#include <rho/ml/tCNN.h>
+#include <ml/tCNN.h>
 
 #include <rho/algo/string_util.h>
 
 
-namespace rho
-{
 namespace ml
 {
 
@@ -1341,4 +1339,3 @@ void tCNN::unpack(iReadable* in)
 
 
 }   // namespace ml
-}   // namespace rho
