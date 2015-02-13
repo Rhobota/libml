@@ -26,11 +26,11 @@ namespace ml
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-f64 logistic_function(f64 z);
-f64 derivative_of_logistic_function(f64 z);
-f64 inverse_of_logistic_function(f64 y);
-f64 logistic_function_min();
-f64 logistic_function_max();
+fml logistic_function(fml z);
+fml derivative_of_logistic_function(fml z);
+fml inverse_of_logistic_function(fml y);
+fml logistic_function_min();
+fml logistic_function_max();
 
 
 //////////////////////////////////////////////////////////////////////
@@ -39,11 +39,11 @@ f64 logistic_function_max();
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-f64 hyperbolic_function(f64 z);
-f64 derivative_of_hyperbolic_function(f64 z);
-f64 inverse_of_hyperbolic_function(f64 y);
-f64 hyperbolic_function_min();
-f64 hyperbolic_function_max();
+fml hyperbolic_function(fml z);
+fml derivative_of_hyperbolic_function(fml z);
+fml inverse_of_hyperbolic_function(fml y);
+fml hyperbolic_function_min();
+fml hyperbolic_function_max();
 
 
 //////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ tIO examplify(u32 highDimension, u32 numDimensions);
  *
  * This is useful for evaluating the output of a classifier.
  */
-u32 un_examplify(const tIO& output, f64* error = NULL);
+u32 un_examplify(const tIO& output, fml* error = NULL);
 
 /**
  * Turns the given image into an example that can be trained-on.
@@ -121,7 +121,7 @@ tIO examplify(const img::tImage* image);
  */
 void un_examplify(const tIO& io, bool color, u32 width,
                   bool absolute, img::tImage* dest,
-                  const f64* minValue = NULL, const f64* maxValue = NULL);
+                  const fml* minValue = NULL, const fml* maxValue = NULL);
 
 /**
  * Z-score a set of input examples.
@@ -155,26 +155,26 @@ void zscore(std::vector<tIO>& trainingInputs,
  * Calculates and returns the standard squared error between the given
  * output and the given target.
  */
-f64 standardSquaredError(const tIO& output, const tIO& target);
+fml standardSquaredError(const tIO& output, const tIO& target);
 
 /**
  * Calculates the average standard squared error between each output/target
  * pair.
  */
-f64 standardSquaredError(const std::vector<tIO>& outputs,
+fml standardSquaredError(const std::vector<tIO>& outputs,
                          const std::vector<tIO>& targets);
 
 /**
  * Calculates and returns the cross-entropy cost between the given
  * output and the given target.
  */
-f64 crossEntropyCost(const tIO& output, const tIO& target);
+fml crossEntropyCost(const tIO& output, const tIO& target);
 
 /**
  * Calculates the average cross-entropy cost between each output/target
  * pair.
  */
-f64 crossEntropyCost(const std::vector<tIO>& outputs,
+fml crossEntropyCost(const std::vector<tIO>& outputs,
                      const std::vector<tIO>& targets);
 
 /**
@@ -185,7 +185,7 @@ f64 crossEntropyCost(const std::vector<tIO>& outputs,
  *        pair version because that wouldn't not make sense for this
  *        particular way of measuring error.)
  */
-f64 rmsError(const std::vector<tIO>& outputs,
+fml rmsError(const std::vector<tIO>& outputs,
              const std::vector<tIO>& targets);
 
 

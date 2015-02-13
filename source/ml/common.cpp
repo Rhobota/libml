@@ -19,62 +19,62 @@ namespace ml
 {
 
 
-f64 logistic_function(f64 z)
+fml logistic_function(fml z)
 {
     return (1.0 / (1.0 + std::exp(-z)));
 }
 
-f64 derivative_of_logistic_function(f64 z)
+fml derivative_of_logistic_function(fml z)
 {
-    f64 y = logistic_function(z);
-    f64 slope = (y * (1.0 - y));
+    fml y = logistic_function(z);
+    fml slope = (y * (1.0 - y));
     slope = std::max(slope, 1e-5);    // <-- Experimental
     return slope;
 }
 
-f64 inverse_of_logistic_function(f64 y)
+fml inverse_of_logistic_function(fml y)
 {
     if (y < 0.0001) y = 0.0001;
     if (y > 0.9999) y = 0.9999;
     return -std::log((1.0 / y) - 1.0);
 }
 
-f64 logistic_function_min()
+fml logistic_function_min()
 {
     return 0.0;
 }
 
-f64 logistic_function_max()
+fml logistic_function_max()
 {
     return 1.0;
 }
 
 
-f64 hyperbolic_function(f64 z)
+fml hyperbolic_function(fml z)
 {
     // Recommended by: "Efficient BackProp" (LeCun et al.)
     return 1.7159 * std::tanh(2.0/3.0 * z);
 }
 
-f64 derivative_of_hyperbolic_function(f64 z)
+fml derivative_of_hyperbolic_function(fml z)
 {
-    f64 s = 1.0 / std::cosh(2.0/3.0 * z);
+    fml s = 1.0 / std::cosh(2.0/3.0 * z);
     return 1.14393 * s * s;
 }
 
-f64 inverse_of_hyperbolic_function(f64 y)
+fml inverse_of_hyperbolic_function(fml y)
 {
     if (y < -1.71589) y = -1.71589;
     if (y > 1.71589) y = 1.71589;
     return 1.5 * atanh(0.582785 * y);
 }
 
-f64 hyperbolic_function_min()
+fml hyperbolic_function_min()
 {
     return -1.7159;
 }
 
-f64 hyperbolic_function_max()
+fml hyperbolic_function_max()
 {
     return 1.7159;
 }
@@ -89,7 +89,7 @@ tIO examplify(u32 highDimension, u32 numDimensions)
     return target;
 }
 
-u32 un_examplify(const tIO& output, f64* error)
+u32 un_examplify(const tIO& output, fml* error)
 {
     if (output.size() == 0)
         throw eInvalidArgument("The output vector must have at least one dimension!");
@@ -115,7 +115,7 @@ tIO examplify(const img::tImage* image)
 
 void un_examplify(const tIO& io, bool color, u32 width,
                   bool absolute, img::tImage* dest,
-                  const f64* minValue, const f64* maxValue)
+                  const fml* minValue, const fml* maxValue)
 {
     if (io.size() == 0)
         throw eInvalidArgument("The example io must have at least one dimension!");
@@ -123,11 +123,11 @@ void un_examplify(const tIO& io, bool color, u32 width,
         throw eInvalidArgument("Width may not be zero.");
 
     // Create a copy of io that can be modified.
-    std::vector<f64> weights = io;
+    tIO weights = io;
 
     // Normalize the weights to [0.0, 255.0].
-    f64 maxval;
-    f64 minval;
+    fml maxval;
+    fml minval;
     if (minValue && maxValue)
     {
         maxval = *maxValue;
@@ -149,7 +149,7 @@ void un_examplify(const tIO& io, bool color, u32 width,
         }
         if (maxval == minval) maxval += 0.000001;
     }
-    f64 absmax = std::max(std::fabs(maxval), std::fabs(minval));
+    fml absmax = std::max(std::fabs(maxval), std::fabs(minval));
     if (color)
     {
         if (absolute)
@@ -161,7 +161,7 @@ void un_examplify(const tIO& io, bool color, u32 width,
         {
             for (u32 i = 0; i < weights.size(); i++)
             {
-                f64 val = ((weights[i] - minval) / (maxval - minval)) * 255.0;
+                fml val = ((weights[i] - minval) / (maxval - minval)) * 255.0;
                 weights[i] = val;
             }
         }
@@ -201,7 +201,7 @@ void un_examplify(const tIO& io, bool color, u32 width,
                 u8 g = 0;     // <-- used if the weight is positive
                 u8 b = 0;     // <-- not used
 
-                f64 w = weights[wIndex++];
+                fml w = weights[wIndex++];
 
                 if (w > 0.0)
                     g = (u8)(w / absmax * 255.0);
@@ -241,8 +241,8 @@ void zscore(std::vector<tIO>& inputs, u32 dStart, u32 dEnd)
             dim[i] = inputs[i][d];
 
         // ... Calculate the mean and stddev
-        f64 mean = algo::mean(dim);
-        f64 stddev = algo::stddev(dim);
+        fml mean = algo::mean(dim);
+        fml stddev = algo::stddev(dim);
 
         // ... Normalize that dimension
         if (stddev != 0.0)
@@ -293,8 +293,8 @@ void zscore(std::vector<tIO>& trainingInputs, std::vector<tIO>& testInputs)
             dim[i] = trainingInputs[i][d];
 
         // ... Calculate the mean and stddev
-        f64 mean = algo::mean(dim);
-        f64 stddev = algo::stddev(dim);
+        fml mean = algo::mean(dim);
+        fml stddev = algo::stddev(dim);
 
         // ... Normalize that dimension
         if (stddev != 0.0)
@@ -315,20 +315,20 @@ void zscore(std::vector<tIO>& trainingInputs, std::vector<tIO>& testInputs)
 }
 
 
-f64 standardSquaredError(const tIO& output, const tIO& target)
+fml standardSquaredError(const tIO& output, const tIO& target)
 {
     if (output.size() != target.size())
         throw eInvalidArgument(
                 "The output vector must have the same dimensionality as the target vector!");
     if (output.size() == 0)
         throw eInvalidArgument("The output and target vectors must have at least one dimension!");
-    f64 error = 0.0;
+    fml error = 0.0;
     for (size_t i = 0; i < output.size(); i++)
         error += (output[i]-target[i]) * (output[i]-target[i]);
     return 0.5*error;
 }
 
-f64 standardSquaredError(const std::vector<tIO>& outputs,
+fml standardSquaredError(const std::vector<tIO>& outputs,
                          const std::vector<tIO>& targets)
 {
     if (outputs.size() != targets.size())
@@ -356,21 +356,21 @@ f64 standardSquaredError(const std::vector<tIO>& outputs,
         throw eInvalidArgument("The output/target pairs must have at least one dimension!");
     }
 
-    f64 error = 0.0;
+    fml error = 0.0;
     for (size_t i = 0; i < outputs.size(); i++)
         error += standardSquaredError(outputs[i], targets[i]);
-    return error / ((f64)outputs.size());
+    return error / ((fml)outputs.size());
 }
 
-f64 crossEntropyCost(const tIO& output, const tIO& target)
+fml crossEntropyCost(const tIO& output, const tIO& target)
 {
     if (output.size() != target.size())
         throw eInvalidArgument(
                 "The output vector must have the same dimensionality as the target vector!");
     if (output.size() == 0)
         throw eInvalidArgument("The output and target vectors must have at least one dimension!");
-    f64 osum = 0.0;
-    f64 tsum = 0.0;
+    fml osum = 0.0;
+    fml tsum = 0.0;
     for (size_t i = 0; i < output.size(); i++)
     {
         if (output[i] > 1.0)
@@ -388,14 +388,14 @@ f64 crossEntropyCost(const tIO& output, const tIO& target)
         throw eInvalidArgument("The sum of the outputs must be 1.0.");
     if (tsum > 1.0001 || tsum < 0.9999)
         throw eInvalidArgument("The sum of the targets must be 1.0.");
-    f64 error = 0.0;
+    fml error = 0.0;
     for (size_t i = 0; i < output.size(); i++)
         if (target[i] > 0.0)
             error += target[i] * std::log(output[i]);
     return -error;
 }
 
-f64 crossEntropyCost(const std::vector<tIO>& outputs,
+fml crossEntropyCost(const std::vector<tIO>& outputs,
                      const std::vector<tIO>& targets)
 {
     if (outputs.size() != targets.size())
@@ -423,17 +423,17 @@ f64 crossEntropyCost(const std::vector<tIO>& outputs,
         throw eInvalidArgument("The output/target pairs must have at least one dimension!");
     }
 
-    f64 error = 0.0;
+    fml error = 0.0;
     for (size_t i = 0; i < outputs.size(); i++)
         error += crossEntropyCost(outputs[i], targets[i]);
-    return error / ((f64)outputs.size());
+    return error / ((fml)outputs.size());
 }
 
-f64 rmsError(const std::vector<tIO>& outputs,
+fml rmsError(const std::vector<tIO>& outputs,
              const std::vector<tIO>& targets)
 {
-    f64 sqrdError = standardSquaredError(outputs, targets);
-    return std::sqrt(sqrdError * 2.0 / ((f64)outputs[0].size()));
+    fml sqrdError = standardSquaredError(outputs, targets);
+    return std::sqrt(sqrdError * 2.0 / ((fml)outputs[0].size()));
 }
 
 
@@ -957,8 +957,8 @@ void s_drawLayer(const tCNN* cnn, u32 layerIndex,
                 image.setFormat(img::kRGB24); image.setWidth(padding*2); image.setHeight(heightHere);
                 image.setBufSize(image.width() * image.height() * 3);
                 image.setBufUsed(image.bufSize());
-                f64 minpossible, maxpossible;
-                f64 val = cnn->getOutput(layerIndex, n, 0, &minpossible, &maxpossible);
+                fml minpossible, maxpossible;
+                fml val = cnn->getOutput(layerIndex, n, 0, &minpossible, &maxpossible);
                 for (u32 i = 0; i < image.bufUsed(); i += 3)
                 {
                     u8 r = 0;   // <-- used if val is negative
@@ -1359,10 +1359,10 @@ bool tSmartStoppingWrapper::didFinishEpoch(iLearner* learner,
     switch (m_performanceAttribute)
     {
         case kClassificationErrorRate:
-            testError = errorRate(testCM);
+            testError = (f64) errorRate(testCM);
             break;
         case kOutputErrorMeasure:
-            testError = learner->calculateError(testOutputs, testTargets);
+            testError = (f64) learner->calculateError(testOutputs, testTargets);
             break;
         default:
             throw eLogicError("Unknown performance attribute");
@@ -1491,10 +1491,10 @@ bool tBestRememberingWrapper::didFinishEpoch(iLearner* learner,
     switch (m_performanceAttribute)
     {
         case kClassificationErrorRate:
-            testErrorRate = errorRate(testCM);
+            testErrorRate = (f64) errorRate(testCM);
             break;
         case kOutputErrorMeasure:
-            testErrorRate = learner->calculateError(testOutputs, testTargets);
+            testErrorRate = (f64) learner->calculateError(testOutputs, testTargets);
             break;
         default:
             throw eLogicError("Unknown performance attribute");
@@ -1605,8 +1605,8 @@ bool tLoggingWrapper::didFinishEpoch(iLearner* learner,
     // the training and test sets.
     f64 trainErrorRate = errorRate(trainCM);
     f64 testErrorRate  = errorRate(testCM);
-    f64 trainError = learner->calculateError(trainOutputs, trainTargets);
-    f64 testError = learner->calculateError(testOutputs, testTargets);
+    fml trainError = learner->calculateError(trainOutputs, trainTargets);
+    fml testError = learner->calculateError(testOutputs, testTargets);
 
     // Print the training and test error to the human-readable log.
     m_logfile << "Train error:             " << trainErrorRate*100 << "% "
