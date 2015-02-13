@@ -3,6 +3,7 @@
 
 
 #include <ml/rhocompat.h>
+#include <ml/iLearner.h>
 
 #include <rho/algo/tLCG.h>
 #include <rho/types.h>
@@ -30,9 +31,9 @@ namespace ml
  * each cluster is an array of indices into
  * 'points'.
  */
-std::vector< std::vector<u32> > kmeans(const std::vector< std::vector<f64> >& points, u32 k,
-                                       f64 rmin, f64 rmax, algo::iLCG& lcg,
-                                             std::vector< std::vector<f64> >& centers);
+std::vector< std::vector<u32> > kmeans(const std::vector<tIO>& points, u32 k,
+                                       fml rmin, fml rmax, algo::iLCG& lcg,
+                                             std::vector<tIO>& centers);
 
 
 /**
@@ -49,9 +50,9 @@ std::vector< std::vector<u32> > kmeans(const std::vector< std::vector<f64> >& po
  * each cluster is an array of indices into
  * 'points'.
  */
-std::vector< std::vector<u32> > kmeans_pp(const std::vector< std::vector<f64> >& points, u32 k,
+std::vector< std::vector<u32> > kmeans_pp(const std::vector<tIO>& points, u32 k,
                                           algo::iLCG& lcg,
-                                                std::vector< std::vector<f64> >& centers);
+                                                std::vector<tIO>& centers);
 
 
 /**
@@ -66,8 +67,8 @@ std::vector< std::vector<u32> > kmeans_pp(const std::vector< std::vector<f64> >&
  * each cluster is an array of indices into
  * 'points'.
  */
-std::vector< std::vector<u32> > kmeans(const std::vector< std::vector<f64> >& points, u32 k,
-                                             std::vector< std::vector<f64> >& centers);
+std::vector< std::vector<u32> > kmeans(const std::vector<tIO>& points, u32 k,
+                                             std::vector<tIO>& centers);
 
 
 }   // namespace ml

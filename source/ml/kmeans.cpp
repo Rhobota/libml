@@ -10,12 +10,12 @@ namespace ml
 
 
 static
-vector<f64> s_randPoint(algo::iLCG& lcg, f64 rmin, f64 rmax, u32 dimensions)
+tIO s_randPoint(algo::iLCG& lcg, fml rmin, fml rmax, u32 dimensions)
 {
-    vector<f64> v(dimensions);
+    tIO v(dimensions);
     for (u32 i = 0; i < dimensions; i++)
     {
-        v[i] = ((f64)lcg.next()) / ((f64)lcg.randMax());    // [0.0, 1.0]
+        v[i] = ((fml)lcg.next()) / ((fml)lcg.randMax());    // [0.0, 1.0]
         v[i] *= rmax-rmin;                                  // [0.0, rmax-rmin]
         v[i] += rmin;                                       // [rmin, rmax]
     }
@@ -24,15 +24,15 @@ vector<f64> s_randPoint(algo::iLCG& lcg, f64 rmin, f64 rmax, u32 dimensions)
 
 
 static
-vector<f64> s_calcCenter(const vector< vector<f64> >& points, const vector<u32>& cluster)
+tIO s_calcCenter(const vector<tIO>& points, const vector<u32>& cluster)
 {
     assert(cluster.size() > 0);
 
-    vector<f64> center(points[0].size(), 0.0);
+    tIO center(points[0].size(), 0.0);
     for (size_t i = 0; i < cluster.size(); i++)
         for (size_t j = 0; j < center.size(); j++)
             center[j] += points[cluster[i]][j];
-    f64 mul = 1.0 / ((f64)cluster.size());
+    fml mul = 1.0 / ((fml)cluster.size());
     for (size_t j = 0; j < center.size(); j++)
         center[j] *= mul;
     return center;
@@ -40,18 +40,18 @@ vector<f64> s_calcCenter(const vector< vector<f64> >& points, const vector<u32>&
 
 
 static
-f64 s_distanceSquared(const vector<f64>& p1, const vector<f64>& p2)
+fml s_distanceSquared(const tIO& p1, const tIO& p2)
 {
-    f64 dist = 0.0;
+    fml dist = 0.0;
     for (size_t i = 0; i < p1.size(); i++)
         dist += (p1[i]-p2[i]) * (p1[i]-p2[i]);
     return dist;
 }
 
 
-vector< vector<u32> > kmeans(const vector< vector<f64> >& points, u32 k,
-                             f64 rmin, f64 rmax, algo::iLCG& lcg,
-                                   vector< vector<f64> >& centers)
+vector< vector<u32> > kmeans(const vector<tIO>& points, u32 k,
+                             fml rmin, fml rmax, algo::iLCG& lcg,
+                                   vector<tIO>& centers)
 {
     if (points.size() == 0)
         throw eInvalidArgument("There must be points to cluster!");
@@ -73,9 +73,9 @@ vector< vector<u32> > kmeans(const vector< vector<f64> >& points, u32 k,
 }
 
 
-vector< vector<u32> > kmeans_pp(const vector< vector<f64> >& points, u32 k,
+vector< vector<u32> > kmeans_pp(const vector<tIO>& points, u32 k,
                                 algo::iLCG& lcg,
-                                      vector< vector<f64> >& centers)
+                                      vector<tIO>& centers)
 {
     if (points.size() == 0)
         throw eInvalidArgument("There must be points to cluster!");
@@ -91,16 +91,16 @@ vector< vector<u32> > kmeans_pp(const vector< vector<f64> >& points, u32 k,
     centers[0] = points[lcg.next() % points.size()];
     for (u32 i = 1; i < k; i++)
     {
-        vector<f64> cumDists(points.size());
+        tIO cumDists(points.size());
         for (size_t d = 0; d < cumDists.size(); d++)
         {
-            f64 mind = s_distanceSquared(points[d], centers[0]);
+            fml mind = s_distanceSquared(points[d], centers[0]);
             for (u32 j = 1; j < i; j++)
                 mind = std::min(mind, s_distanceSquared(points[d], centers[j]));
             cumDists[d] = (d == 0) ? (mind) : (cumDists[d-1]+mind);
         }
 
-        f64 ran = ((f64)lcg.next()) / ((f64)lcg.randMax()) * cumDists.back();
+        fml ran = ((fml)lcg.next()) / ((fml)lcg.randMax()) * cumDists.back();
         size_t d;
         for (d = 0; ran > cumDists[d]; d++) { }
         centers[i] = points[d];
@@ -110,8 +110,8 @@ vector< vector<u32> > kmeans_pp(const vector< vector<f64> >& points, u32 k,
 }
 
 
-vector< vector<u32> > kmeans(const vector< vector<f64> >& points, u32 k,
-                             vector< vector<f64> >& centers)
+vector< vector<u32> > kmeans(const vector<tIO>& points, u32 k,
+                             vector<tIO>& centers)
 {
     if (points.size() == 0)
         throw eInvalidArgument("There must be points to cluster!");
@@ -136,11 +136,11 @@ vector< vector<u32> > kmeans(const vector< vector<f64> >& points, u32 k,
 
         for (size_t i = 0; i < points.size(); i++)
         {
-            f64 dist = s_distanceSquared(points[i], centers[0]);
+            fml dist = s_distanceSquared(points[i], centers[0]);
             u32 closest = 0;
             for (u32 c = 1; c < k; c++)
             {
-                f64 distHere = s_distanceSquared(points[i], centers[c]);
+                fml distHere = s_distanceSquared(points[i], centers[c]);
                 if (distHere < dist)
                 {
                     closest = c;
