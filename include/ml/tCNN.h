@@ -151,8 +151,8 @@ class tCNN : public iPackable, public iLearner, public bNonCopyable
          * This parameter is also used when the weight update rule
          * is kWeightUpRuleRMSPROP or kWeightUpRuleARMS.
          */
-        void setAlpha(f64 alpha, u32 layerIndex);
-        void setAlpha(f64 alpha);
+        void setAlpha(fml alpha, u32 layerIndex);
+        void setAlpha(fml alpha);
 
         /**
          * Sets the viscosity of the network's weight velocities when using
@@ -160,8 +160,8 @@ class tCNN : public iPackable, public iLearner, public bNonCopyable
          * Sets the viscosity of one layer (first method) or all layers
          * (second method).
          */
-        void setViscosity(f64 viscosity, u32 layerIndex);
-        void setViscosity(f64 viscosity);
+        void setViscosity(fml viscosity, u32 layerIndex);
+        void setViscosity(fml viscosity);
 
         //////////////////////////////////////////////////////////////////////
         // Training -- this is the iLearner interface
@@ -214,7 +214,7 @@ class tCNN : public iPackable, public iLearner, public bNonCopyable
          * Calculates the cross-entropy cost if the output layer of the
          * network is a softmax group.
          */
-        f64 calculateError(const tIO& output, const tIO& target);
+        fml calculateError(const tIO& output, const tIO& target);
 
         /**
          * Calculates the average standard squared error if the output layer of
@@ -222,7 +222,7 @@ class tCNN : public iPackable, public iLearner, public bNonCopyable
          * Calculates the average cross-entropy cost if the output layer of the
          * network is a softmax group.
          */
-        f64 calculateError(const std::vector<tIO>& outputs,
+        fml calculateError(const std::vector<tIO>& outputs,
                            const std::vector<tIO>& targets);
 
         /**
@@ -278,7 +278,7 @@ class tCNN : public iPackable, public iLearner, public bNonCopyable
          * map. The number of weights returned will equal the size of the
          * receptive field below the specified feature map.
          */
-        void getWeights(u32 layerIndex, u32 mapIndex, std::vector<f64>& weights) const;
+        void getWeights(u32 layerIndex, u32 mapIndex, std::vector<fml>& weights) const;
 
         /**
          * Returns the bias value of the specified feature map.
@@ -288,7 +288,7 @@ class tCNN : public iPackable, public iLearner, public bNonCopyable
          * of the field below. This method is how you can access the bias
          * of a map.
          */
-        f64 getBias(u32 layerIndex, u32 mapIndex) const;
+        fml getBias(u32 layerIndex, u32 mapIndex) const;
 
         /**
          * Returns the number of replicated filters in the specified
@@ -310,8 +310,8 @@ class tCNN : public iPackable, public iLearner, public bNonCopyable
          * the specified neuron (determined by the squashing function
          * used by that neuron).
          */
-        f64 getOutput(u32 layerIndex, u32 mapIndex, u32 filterIndex,
-                      f64* minValue = NULL, f64* maxValue = NULL) const;
+        fml getOutput(u32 layerIndex, u32 mapIndex, u32 filterIndex,
+                      fml* minValue = NULL, fml* maxValue = NULL) const;
 
         /**
          * Generates an image representation of the specified feature map.
@@ -358,8 +358,8 @@ class tCNN : public iPackable, public iLearner, public bNonCopyable
         class tLayerCNN* m_layers;   // an array of layers
         u32 m_numLayers;             // number of layers
 
-        f64 m_randWeightMin;   // used for resetWeights()
-        f64 m_randWeightMax;   // ...
+        fml m_randWeightMin;   // used for resetWeights()
+        fml m_randWeightMax;   // ...
 
         std::vector<tIO> m_inputAccum;
         std::vector<tIO> m_targetAccum;

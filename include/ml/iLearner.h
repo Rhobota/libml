@@ -91,7 +91,7 @@ class iLearner
          * the standard squared error or the cross-entropy loss, if one of
          * those is appropriate. Or the learner may do something else.
          */
-        virtual f64 calculateError(const tIO& output, const tIO& target) = 0;
+        virtual fml calculateError(const tIO& output, const tIO& target) = 0;
 
         /**
          * Asks the learner to calculate the error between all the given
@@ -100,7 +100,7 @@ class iLearner
          * loss, if one of those is appropriate. Or the learner may do
          * something else.
          */
-        virtual f64 calculateError(const std::vector<tIO>& outputs,
+        virtual fml calculateError(const std::vector<tIO>& outputs,
                                    const std::vector<tIO>& targets) = 0;
 
         /**

@@ -89,8 +89,8 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          *        do its learning before you begin training.
          */
         tANN(std::vector<u32> layerSizes,
-             f64 randWeightMin = -1.0,
-             f64 randWeightMax = 1.0);
+             fml randWeightMin = -1.0,
+             fml randWeightMax = 1.0);
 
         /**
          * Resets the weighs in the network to the initial random weights
@@ -190,8 +190,8 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          * This parameter is also used when the weight update rule
          * is kWeightUpRuleRMSPROP or kWeightUpRuleARMS.
          */
-        void setAlpha(f64 alpha, u32 layerIndex);
-        void setAlpha(f64 alpha);
+        void setAlpha(fml alpha, u32 layerIndex);
+        void setAlpha(fml alpha);
 
         /**
          * Sets the viscosity of the network's weight velocities when using
@@ -199,8 +199,8 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          * Sets the viscosity of one layer (first method) or all layers
          * (second method).
          */
-        void setViscosity(f64 viscosity, u32 layerIndex);
-        void setViscosity(f64 viscosity);
+        void setViscosity(fml viscosity, u32 layerIndex);
+        void setViscosity(fml viscosity);
 
         //////////////////////////////////////////////////////////////////////
         // Training -- this is the iLearner interface
@@ -253,7 +253,7 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          * Calculates the cross-entropy cost if the output layer of the
          * network is a softmax group.
          */
-        f64 calculateError(const tIO& output, const tIO& target);
+        fml calculateError(const tIO& output, const tIO& target);
 
         /**
          * Calculates the average standard squared error if the output layer of
@@ -261,7 +261,7 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          * Calculates the average cross-entropy cost if the output layer of the
          * network is a softmax group.
          */
-        f64 calculateError(const std::vector<tIO>& outputs,
+        fml calculateError(const std::vector<tIO>& outputs,
                            const std::vector<tIO>& targets);
 
         /**
@@ -308,7 +308,7 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          * the number of weights returned will equal the dimensionality of the
          * input.
          */
-        void getWeights(u32 layerIndex, u32 neuronIndex, std::vector<f64>& weights) const;
+        void getWeights(u32 layerIndex, u32 neuronIndex, std::vector<fml>& weights) const;
 
         /**
          * Returns the bias value of the specified neuron.
@@ -318,7 +318,7 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          * of the layer below. This method is how you can access the bias
          * of a neuron.
          */
-        f64 getBias(u32 layerIndex, u32 neuronIndex) const;
+        fml getBias(u32 layerIndex, u32 neuronIndex) const;
 
         /**
          * Returns the output value of the specified neuron. This will be
@@ -328,7 +328,7 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          * Note: Examples are not pushed through by addExample(). They are
          * only pushed through by evaluate*() and update().
          */
-        f64 getOutput(u32 layerIndex, u32 neuronIndex) const;
+        fml getOutput(u32 layerIndex, u32 neuronIndex) const;
 
         /**
          * Generates an image representation of the specified neuron.
@@ -361,8 +361,8 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
         class tLayer* m_layers;  // an array of layers
         u32 m_numLayers;         // number of layers
 
-        f64 m_randWeightMin;     // used for resetWeights()
-        f64 m_randWeightMax;     // used for resetWeights()
+        fml m_randWeightMin;     // used for resetWeights()
+        fml m_randWeightMax;     // used for resetWeights()
 
         std::vector<tIO> m_inputAccum;
         std::vector<tIO> m_targetAccum;

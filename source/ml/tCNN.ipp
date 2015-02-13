@@ -106,7 +106,7 @@ class tLayerCNN : public bNonCopyable
                     for (u32 m = 0; m < m_numFeatureMapsInThisLayer; m++)
                     {
                         size_t off = outputIndex + m;
-                        f64 maxval = m_output(off,c);
+                        fml maxval = m_output(off,c);
                         for (u32 i = 0; i < m_poolHeight; i++)
                         {
                             size_t off2 = off;
@@ -149,7 +149,7 @@ class tLayerCNN : public bNonCopyable
                     for (u32 m = 0; m < m_numFeatureMapsInThisLayer; m++)
                     {
                         size_t off = outputIndex + m;
-                        f64 maxval = m_output(off,c);
+                        fml maxval = m_output(off,c);
                         size_t maxi = off;
                         for (u32 i = 0; i < m_poolHeight; i++)
                         {
@@ -194,7 +194,7 @@ class tLayerCNN : public bNonCopyable
               u32 stepSizeHorizontal, u32 stepSizeVertical,
               u32 numFeatureMapsInThisLayer,
               u32 poolWidth, u32 poolHeight,
-              f64 rmin, f64 rmax, algo::iLCG& lcg)
+              fml rmin, fml rmax, algo::iLCG& lcg)
     {
         // Validation and setup of useful member state.
         if (!(inputSize > 0))
@@ -254,7 +254,7 @@ class tLayerCNN : public bNonCopyable
         init_data();
     }
 
-    void resetWeights(f64 rmin, f64 rmax, algo::iLCG& lcg)
+    void resetWeights(fml rmin, fml rmax, algo::iLCG& lcg)
     {
         assert(rmin < rmax);
         m_layer.reset(rmin, rmax, lcg);
@@ -277,13 +277,13 @@ class tLayerCNN : public bNonCopyable
         m_layer.weightUpRule = rule;
     }
 
-    void setLayerAlpha(f64 alpha)
+    void setLayerAlpha(fml alpha)
     {
         assert(alpha > 0.0);
         m_layer.alpha = alpha;
     }
 
-    void setLayerViscosity(f64 viscosity)
+    void setLayerViscosity(fml viscosity)
     {
         assert(viscosity > 0.0 && viscosity < 1.0);
         m_layer.viscosity = viscosity;
@@ -627,8 +627,8 @@ tCNN::tCNN(string descriptionString)
                                  nmapsHere,           //   u32 numFeatureMapsInThisLayer
                                  poolwidth,           //   u32 poolWidth
                                  poolheight,          //   u32 poolHeight
-                                 m_randWeightMin,     //   f64 rmin
-                                 m_randWeightMax,     //   f64 rmax
+                                 m_randWeightMin,     //   fml rmin
+                                 m_randWeightMax,     //   fml rmax
                                  lcg);                //   algo::iLCG& lcg
 
                 nmaps = nmapsHere;
@@ -650,8 +650,8 @@ tCNN::tCNN(string descriptionString)
                                  numouts,             //   u32 numFeatureMapsInThisLayer
                                  1,                   //   u32 poolWidth
                                  1,                   //   u32 poolHeight
-                                 m_randWeightMin,     //   f64 rmin
-                                 m_randWeightMax,     //   f64 rmax
+                                 m_randWeightMin,     //   fml rmin
+                                 m_randWeightMax,     //   fml rmax
                                  lcg);                //   algo::iLCG& lcg
 
                 nmaps = numouts;
@@ -748,7 +748,7 @@ void tCNN::setWeightUpRule(tANN::nWeightUpRule rule)
         setWeightUpRule(rule, i);
 }
 
-void tCNN::setAlpha(f64 alpha, u32 layerIndex)
+void tCNN::setAlpha(fml alpha, u32 layerIndex)
 {
     if (layerIndex >= m_numLayers)
         throw eInvalidArgument("No layer with that index.");
@@ -757,7 +757,7 @@ void tCNN::setAlpha(f64 alpha, u32 layerIndex)
     m_layers[layerIndex].setLayerAlpha(alpha);
 }
 
-void tCNN::setAlpha(f64 alpha)
+void tCNN::setAlpha(fml alpha)
 {
     if (alpha <= 0.0)
         throw eInvalidArgument("Alpha must be greater than zero.");
@@ -765,7 +765,7 @@ void tCNN::setAlpha(f64 alpha)
         setAlpha(alpha, i);
 }
 
-void tCNN::setViscosity(f64 viscosity, u32 layerIndex)
+void tCNN::setViscosity(fml viscosity, u32 layerIndex)
 {
     if (layerIndex >= m_numLayers)
         throw eInvalidArgument("No layer with that index.");
@@ -774,7 +774,7 @@ void tCNN::setViscosity(f64 viscosity, u32 layerIndex)
     m_layers[layerIndex].setLayerViscosity(viscosity);
 }
 
-void tCNN::setViscosity(f64 viscosity)
+void tCNN::setViscosity(fml viscosity)
 {
     if (viscosity <= 0.0 || viscosity >= 1.0)
         throw eInvalidArgument("Viscosity must be greater than zero and less than one.");
@@ -798,7 +798,7 @@ void tCNN::addExample(const tIO& input, const tIO& target)
     }
     if (type == tANN::kLayerTypeSoftmax)
     {
-        f64 summation = 0.0;
+        fml summation = 0.0;
         for (size_t i = 0; i < target.size(); i++)
             summation += target[i];
         if (summation < 0.9999 || summation > 1.0001)
@@ -931,7 +931,7 @@ void tCNN::evaluateBatch(std::vector<tIO>::const_iterator inputStart,
     }
 }
 
-f64 tCNN::calculateError(const tIO& output, const tIO& target)
+fml tCNN::calculateError(const tIO& output, const tIO& target)
 {
     if (m_layers[m_numLayers-1].getLayer().layerType == tANN::kLayerTypeSoftmax)
         return crossEntropyCost(output, target);
@@ -939,7 +939,7 @@ f64 tCNN::calculateError(const tIO& output, const tIO& target)
         return standardSquaredError(output, target);
 }
 
-f64 tCNN::calculateError(const std::vector<tIO>& outputs,
+fml tCNN::calculateError(const std::vector<tIO>& outputs,
                          const std::vector<tIO>& targets)
 {
     if (m_layers[m_numLayers-1].getLayer().layerType == tANN::kLayerTypeSoftmax)
@@ -1188,7 +1188,7 @@ void tCNN::getWeights(u32 layerIndex, u32 mapIndex, tIO& weights) const
         weights[s] = w(mapIndex, s);
 }
 
-f64 tCNN::getBias(u32 layerIndex, u32 mapIndex) const
+fml tCNN::getBias(u32 layerIndex, u32 mapIndex) const
 {
     if (mapIndex >= getNumFeatureMaps(layerIndex))
         throw eInvalidArgument("No layer/map with that index.");
@@ -1207,8 +1207,8 @@ u32 tCNN::getNumReplicatedFilters(u32 layerIndex) const
     return m_layers[layerIndex].getNumReplicas();
 }
 
-f64 tCNN::getOutput(u32 layerIndex, u32 mapIndex, u32 filterIndex,
-                    f64* minValue, f64* maxValue) const
+fml tCNN::getOutput(u32 layerIndex, u32 mapIndex, u32 filterIndex,
+                    fml* minValue, fml* maxValue) const
 {
     if (mapIndex >= getNumFeatureMaps(layerIndex))
         throw eInvalidArgument("No layer/map with that index.");
@@ -1287,8 +1287,8 @@ void tCNN::getOutputImage(u32 layerIndex, u32 mapIndex,
     // is okay to let un_examplify() determine a good range itself, but here we know
     // the range and we want the resulting image to represent the values relative to that
     // range.
-    f64 minValue = s_squash_min(m_layers[layerIndex].getLayer().layerType);
-    f64 maxValue = s_squash_max(m_layers[layerIndex].getLayer().layerType);
+    fml minValue = s_squash_min(m_layers[layerIndex].getLayer().layerType);
+    fml maxValue = s_squash_max(m_layers[layerIndex].getLayer().layerType);
 
     // Use the image creating method in ml::common to do the work.
     un_examplify(weights, false, width, false, dest, &minValue, &maxValue);
@@ -1307,7 +1307,7 @@ void tCNN::unpack(iReadable* in)
 {
     // Try to unpack the network.
     u32 numLayers;
-    f64 randWeightMin, randWeightMax;
+    fml randWeightMin, randWeightMax;
     rho::unpack(in, numLayers);
     if (numLayers == 0)
         throw eRuntimeError("Invalid CNN stream -- num layers");

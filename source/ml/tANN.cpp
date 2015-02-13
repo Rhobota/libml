@@ -111,7 +111,7 @@ char s_weightUpRuleToChar(tANN::nWeightUpRule rule)
 
 
 static
-f64 s_squash(f64 val, tANN::nLayerType type)
+fml s_squash(fml val, tANN::nLayerType type)
 {
     switch (type)
     {
@@ -128,7 +128,7 @@ f64 s_squash(f64 val, tANN::nLayerType type)
 
 
 static
-f64 s_derivative_of_squash(f64 val, tANN::nLayerType type)
+fml s_derivative_of_squash(fml val, tANN::nLayerType type)
 {
     switch (type)
     {
@@ -145,7 +145,7 @@ f64 s_derivative_of_squash(f64 val, tANN::nLayerType type)
 
 
 static
-f64 s_squash_min(tANN::nLayerType type)
+fml s_squash_min(tANN::nLayerType type)
 {
     switch (type)
     {
@@ -162,7 +162,7 @@ f64 s_squash_min(tANN::nLayerType type)
 
 
 static
-f64 s_squash_max(tANN::nLayerType type)
+fml s_squash_max(tANN::nLayerType type)
 {
     switch (type)
     {
@@ -185,7 +185,7 @@ class tSquashFunc
         tSquashFunc(tANN::nLayerType type)
             : m_type(type) { }
 
-        f64 operator()(f64 val) const { return s_squash(val, m_type); }
+        fml operator()(fml val) const { return s_squash(val, m_type); }
 
     private:
 
@@ -200,7 +200,7 @@ class tDirSquashFunc
         tDirSquashFunc(tANN::nLayerType type)
             : m_type(type) { }
 
-        f64 operator()(f64 val) const { return s_derivative_of_squash(val, m_type); }
+        fml operator()(fml val) const { return s_derivative_of_squash(val, m_type); }
 
     private:
 
@@ -212,7 +212,7 @@ class tExpFunc
 {
     public:
 
-        f64 operator()(f64 val) const { return std::min(std::exp(val), 1e100); }
+        fml operator()(fml val) const { return std::min(std::exp(val), 1e100); }
 };
 
 
@@ -220,7 +220,7 @@ class t_RMSPROP_wUpdate
 {
     public:
 
-        f64 operator()(f64 dw_accum, f64 dw_accum_avg) const
+        fml operator()(fml dw_accum, fml dw_accum_avg) const
         {
             return (dw_accum_avg > 0.0) ? (dw_accum / std::sqrt(dw_accum_avg)) : (0.0);
         }
@@ -264,8 +264,8 @@ class tLayer : public bNonCopyable
     /////////////////////////////////////////////////////////////////////////////////////
 
     tANN::nWeightUpRule weightUpRule;
-    f64 alpha;
-    f64 viscosity;     // <-- used only with the momentum weight update rule
+    fml alpha;
+    fml viscosity;     // <-- used only with the momentum weight update rule
 
     /////////////////////////////////////////////////////////////////////////////////////
     // Methods...
@@ -279,7 +279,7 @@ class tLayer : public bNonCopyable
         weightUpRule = tANN::kWeightUpRuleMax;
     }
 
-    void reset(f64 rmin, f64 rmax, algo::iLCG& lcg)
+    void reset(fml rmin, fml rmax, algo::iLCG& lcg)
     {
         // Reset the node state and the gradient state.
         output.resize(0,0);
@@ -321,7 +321,7 @@ class tLayer : public bNonCopyable
     }
 
     void init(i32 prevSize, i32 mySize,
-              f64 rmin, f64 rmax, algo::iLCG& lcg)
+              fml rmin, fml rmax, algo::iLCG& lcg)
     {
         // Init the data stuff.
         init_data(prevSize, mySize);
@@ -620,8 +620,8 @@ tANN::tANN(iReadable* in)
 }
 
 tANN::tANN(std::vector<u32> layerSizes,
-           f64 randWeightMin,
-           f64 randWeightMax)
+           fml randWeightMin,
+           fml randWeightMax)
     : m_layers(NULL),
       m_numLayers(0),
       m_randWeightMin(randWeightMin),
@@ -719,7 +719,7 @@ void tANN::setWeightUpRule(nWeightUpRule rule)
         setWeightUpRule(rule, i);
 }
 
-void tANN::setAlpha(f64 alpha, u32 layerIndex)
+void tANN::setAlpha(fml alpha, u32 layerIndex)
 {
     if (layerIndex >= m_numLayers)
         throw eInvalidArgument("No layer with that index.");
@@ -728,7 +728,7 @@ void tANN::setAlpha(f64 alpha, u32 layerIndex)
     m_layers[layerIndex].alpha = alpha;
 }
 
-void tANN::setAlpha(f64 alpha)
+void tANN::setAlpha(fml alpha)
 {
     if (alpha <= 0.0)
         throw eInvalidArgument("Alpha must be greater than zero.");
@@ -736,7 +736,7 @@ void tANN::setAlpha(f64 alpha)
         setAlpha(alpha, i);
 }
 
-void tANN::setViscosity(f64 viscosity, u32 layerIndex)
+void tANN::setViscosity(fml viscosity, u32 layerIndex)
 {
     if (layerIndex >= m_numLayers)
         throw eInvalidArgument("No layer with that index.");
@@ -745,7 +745,7 @@ void tANN::setViscosity(f64 viscosity, u32 layerIndex)
     m_layers[layerIndex].viscosity = viscosity;
 }
 
-void tANN::setViscosity(f64 viscosity)
+void tANN::setViscosity(fml viscosity)
 {
     if (viscosity <= 0.0 || viscosity >= 1.0)
         throw eInvalidArgument("Viscosity must be greater than zero and less than one.");
@@ -769,7 +769,7 @@ void tANN::addExample(const tIO& input, const tIO& target)
     }
     if (type == kLayerTypeSoftmax)
     {
-        f64 summation = 0.0;
+        fml summation = 0.0;
         for (size_t i = 0; i < target.size(); i++)
             summation += target[i];
         if (summation < 0.9999 || summation > 1.0001)
@@ -903,7 +903,7 @@ void tANN::evaluateBatch(std::vector<tIO>::const_iterator inputStart,
     }
 }
 
-f64 tANN::calculateError(const tIO& output, const tIO& target)
+fml tANN::calculateError(const tIO& output, const tIO& target)
 {
     if (m_layers[m_numLayers-1].layerType == kLayerTypeSoftmax)
         return crossEntropyCost(output, target);
@@ -911,7 +911,7 @@ f64 tANN::calculateError(const tIO& output, const tIO& target)
         return standardSquaredError(output, target);
 }
 
-f64 tANN::calculateError(const std::vector<tIO>& outputs,
+fml tANN::calculateError(const std::vector<tIO>& outputs,
                          const std::vector<tIO>& targets)
 {
     if (m_layers[m_numLayers-1].layerType == kLayerTypeSoftmax)
@@ -1058,7 +1058,7 @@ void tANN::getWeights(u32 layerIndex, u32 neuronIndex, tIO& weights) const
         weights[s] = w(neuronIndex,s);
 }
 
-f64 tANN::getBias(u32 layerIndex, u32 neuronIndex) const
+fml tANN::getBias(u32 layerIndex, u32 neuronIndex) const
 {
     if (neuronIndex >= getNumNeuronsInLayer(layerIndex))
         throw eInvalidArgument("No layer/node with that index.");
@@ -1067,7 +1067,7 @@ f64 tANN::getBias(u32 layerIndex, u32 neuronIndex) const
     return w.rightCols(1)(neuronIndex,0);
 }
 
-f64 tANN::getOutput(u32 layerIndex, u32 neuronIndex) const
+fml tANN::getOutput(u32 layerIndex, u32 neuronIndex) const
 {
     if (neuronIndex >= getNumNeuronsInLayer(layerIndex))
         throw eInvalidArgument("No layer/node with that index.");
@@ -1092,7 +1092,7 @@ void tANN::getImage(u32 layerIndex, u32 neuronIndex,
 
     // Add an output indicator.
     nLayerType type = m_layers[layerIndex].layerType;
-    f64 output = (getOutput(layerIndex, neuronIndex) - s_squash_min(type))
+    fml output = (getOutput(layerIndex, neuronIndex) - s_squash_min(type))
                     / (s_squash_max(type) - s_squash_min(type));   // output now in [0, 1]
     u8 outputByte = (u8) (output*255.0);
     u8 red = 0;
@@ -1127,7 +1127,7 @@ void tANN::unpack(iReadable* in)
 {
     // Try to unpack the network.
     u32 numLayers;
-    f64 randWeightMin, randWeightMax;
+    fml randWeightMin, randWeightMax;
     rho::unpack(in, numLayers);
     if (numLayers == 0)
         throw eRuntimeError("Invalid ANN stream -- num layers");
