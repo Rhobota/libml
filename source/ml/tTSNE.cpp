@@ -27,13 +27,13 @@ void tsne(const std::vector<tIO>& originalData, f64 theta, f64 perplexity,
     int N = (int) originalData.size();
     int D = (int) originalData[0].size();
     int redDims = 2;
-    double* data = (double*) malloc(N * D * sizeof(double));
+    f64* data = (f64*) malloc(N * D * sizeof(f64));
     for (int i = 0; i < N; i++)
     {
         for (int j = 0; j < D; j++)
             data[i*D + j] = originalData[i][j];
     }
-    double* Y = (double*) malloc(N * redDims * sizeof(double));
+    f64* Y = (f64*) malloc(N * redDims * sizeof(f64));
 
     // Run t-SNE.
     TSNE tsneobj;

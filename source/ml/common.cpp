@@ -481,7 +481,7 @@ void buildConfusionMatrix(const std::vector<tIO>& outputs,
 static
 void s_fill_cell(const std::vector<u32>& indices, const std::vector<tIO>& inputs,
                  bool color, u32 width, bool absolute,
-                 u32 boxWidth, double ox, double oy,
+                 u32 boxWidth, f64 ox, f64 oy,
                  algo::iLCG& lcg, img::tCanvas& canvas)
 {
     const u32 kPadding = 5;
