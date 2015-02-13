@@ -20,7 +20,8 @@ namespace ml
  * input/output/target examples and the internal precision
  * of the learners.
  */
-typedef f64 fml;
+typedef f32 fml;
+#define FML(x) x ## f   // <-- used to append 'f' to the end of fml literals
 
 
 /**

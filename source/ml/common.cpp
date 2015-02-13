@@ -21,62 +21,62 @@ namespace ml
 
 fml logistic_function(fml z)
 {
-    return (1.0 / (1.0 + std::exp(-z)));
+    return (FML(1.0) / (FML(1.0) + std::exp(-z)));
 }
 
 fml derivative_of_logistic_function(fml z)
 {
     fml y = logistic_function(z);
-    fml slope = (y * (1.0 - y));
-    slope = std::max(slope, 1e-5);    // <-- Experimental
+    fml slope = (y * (FML(1.0) - y));
+    slope = std::max(slope, FML(1e-5));    // <-- Experimental
     return slope;
 }
 
 fml inverse_of_logistic_function(fml y)
 {
-    if (y < 0.0001) y = 0.0001;
-    if (y > 0.9999) y = 0.9999;
-    return -std::log((1.0 / y) - 1.0);
+    if (y < FML(0.0001)) y = FML(0.0001);
+    if (y > FML(0.9999)) y = FML(0.9999);
+    return -std::log((FML(1.0) / y) - FML(1.0));
 }
 
 fml logistic_function_min()
 {
-    return 0.0;
+    return FML(0.0);
 }
 
 fml logistic_function_max()
 {
-    return 1.0;
+    return FML(1.0);
 }
 
 
 fml hyperbolic_function(fml z)
 {
     // Recommended by: "Efficient BackProp" (LeCun et al.)
-    return 1.7159 * std::tanh(2.0/3.0 * z);
+    return FML(1.7159) * std::tanh(FML(2.0)/FML(3.0) * z);
 }
 
 fml derivative_of_hyperbolic_function(fml z)
 {
-    fml s = 1.0 / std::cosh(2.0/3.0 * z);
-    return 1.14393 * s * s;
+    fml s = FML(1.0) / std::cosh(FML(2.0)/FML(3.0) * z);
+    return FML(1.14393) * s * s;
 }
 
 fml inverse_of_hyperbolic_function(fml y)
 {
-    if (y < -1.71589) y = -1.71589;
-    if (y > 1.71589) y = 1.71589;
-    return 1.5 * atanh(0.582785 * y);
+    if (y < FML(-1.71589)) y = FML(-1.71589);
+    if (y > FML(1.71589)) y = FML(1.71589);
+    return FML(1.5) * atanhf(FML(0.582785) * y);
 }
 
 fml hyperbolic_function_min()
 {
-    return -1.7159;
+    return FML(-1.7159);
 }
 
 fml hyperbolic_function_max()
 {
-    return 1.7159;
+    return FML(1.7159);
 }
 
 
@@ -109,7 +109,7 @@ tIO examplify(const img::tImage* image)
     const u8* buf = image->buf();
     tIO input(image->bufUsed(), 0.0);
     for (u32 i = 0; i < image->bufUsed(); i++)
-        input[i] = buf[i] / 255.0;
+        input[i] = buf[i] / FML(255.0);
     return input;
 }
 
@@ -147,7 +147,7 @@ void un_examplify(const tIO& io, bool color, u32 width,
             maxval = std::max(maxval, weights[i]);
             minval = std::min(minval, weights[i]);
         }
-        if (maxval == minval) maxval += 0.000001;
+        if (maxval == minval) maxval += FML(0.000001);
     }
     fml absmax = std::max(std::fabs(maxval), std::fabs(minval));
     if (color)
@@ -155,13 +155,13 @@ void un_examplify(const tIO& io, bool color, u32 width,
         if (absolute)
         {
             for (u32 i = 0; i < weights.size(); i++)
-                weights[i] = (std::fabs(weights[i]) / absmax) * 255.0;
+                weights[i] = (std::fabs(weights[i]) / absmax) * FML(255.0);
         }
         else
         {
             for (u32 i = 0; i < weights.size(); i++)
             {
-                fml val = ((weights[i] - minval) / (maxval - minval)) * 255.0;
+                fml val = ((weights[i] - minval) / (maxval - minval)) * FML(255.0);
                 weights[i] = val;
             }
         }
@@ -325,7 +325,7 @@ fml standardSquaredError(const tIO& output, const tIO& target)
     fml error = 0.0;
     for (size_t i = 0; i < output.size(); i++)
         error += (output[i]-target[i]) * (output[i]-target[i]);
-    return 0.5*error;
+    return FML(0.5) * error;
 }
 
 fml standardSquaredError(const std::vector<tIO>& outputs,
@@ -433,7 +433,7 @@ fml rmsError(const std::vector<tIO>& outputs,
              const std::vector<tIO>& targets)
 {
     fml sqrdError = standardSquaredError(outputs, targets);
-    return std::sqrt(sqrdError * 2.0 / ((fml)outputs[0].size()));
+    return std::sqrt(sqrdError * FML(2.0) / ((fml)outputs[0].size()));
 }
 
 
