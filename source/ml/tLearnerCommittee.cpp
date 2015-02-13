@@ -161,7 +161,7 @@ void tLearnerCommittee::evaluateBatch(std::vector<tIO>::const_iterator inputStar
             for (size_t c = 1; c < outputs.size(); c++)
                 s_accum((*outputStart), outputs[c][i]);
             for (size_t j = 0; j < (*outputStart).size(); j++)
-                (*outputStart)[j] /= ((f64)m_committee.size());
+                (*outputStart)[j] /= ((fml)m_committee.size());
         }
         else if (m_type == kCommitteeMostConfident)
         {
@@ -201,21 +201,21 @@ std::string tLearnerCommittee::learnerInfoString() const
     return str;
 }
 
-f64 tLearnerCommittee::calculateError(const tIO& output, const tIO& target)
+fml tLearnerCommittee::calculateError(const tIO& output, const tIO& target)
 {
-    f64 sum = 0.0;
+    fml sum = 0.0;
     for (size_t i = 0; i < m_committee.size(); i++)
         sum += m_committee[i]->calculateError(output, target);
-    return sum / ((f64)m_committee.size());
+    return sum / ((fml)m_committee.size());
 }
 
-f64 tLearnerCommittee::calculateError(const std::vector<tIO>& outputs,
+fml tLearnerCommittee::calculateError(const std::vector<tIO>& outputs,
                                       const std::vector<tIO>& targets)
 {
-    f64 sum = 0.0;
+    fml sum = 0.0;
     for (size_t i = 0; i < m_committee.size(); i++)
         sum += m_committee[i]->calculateError(outputs, targets);
-    return sum / ((f64)m_committee.size());
+    return sum / ((fml)m_committee.size());
 }
 
 void tLearnerCommittee::addExample(const tIO& input, const tIO& target)

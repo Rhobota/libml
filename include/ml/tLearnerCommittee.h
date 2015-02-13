@@ -88,12 +88,12 @@ class tLearnerCommittee : public iLearner, public bNonCopyable
         /**
          * Calculates the average error of the learners in the committee.
          */
-        f64 calculateError(const tIO& output, const tIO& target);
+        fml calculateError(const tIO& output, const tIO& target);
 
         /**
          * Calculates the average error of the learners in the committee.
          */
-        f64 calculateError(const std::vector<tIO>& outputs,
+        fml calculateError(const std::vector<tIO>& outputs,
                            const std::vector<tIO>& targets);
 
         /**

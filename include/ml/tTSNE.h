@@ -42,7 +42,7 @@ namespace ml
  * data points on return as is in 'originalData', but each will be reduced to a lower
  * number of dimensions.
  */
-void tsne(const std::vector<tIO>& originalData, f64 theta, f64 perplexity,
+void tsne(const std::vector<tIO>& originalData, fml theta, fml perplexity,
                 std::vector<tIO>& reducedDimData);
 
 

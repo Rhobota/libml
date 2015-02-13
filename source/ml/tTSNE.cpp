@@ -9,7 +9,7 @@ namespace ml
 {
 
 
-void tsne(const std::vector<tIO>& originalData, f64 theta, f64 perplexity,
+void tsne(const std::vector<tIO>& originalData, fml theta, fml perplexity,
                 std::vector<tIO>& reducedDimData)
 {
     // Verify that the input is reasonable.
@@ -71,10 +71,10 @@ void plotImages(const std::vector<tIO>& images, bool color, u32 width,
             throw eInvalidArgument("Each locations must specify a 2D point.");
 
     // Normalize the locations to the coordinate space we want.
-    f64 xmin = locations[0][0];
-    f64 xmax = locations[0][0];
-    f64 ymin = locations[0][1];
-    f64 ymax = locations[0][1];
+    fml xmin = locations[0][0];
+    fml xmax = locations[0][0];
+    fml ymin = locations[0][1];
+    fml ymax = locations[0][1];
     for (size_t i = 1; i < locations.size(); i++)
     {
         xmin = std::min(xmin, locations[i][0]);
@@ -82,7 +82,7 @@ void plotImages(const std::vector<tIO>& images, bool color, u32 width,
         ymin = std::min(ymin, locations[i][1]);
         ymax = std::max(ymax, locations[i][1]);
     }
-    f64 scale = ((f64)destWidth) / (xmax - xmin);
+    fml scale = ((fml)destWidth) / (xmax - xmin);
     std::vector<tIO> locs = locations;
     for (size_t i = 0; i < locs.size(); i++)
     {
