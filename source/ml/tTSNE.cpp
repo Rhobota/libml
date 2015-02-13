@@ -46,7 +46,7 @@ void tsne(const std::vector<tIO>& originalData, fml theta, fml perplexity,
     {
         reducedDimData[i].resize(redDims);
         for (int j = 0; j < redDims; j++)
-            reducedDimData[i][j] = Y[i*redDims + j];
+            reducedDimData[i][j] = (fml) (Y[i*redDims + j]);   // <-- loses floating point precision!
     }
     free(Y); Y = NULL;
 }

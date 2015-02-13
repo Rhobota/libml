@@ -212,7 +212,7 @@ class tExpFunc
 {
     public:
 
-        fml operator()(fml val) const { return std::min(std::exp(val), 1e100); }
+        fml operator()(fml val) const { return std::min(std::exp(val), FML(1e30)); }
 };
 
 
@@ -352,7 +352,7 @@ class tLayer : public bNonCopyable
                 if (denom > 0.0)
                     a.col(c) /= denom;
                 else
-                    a.col(c).setConstant(1.0 / (fml)a.rows());
+                    a.col(c).setConstant(FML(1.0) / (fml)a.rows());
             }
         }
         else
@@ -435,7 +435,7 @@ class tLayer : public bNonCopyable
             {
                 if (alpha <= 0.0)
                     throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
-                fml mult = (10.0 / batchSize) * alpha;
+                fml mult = (FML(10.0) / batchSize) * alpha;
                 w.noalias() -= mult * dw_accum;
                 break;
             }
@@ -448,7 +448,7 @@ class tLayer : public bNonCopyable
                     throw eLogicError("When using the momentum update rule, viscosity must be set.");
                 if (vel.rows() == 0)
                     vel = Mat::Zero(w.rows(), w.cols());
-                fml mult = (10.0 / batchSize) * alpha;
+                fml mult = (FML(10.0) / batchSize) * alpha;
                 vel *= viscosity;
                 vel.noalias() -= mult*dw_accum;
                 w.noalias() += vel;
@@ -473,10 +473,10 @@ class tLayer : public bNonCopyable
                     throw eLogicError("When using the rmsprop rule, alpha must be set.");
                 if (dw_accum_avg.rows() == 0)
                     dw_accum_avg = Mat::Constant(w.rows(), w.cols(), 1000.0);
-                fml batchNormMult = 1.0 / batchSize;
+                fml batchNormMult = FML(1.0) / batchSize;
                 dw_accum *= batchNormMult;
-                dw_accum_avg *= 0.9;
-                dw_accum_avg.noalias() += 0.1*dw_accum.array().square().matrix();
+                dw_accum_avg *= FML(0.9);
+                dw_accum_avg.noalias() += FML(0.1) * dw_accum.array().square().matrix();
                 w.noalias() -= alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_wUpdate());
                 break;
             }

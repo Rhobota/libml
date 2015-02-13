@@ -32,7 +32,7 @@ tIO s_calcCenter(const vector<tIO>& points, const vector<u32>& cluster)
     for (size_t i = 0; i < cluster.size(); i++)
         for (size_t j = 0; j < center.size(); j++)
             center[j] += points[cluster[i]][j];
-    fml mul = 1.0 / ((fml)cluster.size());
+    fml mul = FML(1.0) / ((fml)cluster.size());
     for (size_t j = 0; j < center.size(); j++)
         center[j] *= mul;
     return center;

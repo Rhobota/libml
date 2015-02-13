@@ -66,7 +66,7 @@ fml inverse_of_hyperbolic_function(fml y)
 {
     if (y < FML(-1.71589)) y = FML(-1.71589);
     if (y > FML(1.71589)) y = FML(1.71589);
-    return FML(1.5) * atanhf(FML(0.582785) * y);
+    return FML(1.5) * FML(atanh)(FML(0.582785) * y);
 }
 
 fml hyperbolic_function_min()
