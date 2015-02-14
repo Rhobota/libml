@@ -1613,6 +1613,8 @@ bool tLoggingWrapper::didFinishEpoch(iLearner* learner,
                                              << trainError << std::endl;
     m_logfile << "Test error:              " << testErrorRate*100 << "% "
                                              << testError << std::endl;
+    m_logfile << "Epoch train time:        " << epochTrainTimeInSeconds << " seconds"
+                                             << std::endl;
     m_logfile << std::endl;
 
     // Print the training and test error to the simplified data log.
