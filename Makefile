@@ -12,6 +12,7 @@ CC_FLAGS_LOCAL := $(CC_FLAGS) \
 	-g -O2 -fvisibility=hidden -Wall -Wextra -Werror -pedantic \
 	-Wswitch-default -Wcast-qual -Wcast-align -Wconversion \
 	-Wno-unused-parameter -Wno-long-long -Wno-sign-conversion \
+	-fopenmp \
 	-D_FILE_OFFSET_BITS=64 \
 	-I ../librho/include \
 	-I $(INCLUDE_DIR)  # consider: -Wold-style-cast -Wshadow
