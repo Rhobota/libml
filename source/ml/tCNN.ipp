@@ -279,13 +279,13 @@ class tLayerCNN : public bNonCopyable
 
     void setLayerAlpha(fml alpha)
     {
-        assert(alpha > 0.0);
+        assert(alpha > FML(0.0));
         m_layer.alpha = alpha;
     }
 
     void setLayerViscosity(fml viscosity)
     {
-        assert(viscosity > 0.0 && viscosity < 1.0);
+        assert(viscosity > FML(0.0) && viscosity < FML(1.0));
         m_layer.viscosity = viscosity;
     }
 
@@ -752,14 +752,14 @@ void tCNN::setAlpha(fml alpha, u32 layerIndex)
 {
     if (layerIndex >= m_numLayers)
         throw eInvalidArgument("No layer with that index.");
-    if (alpha <= 0.0)
+    if (alpha <= FML(0.0))
         throw eInvalidArgument("Alpha must be greater than zero.");
     m_layers[layerIndex].setLayerAlpha(alpha);
 }
 
 void tCNN::setAlpha(fml alpha)
 {
-    if (alpha <= 0.0)
+    if (alpha <= FML(0.0))
         throw eInvalidArgument("Alpha must be greater than zero.");
     for (u32 i = 0; i < m_numLayers; i++)
         setAlpha(alpha, i);
@@ -769,14 +769,14 @@ void tCNN::setViscosity(fml viscosity, u32 layerIndex)
 {
     if (layerIndex >= m_numLayers)
         throw eInvalidArgument("No layer with that index.");
-    if (viscosity <= 0.0 || viscosity >= 1.0)
+    if (viscosity <= FML(0.0) || viscosity >= FML(1.0))
         throw eInvalidArgument("Viscosity must be greater than zero and less than one.");
     m_layers[layerIndex].setLayerViscosity(viscosity);
 }
 
 void tCNN::setViscosity(fml viscosity)
 {
-    if (viscosity <= 0.0 || viscosity >= 1.0)
+    if (viscosity <= FML(0.0) || viscosity >= FML(1.0))
         throw eInvalidArgument("Viscosity must be greater than zero and less than one.");
     for (u32 i = 0; i < m_numLayers; i++)
         setViscosity(viscosity, i);
@@ -801,7 +801,7 @@ void tCNN::addExample(const tIO& input, const tIO& target)
         fml summation = 0.0;
         for (size_t i = 0; i < target.size(); i++)
             summation += target[i];
-        if (summation < 0.9999 || summation > 1.0001)
+        if (summation < FML(0.9999) || summation > FML(1.0001))
         {
             throw eInvalidArgument("For networks with a softmax top layer, the sum of the target "
                     "vector must be 1.0");

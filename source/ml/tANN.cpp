@@ -222,7 +222,7 @@ class t_RMSPROP_wUpdate
 
         fml operator()(fml dw_accum, fml dw_accum_avg) const
         {
-            return (dw_accum_avg > 0.0) ? (dw_accum / std::sqrt(dw_accum_avg)) : (0.0);
+            return (dw_accum_avg > FML(0.0)) ? (dw_accum / std::sqrt(dw_accum_avg)) : FML(0.0);
         }
 };
 
@@ -349,7 +349,7 @@ class tLayer : public bNonCopyable
             for (i32 c = 0; c < a.cols(); c++)
             {
                 fml denom = a.col(c).sum();
-                if (denom > 0.0)
+                if (denom > FML(0.0))
                     a.col(c) /= denom;
                 else
                     a.col(c).setConstant(FML(1.0) / (fml)a.rows());
@@ -433,7 +433,7 @@ class tLayer : public bNonCopyable
 
             case tANN::kWeightUpRuleFixedLearningRate:
             {
-                if (alpha <= 0.0)
+                if (alpha <= FML(0.0))
                     throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
                 fml mult = (FML(10.0) / batchSize) * alpha;
                 w.noalias() -= mult * dw_accum;
@@ -442,9 +442,9 @@ class tLayer : public bNonCopyable
 
             case tANN::kWeightUpRuleMomentum:
             {
-                if (alpha <= 0.0)
+                if (alpha <= FML(0.0))
                     throw eLogicError("When using the momentum update rule, alpha must be set.");
-                if (viscosity <= 0.0 || viscosity >= 1.0)
+                if (viscosity <= FML(0.0) || viscosity >= FML(1.0))
                     throw eLogicError("When using the momentum update rule, viscosity must be set.");
                 if (vel.rows() == 0)
                     vel = Mat::Zero(w.rows(), w.cols());
@@ -469,7 +469,7 @@ class tLayer : public bNonCopyable
 
             case tANN::kWeightUpRuleRMSPROP:
             {
-                if (alpha <= 0.0)
+                if (alpha <= FML(0.0))
                     throw eLogicError("When using the rmsprop rule, alpha must be set.");
                 if (dw_accum_avg.rows() == 0)
                     dw_accum_avg = Mat::Constant(w.rows(), w.cols(), 1000.0);
@@ -723,14 +723,14 @@ void tANN::setAlpha(fml alpha, u32 layerIndex)
 {
     if (layerIndex >= m_numLayers)
         throw eInvalidArgument("No layer with that index.");
-    if (alpha <= 0.0)
+    if (alpha <= FML(0.0))
         throw eInvalidArgument("Alpha must be greater than zero.");
     m_layers[layerIndex].alpha = alpha;
 }
 
 void tANN::setAlpha(fml alpha)
 {
-    if (alpha <= 0.0)
+    if (alpha <= FML(0.0))
         throw eInvalidArgument("Alpha must be greater than zero.");
     for (u32 i = 0; i < m_numLayers; i++)
         setAlpha(alpha, i);
@@ -740,14 +740,14 @@ void tANN::setViscosity(fml viscosity, u32 layerIndex)
 {
     if (layerIndex >= m_numLayers)
         throw eInvalidArgument("No layer with that index.");
-    if (viscosity <= 0.0 || viscosity >= 1.0)
+    if (viscosity <= FML(0.0) || viscosity >= FML(1.0))
         throw eInvalidArgument("Viscosity must be greater than zero and less than one.");
     m_layers[layerIndex].viscosity = viscosity;
 }
 
 void tANN::setViscosity(fml viscosity)
 {
-    if (viscosity <= 0.0 || viscosity >= 1.0)
+    if (viscosity <= FML(0.0) || viscosity >= FML(1.0))
         throw eInvalidArgument("Viscosity must be greater than zero and less than one.");
     for (u32 i = 0; i < m_numLayers; i++)
         setViscosity(viscosity, i);
@@ -772,7 +772,7 @@ void tANN::addExample(const tIO& input, const tIO& target)
         fml summation = 0.0;
         for (size_t i = 0; i < target.size(); i++)
             summation += target[i];
-        if (summation < 0.9999 || summation > 1.0001)
+        if (summation < FML(0.9999) || summation > FML(1.0001))
         {
             throw eInvalidArgument("For networks with a softmax top layer, the sum of the target "
                     "vector must be 1.0");
@@ -1094,14 +1094,14 @@ void tANN::getImage(u32 layerIndex, u32 neuronIndex,
     nLayerType type = m_layers[layerIndex].layerType;
     fml output = (getOutput(layerIndex, neuronIndex) - s_squash_min(type))
                     / (s_squash_max(type) - s_squash_min(type));   // output now in [0, 1]
-    u8 outputByte = (u8) (output*255.0);
+    u8 outputByte = (u8) (output * FML(255.0));
     u8 red = 0;
     u8 green = (u8) (255 - outputByte);
     u8 blue = outputByte;
     u32 ySpan = height / 5;
     u32 yStart = 0;
     u32 xSpan = width / 5;
-    u32 xStart = (u32) (output * (width-xSpan));
+    u32 xStart = (u32) (output * ((fml)(width-xSpan)));
     for (u32 r = yStart; r < yStart+ySpan; r++)
     {
         for (u32 c = xStart; c < xStart+xSpan; c++)

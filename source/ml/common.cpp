@@ -203,11 +203,11 @@ void un_examplify(const tIO& io, bool color, u32 width,
 
                 fml w = weights[wIndex++];
 
-                if (w > 0.0)
-                    g = (u8)(w / absmax * 255.0);
+                if (w > FML(0.0))
+                    g = (u8)(w / absmax * FML(255.0));
 
-                if (w < 0.0)
-                    r = (u8)(-w / absmax * 255.0);
+                if (w < FML(0.0))
+                    r = (u8)(-w / absmax * FML(255.0));
 
                 buf[bufIndex++] = r;
                 buf[bufIndex++] = g;
@@ -245,7 +245,7 @@ void zscore(std::vector<tIO>& inputs, u32 dStart, u32 dEnd)
         fml stddev = algo::stddev(dim);
 
         // ... Normalize that dimension
-        if (stddev != 0.0)
+        if (stddev != FML(0.0))
         {
             for (size_t i = 0; i < inputs.size(); i++)
                 inputs[i][d] = (inputs[i][d] - mean) / stddev;
@@ -297,7 +297,7 @@ void zscore(std::vector<tIO>& trainingInputs, std::vector<tIO>& testInputs)
         fml stddev = algo::stddev(dim);
 
         // ... Normalize that dimension
-        if (stddev != 0.0)
+        if (stddev != FML(0.0))
         {
             for (size_t i = 0; i < trainingInputs.size(); i++)
                 trainingInputs[i][d] = (trainingInputs[i][d] - mean) / stddev;
@@ -373,24 +373,24 @@ fml crossEntropyCost(const tIO& output, const tIO& target)
     fml tsum = 0.0;
     for (size_t i = 0; i < output.size(); i++)
     {
-        if (output[i] > 1.0)
+        if (output[i] > FML(1.0))
             throw eInvalidArgument("The output value cannot be >1.0 when it represents a probability.");
-        if (output[i] < 0.0)
+        if (output[i] < FML(0.0))
             throw eInvalidArgument("The output value cannot be <0.0 when it represents a probability.");
-        if (target[i] > 1.0)
+        if (target[i] > FML(1.0))
             throw eInvalidArgument("The target value cannot be >1.0 when it represents a probability.");
-        if (target[i] < 0.0)
+        if (target[i] < FML(0.0))
             throw eInvalidArgument("The target value cannot be <0.0 when it represents a probability.");
         osum += output[i];
         tsum += target[i];
     }
-    if (osum > 1.0001 || osum < 0.9999)
+    if (osum > FML(1.0001) || osum < FML(0.9999))
         throw eInvalidArgument("The sum of the outputs must be 1.0.");
-    if (tsum > 1.0001 || tsum < 0.9999)
+    if (tsum > FML(1.0001) || tsum < FML(0.9999))
         throw eInvalidArgument("The sum of the targets must be 1.0.");
     fml error = 0.0;
     for (size_t i = 0; i < output.size(); i++)
-        if (target[i] > 0.0)
+        if (target[i] > FML(0.0))
             error += target[i] * std::log(output[i]);
     return -error;
 }
@@ -964,10 +964,10 @@ void s_drawLayer(const tCNN* cnn, u32 layerIndex,
                     u8 r = 0;   // <-- used if val is negative
                     u8 g = 0;   // <-- used if val is positive
                     u8 b = 0;   // <-- not used
-                    if (val < 0.0)
-                        r = (u8) (val / minpossible * 255.0);
-                    else if (val > 0.0)
-                        g = (u8) (val / maxpossible * 255.0);
+                    if (val < FML(0.0))
+                        r = (u8) (val / minpossible * FML(255.0));
+                    else if (val > FML(0.0))
+                        g = (u8) (val / maxpossible * FML(255.0));
                     image.buf()[i+0] = r;
                     image.buf()[i+1] = g;
                     image.buf()[i+2] = b;

@@ -94,7 +94,7 @@ public:
     bool insert(int new_index);
     void subdivide();
     bool isCorrect();
-    void rebuildTree();
+    //void rebuildTree();
     void getAllIndices(int* indices);
     int getDepth();
     void computeNonEdgeForces(int point_index, double theta, double neg_f[], double* sum_Q);
