@@ -20,7 +20,7 @@ void tsne(const std::vector<tIO>& originalData, fml theta, fml perplexity,
             throw eInvalidArgument("All data points must have the same dimensionality.");
     if (originalData[0].size() == 0)
         throw eInvalidArgument("The dimensionality of the data points must be non-zero.");
-    if (theta < 0.0 || theta > 1.0)
+    if (theta < FML(0.0) || theta > FML(1.0))
         throw eInvalidArgument("Theta must be in the range [0.0, 1.0].");
 
     // Setup the state that the t-SNE algo needs.
