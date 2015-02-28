@@ -5,6 +5,21 @@ namespace ml2
 {
 
 
+tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule)
+{
+}
+
+
+void tAnnLayer::setAlpha(fml alpha)
+{
+}
+
+
+void tAnnLayer::setViscosity(fml viscosity)
+{
+}
+
+
 void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
 {
 }
@@ -26,6 +41,16 @@ void tAnnLayer::takeOutputErrorGradients(
 fml* tAnnLayer::getInputErrorGradients(u32& numInputDims, u32& count) const
 {
     return NULL;
+}
+
+
+void tAnnLayer::pack(iWritable* out) const
+{
+}
+
+
+void tAnnLayer::unpack(iReadable* in)
+{
 }
 
 

@@ -168,7 +168,7 @@ class tANN : public iPackable, public iLearner, public bNonCopyable
          *
          *    - kWeightUpRuleARMS
          *         -- requires setAlpha()
-         *         -- very similar to RMSPROP, but has an addaptive alpha
+         *         -- very similar to RMSPROP, but has an adaptive alpha
          */
         void setWeightUpRule(nWeightUpRule rule, u32 layerIndex);
         void setWeightUpRule(nWeightUpRule rule);
