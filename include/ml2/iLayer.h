@@ -2,11 +2,14 @@
 #define __ml2_iLayer_h__
 
 
+#include <ml2/rhocompat.h>
+
+
 namespace ml2
 {
 
 
-typedef fml f32;
+typedef f32 fml;
 
 
 class iLayer
@@ -62,8 +65,9 @@ class iLayer
          * to do its calculations, and this way the layer doesn't have to
          * remember the most recent input on its own.
          */
-        virtual void takeOutputErrorGradients(fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
-                                              fml* input, u32 numInputDims, u32 inputCount) = 0;
+        virtual void takeOutputErrorGradients(
+                          fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
+                          fml* input, u32 numInputDims, u32 inputCount) = 0;
 
         /**
          * When takeOutputErrorGradients() is called, the error gradients for this
