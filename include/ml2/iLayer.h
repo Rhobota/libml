@@ -9,7 +9,14 @@ namespace ml2
 {
 
 
+/**
+ * We can easily switch floating point precisions with the
+ * following typedef. This effect the precision of the
+ * input/output/target examples and the internal precision
+ * of the learners.
+ */
 typedef f32 fml;
+#define FML(x) x ## f   // <-- used to append 'f' to the end of fml literals
 
 
 class iLayer

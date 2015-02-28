@@ -126,7 +126,19 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
 
     private:
 
+        nAnnLayerType             m_type;
+        nAnnLayerWeightUpdateRule m_rule;
 
+        fml m_alpha;
+        fml m_viscosity;
+
+        fml* m_output;
+        u32  m_numOutputDims;
+        u32  m_outputCount;
+
+        fml* m_prev_da;
+        u32  m_numInputDims;
+        u32  m_inputCount;
 };
 
 
