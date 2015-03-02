@@ -293,10 +293,77 @@ void tAnnLayer::takeOutputErrorGradients(
     dw_accum = (dA * inputMap.transpose()) / ((fml) numInputDims);
     db_accum = dA.rowwise().sum();
 
-    //switch (m_rule)
-    //{
-        // TODO
-    //}
+    fml batchSize = (fml) outputCount;
+
+    switch (m_rule)
+    {
+        case kWeightUpRuleNone:
+        {
+            break;
+        }
+
+        case kWeightUpRuleFixedLearningRate:
+        {
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
+            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            w.noalias() -= mult * dw_accum;
+            break;
+        }
+
+        case kWeightUpRuleMomentum:
+        {
+//             if (m_alpha <= FML(0.0))
+//                 throw eLogicError("When using the momentum update rule, alpha must be set.");
+//             if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
+//                 throw eLogicError("When using the momentum update rule, viscosity must be set.");
+//             if (vel.rows() == 0)
+//                 vel = Mat::Zero(w.rows(), w.cols());
+//             fml mult = (FML(10.0) / batchSize) * m_alpha;
+//             vel *= m_viscosity;
+//             vel.noalias() -= mult*dw_accum;
+//             w.noalias() += vel;
+//             break;
+        }
+
+        case kWeightUpRuleAdaptiveRates:
+        {
+            throw eNotImplemented("This used to be implemented in the old ANN... so look there as a reference if you want to implement it here again.");
+            break;
+        }
+
+        case kWeightUpRuleRPROP:
+        {
+            throw eNotImplemented("This used to be implemented in the old ANN... so look there as a reference if you want to implement it here again.");
+            break;
+        }
+
+        case kWeightUpRuleRMSPROP:
+        {
+//             if (m_alpha <= FML(0.0))
+//                 throw eLogicError("When using the rmsprop rule, alpha must be set.");
+//             if (dw_accum_avg.rows() == 0)
+//                 dw_accum_avg = Mat::Constant(w.rows(), w.cols(), 1000.0);
+//             fml batchNormMult = FML(1.0) / batchSize;
+//             dw_accum *= batchNormMult;
+//             dw_accum_avg *= FML(0.9);
+//             dw_accum_avg.noalias() += FML(0.1) * dw_accum.array().square().matrix();
+//             w.noalias() -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_wUpdate());
+//             break;
+        }
+
+        case kWeightUpRuleARMS:
+        {
+            throw eNotImplemented("Not sure what I want here yet...");
+            break;
+        }
+
+        default:
+        {
+            throw eRuntimeError("Unknown update rule");
+            break;
+        }
+    }
 }
 
 
