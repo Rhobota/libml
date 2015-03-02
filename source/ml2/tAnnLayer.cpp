@@ -51,6 +51,17 @@ class tDirHyperbolicFunc
 };
 
 
+class t_RMSPROP_wUpdate
+{
+    public:
+
+        fml operator()(fml dw_accum, fml dw_accum_avg) const
+        {
+            return (dw_accum_avg > FML(0.0)) ? (dw_accum / std::sqrt(dw_accum_avg)) : FML(0.0);
+        }
+};
+
+
 static
 fml s_randInRange(algo::iLCG& lcg, fml randWeightMin, fml randWeightMax)
 {
@@ -82,7 +93,9 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_A(NULL),
       m_a(NULL),
       m_dA(NULL),
-      m_prev_da(NULL)
+      m_prev_da(NULL),
+      m_vel(NULL),
+      m_dw_accum_avg(NULL)
 {
     if (m_numInputDims == 0)
         throw eInvalidArgument("The number of input dimensions may not be zero.");
@@ -117,6 +130,8 @@ tAnnLayer::~tAnnLayer()
     delete [] m_a; m_a = NULL;
     delete [] m_dA; m_dA = NULL;
     delete [] m_prev_da; m_prev_da = NULL;
+    delete [] m_vel; m_vel = NULL;
+    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
 }
 
 
@@ -307,23 +322,29 @@ void tAnnLayer::takeOutputErrorGradients(
             if (m_alpha <= FML(0.0))
                 throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
             fml mult = (FML(10.0) / batchSize) * m_alpha;
-            w.noalias() -= mult * dw_accum;
+            w -= mult * dw_accum;
             break;
         }
 
         case kWeightUpRuleMomentum:
         {
-//             if (m_alpha <= FML(0.0))
-//                 throw eLogicError("When using the momentum update rule, alpha must be set.");
-//             if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
-//                 throw eLogicError("When using the momentum update rule, viscosity must be set.");
-//             if (vel.rows() == 0)
-//                 vel = Mat::Zero(w.rows(), w.cols());
-//             fml mult = (FML(10.0) / batchSize) * m_alpha;
-//             vel *= m_viscosity;
-//             vel.noalias() -= mult*dw_accum;
-//             w.noalias() += vel;
-//             break;
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the momentum update rule, alpha must be set.");
+            if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
+                throw eLogicError("When using the momentum update rule, viscosity must be set.");
+            if (!m_vel)
+            {
+                u32 numWeights = m_numInputDims * m_numNeurons;
+                m_vel = new fml[numWeights];
+                for (u32 i = 0; i < numWeights; i++)
+                    m_vel[i] = FML(0.0);
+            }
+            Map vel(m_vel, m_numNeurons, m_numInputDims);
+            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            vel *= m_viscosity;
+            vel -= mult*dw_accum;
+            w += vel;
+            break;
         }
 
         case kWeightUpRuleAdaptiveRates:
@@ -340,16 +361,22 @@ void tAnnLayer::takeOutputErrorGradients(
 
         case kWeightUpRuleRMSPROP:
         {
-//             if (m_alpha <= FML(0.0))
-//                 throw eLogicError("When using the rmsprop rule, alpha must be set.");
-//             if (dw_accum_avg.rows() == 0)
-//                 dw_accum_avg = Mat::Constant(w.rows(), w.cols(), 1000.0);
-//             fml batchNormMult = FML(1.0) / batchSize;
-//             dw_accum *= batchNormMult;
-//             dw_accum_avg *= FML(0.9);
-//             dw_accum_avg.noalias() += FML(0.1) * dw_accum.array().square().matrix();
-//             w.noalias() -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_wUpdate());
-//             break;
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the rmsprop rule, alpha must be set.");
+            if (!m_dw_accum_avg)
+            {
+                u32 numWeights = m_numInputDims * m_numNeurons;
+                m_dw_accum_avg = new fml[numWeights];
+                for (u32 i = 0; i < numWeights; i++)
+                    m_dw_accum_avg[i] = FML(1000.0);
+            }
+            Map dw_accum_avg(m_dw_accum_avg, m_numNeurons, m_numInputDims);
+            fml batchNormMult = FML(1.0) / batchSize;
+            dw_accum *= batchNormMult;
+            dw_accum_avg *= FML(0.9);
+            dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
+            w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_wUpdate());
+            break;
         }
 
         case kWeightUpRuleARMS:
