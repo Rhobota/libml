@@ -149,7 +149,9 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
         fml* m_A;
         fml* m_a;
 
+        fml* m_dA;
         fml* m_prev_da;
+        fml* m_dw_accum;
 };
 
 

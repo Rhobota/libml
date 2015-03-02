@@ -49,7 +49,9 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_maxCount(0),
       m_A(NULL),
       m_a(NULL),
-      m_prev_da(NULL)
+      m_dA(NULL),
+      m_prev_da(NULL),
+      m_dw_accum(NULL)
 {
     if (m_numInputDims == 0)
         throw eInvalidArgument("The number of input dimensions may not be zero.");
@@ -68,6 +70,9 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
         rf += randWeightMin;                      // [rmin, rmax]
         m_weights[i] = rf;
     }
+    m_dw_accum = new fml[numWeights];
+    for (u32 i = 0; i < numWeights; i++)
+        m_dw_accum[i] = FML(0.0);
 }
 
 
@@ -113,6 +118,10 @@ void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
         m_maxCount = count;
         Map a(m_a, (m_numNeurons+1), count);
         a.bottomRows(1).setOnes();
+        delete [] m_dA;
+        m_dA = NULL;
+        delete [] m_prev_da;
+        m_prev_da = NULL;
     }
     m_curCount = count;
 
@@ -175,7 +184,58 @@ void tAnnLayer::takeOutputErrorGradients(
                   fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
                   fml* input, u32 numInputDims, u32 inputCount)
 {
-    // TODO
+    if (!outputErrorGradients)
+        throw eInvalidArgument("outputErrorGradients may not be null!");
+
+    if (numOutputDims != m_numNeurons+1)
+        throw eInvalidArgument("Unexpected numOutputDims");
+
+    if (outputCount != m_curCount)
+        throw eInvalidArgument("Unexpected outputCount");
+
+    if (!input)
+        throw eInvalidArgument("input may not be null!");
+
+    if (numInputDims != m_numInputDims)
+        throw eInvalidArgument("Unexpected numInputDims");
+
+    if (inputCount != m_curCount)
+        throw eInvalidArgument("Unexpected inputCount");
+
+    if (!m_dA)
+        m_dA = new fml[m_numNeurons * m_maxCount];
+
+    if (!m_prev_da)
+        m_prev_da = new fml[m_numNeurons * m_maxCount];
+
+    Map da(outputErrorGradients, m_numNeurons, outputCount, Eigen::OuterStride<>(numOutputDims));
+    Map dA(m_dA, m_numNeurons, outputCount);
+    Map prev_da(m_prev_da, m_numInputDims, inputCount);
+
+    switch (m_type)
+    {
+        case kLayerTypeSoftmax:
+        {
+            dA = da;
+            break;
+        }
+
+        case kLayerTypeLogistic:
+        {
+            break;
+        }
+
+        case kLayerTypeHyperbolic:
+        {
+            break;
+        }
+
+        default:
+        {
+            throw eRuntimeError("Unknown layer type");
+            break;
+        }
+    }
 }
 
 
