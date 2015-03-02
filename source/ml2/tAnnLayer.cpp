@@ -36,12 +36,13 @@ class tHyperbolicFunc
 
 
 tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
-                     u32 numNeurons)
+                     u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
+                     fml randWeightMin, fml randWeightMax)
     : m_type(type),
       m_rule(rule),
       m_alpha(FML(0.0)),
       m_viscosity(FML(0.0)),
-      m_numInputDims(0),
+      m_numInputDims(numInputDims),
       m_numNeurons(numNeurons),
       m_weights(NULL),
       m_curCount(0),
@@ -50,8 +51,29 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_a(NULL),
       m_prev_da(NULL)
 {
+    if (m_numInputDims == 0)
+        throw eInvalidArgument("The number of input dimensions may not be zero.");
     if (m_numNeurons == 0)
         throw eInvalidArgument("The number of neurons may not be zero.");
+
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    m_weights = new fml[numWeights];
+    u64 ra;
+    fml rf;
+    for (u32 i = 0; i < numWeights; i++)
+    {
+        ra = lcg.next();
+        rf = ((fml)ra) / ((fml)lcg.randMax());    // [0.0, 1.0]
+        rf *= randWeightMax-randWeightMin;        // [0.0, rmax-rmin]
+        rf += randWeightMin;                      // [rmin, rmax]
+        m_weights[i] = rf;
+    }
+}
+
+
+tAnnLayer::~tAnnLayer()
+{
+    // TODO
 }
 
 
@@ -76,22 +98,11 @@ void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
     if (!input)
         throw eInvalidArgument("The input matrix may not be null.");
 
-    if (m_numInputDims != numInputDims || numInputDims == 0)
-    {
-        if (m_numInputDims == 0 && numInputDims > 0)
-            m_numInputDims = numInputDims;
-        else
-            throw eInvalidArgument("Unexpected numInputDims!");
-    }
+    if (numInputDims != m_numInputDims)
+        throw eInvalidArgument("Unexpected numInputDims!");
 
     if (count == 0)
         throw eInvalidArgument("The count may not be zero.");
-
-    if (!m_weights)
-    {
-        m_weights = new fml[m_numNeurons * numInputDims];
-        // TODO -- randomize weights here.
-    }
 
     if (!m_A || !m_a || count > m_maxCount)
     {
@@ -154,8 +165,9 @@ void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
 
 fml* tAnnLayer::getOutput(u32& numOutputDims, u32& count) const
 {
-    // TODO
-    return NULL;
+    numOutputDims = m_numNeurons+1;
+    count = m_curCount;
+    return m_a;
 }
 
 
@@ -169,8 +181,9 @@ void tAnnLayer::takeOutputErrorGradients(
 
 fml* tAnnLayer::getInputErrorGradients(u32& numInputDims, u32& count) const
 {
-    // TODO
-    return NULL;
+    numInputDims = m_numInputDims;
+    count = m_curCount;
+    return m_prev_da;
 }
 
 

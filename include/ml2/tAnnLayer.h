@@ -6,6 +6,7 @@
 
 #include <rho/iPackable.h>
 #include <rho/bNonCopyable.h>
+#include <rho/algo/tLCG.h>
 
 
 namespace ml2
@@ -75,7 +76,13 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
          *         -- very similar to RMSPROP, but has an adaptive alpha
          */
         tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
-                  u32 numNeurons);
+                  u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
+                  fml randWeightMin = -1.0, fml randWeightMax = 1.0);
+
+        /**
+         * D'tor.
+         */
+        ~tAnnLayer();
 
         /**
          * Sets the alpha parameter for this layer. The alpha parameter is
