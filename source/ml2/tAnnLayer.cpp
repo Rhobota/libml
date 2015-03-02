@@ -7,8 +7,8 @@ namespace ml2
 {
 
 
-typedef Eigen::Matrix<fml,Eigen::Dynamic,Eigen::Dynamic> Mat;
-typedef Eigen::Map<Mat> Map;
+typedef Eigen::Matrix< fml, Eigen::Dynamic, Eigen::Dynamic > Mat;
+typedef Eigen::Map< Mat, Eigen::Unaligned, Eigen::OuterStride<Eigen::Dynamic> > Map;
 
 
 class tExpFunc
@@ -35,21 +35,23 @@ class tHyperbolicFunc
 };
 
 
-tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule)
+tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+                     u32 numNeurons)
     : m_type(type),
       m_rule(rule),
       m_alpha(FML(0.0)),
       m_viscosity(FML(0.0)),
-      m_output(NULL),
-      m_numOutputDims(0),
-      m_outputCount(0),
-      m_prev_da(NULL),
       m_numInputDims(0),
-      m_inputCount(0),
+      m_numNeurons(numNeurons),
       m_weights(NULL),
+      m_curCount(0),
+      m_maxCount(0),
       m_A(NULL),
-      m_a(NULL)
+      m_a(NULL),
+      m_prev_da(NULL)
 {
+    if (m_numNeurons == 0)
+        throw eInvalidArgument("The number of neurons may not be zero.");
 }
 
 
@@ -71,18 +73,42 @@ void tAnnLayer::setViscosity(fml viscosity)
 
 void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
 {
-    if (m_numInputDims != numInputDims)
+    if (!input)
+        throw eInvalidArgument("The input matrix may not be null.");
+
+    if (m_numInputDims != numInputDims || numInputDims == 0)
     {
-        if (m_numInputDims == 0)
+        if (m_numInputDims == 0 && numInputDims > 0)
             m_numInputDims = numInputDims;
         else
-            throw eInvalidArgument("Unexpected numInputDims");
+            throw eInvalidArgument("Unexpected numInputDims!");
     }
 
+    if (count == 0)
+        throw eInvalidArgument("The count may not be zero.");
+
+    if (!m_weights)
+    {
+        m_weights = new fml[m_numNeurons * numInputDims];
+        // TODO -- randomize weights here.
+    }
+
+    if (!m_A || !m_a || count > m_maxCount)
+    {
+        delete [] m_A;
+        delete [] m_a;
+        m_A = new fml[m_numNeurons * count];
+        m_a = new fml[(m_numNeurons+1) * count];
+        m_maxCount = count;
+        Map a(m_a, (m_numNeurons+1), count);
+        a.bottomRows(1).setOnes();
+    }
+    m_curCount = count;
+
     Map inputMap(input, numInputDims, count);
-    Map weights(m_weights, 1, m_numInputDims);
-    Map A(m_A, 1, count);
-    Map a(m_a, 1, count);
+    Map weights(m_weights, m_numNeurons, numInputDims);
+    Map A(m_A, m_numNeurons, count);
+    Map a(m_a, m_numNeurons, count, Eigen::OuterStride<>(m_numNeurons+1));
 
     A = (weights * inputMap) / ((fml) numInputDims);
 

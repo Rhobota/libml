@@ -74,7 +74,8 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
          *         -- requires setAlpha()
          *         -- very similar to RMSPROP, but has an adaptive alpha
          */
-        tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule);
+        tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+                  u32 numNeurons);
 
         /**
          * Sets the alpha parameter for this layer. The alpha parameter is
@@ -132,17 +133,16 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
         fml m_alpha;
         fml m_viscosity;
 
-        fml* m_output;
-        u32  m_numOutputDims;
-        u32  m_outputCount;
-
-        fml* m_prev_da;
         u32  m_numInputDims;
-        u32  m_inputCount;
-
+        u32  m_numNeurons;
         fml* m_weights;
+
+        u32  m_curCount;
+        u32  m_maxCount;
         fml* m_A;
         fml* m_a;
+
+        fml* m_prev_da;
 };
 
 
