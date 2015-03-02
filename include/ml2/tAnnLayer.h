@@ -139,6 +139,10 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
         fml* m_prev_da;
         u32  m_numInputDims;
         u32  m_inputCount;
+
+        fml* m_weights;
+        fml* m_A;
+        fml* m_a;
 };
 
 

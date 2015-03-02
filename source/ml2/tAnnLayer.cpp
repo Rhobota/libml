@@ -1,8 +1,38 @@
 #include <ml2/tAnnLayer.h>
 
+#include "Eigen.h"
+
 
 namespace ml2
 {
+
+
+typedef Eigen::Matrix<fml,Eigen::Dynamic,Eigen::Dynamic> Mat;
+typedef Eigen::Map<Mat> Map;
+
+
+class tExpFunc
+{
+    public:
+
+        fml operator()(fml val) const { return std::min(std::exp(val), FML(1e30)); }
+};
+
+
+class tLogisticFunc
+{
+    public:
+
+        fml operator()(fml val) const { return logistic_function(val); }
+};
+
+
+class tHyperbolicFunc
+{
+    public:
+
+        fml operator()(fml val) const { return hyperbolic_function(val); }
+};
 
 
 tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule)
@@ -15,7 +45,10 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule)
       m_outputCount(0),
       m_prev_da(NULL),
       m_numInputDims(0),
-      m_inputCount(0)
+      m_inputCount(0),
+      m_weights(NULL),
+      m_A(NULL),
+      m_a(NULL)
 {
 }
 
@@ -38,7 +71,58 @@ void tAnnLayer::setViscosity(fml viscosity)
 
 void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
 {
-    // TODO
+    if (m_numInputDims != numInputDims)
+    {
+        if (m_numInputDims == 0)
+            m_numInputDims = numInputDims;
+        else
+            throw eInvalidArgument("Unexpected numInputDims");
+    }
+
+    Map inputMap(input, numInputDims, count);
+    Map weights(m_weights, 1, m_numInputDims);
+    Map A(m_A, 1, count);
+    Map a(m_a, 1, count);
+
+    A = (weights * inputMap) / ((fml) numInputDims);
+
+    switch (m_type)
+    {
+        case kLayerTypeSoftmax:
+        {
+            tExpFunc func;
+            a = A.unaryExpr(func);
+            for (i32 c = 0; c < a.cols(); c++)
+            {
+                fml denom = a.col(c).sum();
+                if (denom > FML(0.0))
+                    a.col(c) /= denom;
+                else
+                    a.col(c).setConstant(FML(1.0) / (fml)a.rows());
+            }
+            break;
+        }
+
+        case kLayerTypeLogistic:
+        {
+            tLogisticFunc func;
+            a = A.unaryExpr(func);
+            break;
+        }
+
+        case kLayerTypeHyperbolic:
+        {
+            tHyperbolicFunc func;
+            a = A.unaryExpr(func);
+            break;
+        }
+
+        default:
+        {
+            throw eRuntimeError("Unknown layer type");
+            break;
+        }
+    }
 }
 
 

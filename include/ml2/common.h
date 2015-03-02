@@ -4,6 +4,7 @@
 
 #include <ml2/rhocompat.h>
 
+#include <cmath>
 #include <vector>
 
 
