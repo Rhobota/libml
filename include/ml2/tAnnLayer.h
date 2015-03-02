@@ -142,16 +142,19 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
 
         u32  m_numInputDims;
         u32  m_numNeurons;
-        fml* m_weights;
+
+        fml* m_w;
+        fml* m_b;
+        fml* m_dw_accum;
+        fml* m_db_accum;
 
         u32  m_curCount;
         u32  m_maxCount;
+
         fml* m_A;
         fml* m_a;
-
         fml* m_dA;
         fml* m_prev_da;
-        fml* m_dw_accum;
 };
 
 
