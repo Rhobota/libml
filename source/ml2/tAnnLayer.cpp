@@ -436,6 +436,7 @@ void tAnnLayer::printLayerInfo(std::ostream& out) const
 std::string tAnnLayer::layerInfoString() const
 {
     // TODO
+    return "";
 }
 
 
