@@ -39,7 +39,7 @@ class iLearner
         /**
          * Uses the current knowledge of the learner to evaluate the given input.
          */
-        virtual void evaluate(const tIO& input, tIO& output) const = 0;
+        virtual void evaluate(const tIO& input, tIO& output) = 0;
 
         /**
          * Uses the current knowledge of the learner to evaluate the given inputs.
@@ -49,7 +49,7 @@ class iLearner
          * to perform.
          */
         virtual void evaluateBatch(const std::vector<tIO>& inputs,
-                                         std::vector<tIO>& outputs) const = 0;
+                                         std::vector<tIO>& outputs) = 0;
 
         /**
          * Uses the current knowledge of the learner to evaluate the given inputs.
@@ -59,7 +59,7 @@ class iLearner
          */
         virtual void evaluateBatch(std::vector<tIO>::const_iterator inputStart,
                                    std::vector<tIO>::const_iterator inputEnd,
-                                   std::vector<tIO>::iterator outputStart) const = 0;
+                                   std::vector<tIO>::iterator outputStart) = 0;
 
         /**
          * Asks the learner to calculate the error between the given output
