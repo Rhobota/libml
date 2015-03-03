@@ -7,10 +7,6 @@ namespace ml2
 {
 
 
-typedef Eigen::Matrix< fml, Eigen::Dynamic, Eigen::Dynamic > Mat;
-typedef Eigen::Map< Mat, Eigen::Unaligned, Eigen::OuterStride<Eigen::Dynamic> > Map;
-
-
 class tExpFunc
 {
     public:
@@ -151,7 +147,7 @@ void tAnnLayer::setViscosity(fml viscosity)
 }
 
 
-void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
+void tAnnLayer::takeInput(const fml* input, u32 numInputDims, u32 count)
 {
     if (!input)
         throw eInvalidArgument("The input matrix may not be null.");
@@ -176,7 +172,7 @@ void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
     }
     m_curCount = count;
 
-    Map inputMap(input, numInputDims, count);
+    MapConst inputMap(input, numInputDims, count);
     Map w(m_w, m_numNeurons, numInputDims);
     Map b(m_b, m_numNeurons, 1);
     Map A(m_A, m_numNeurons, count);
@@ -226,7 +222,7 @@ void tAnnLayer::takeInput(fml* input, u32 numInputDims, u32 count)
 }
 
 
-fml* tAnnLayer::getOutput(u32& numOutputDims, u32& count) const
+const fml* tAnnLayer::getOutput(u32& numOutputDims, u32& count) const
 {
     numOutputDims = m_numNeurons;
     count = m_curCount;
@@ -235,8 +231,9 @@ fml* tAnnLayer::getOutput(u32& numOutputDims, u32& count) const
 
 
 void tAnnLayer::takeOutputErrorGradients(
-                  fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
-                  fml* input, u32 numInputDims, u32 inputCount)
+                  const fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
+                  const fml* input, u32 numInputDims, u32 inputCount,
+                  bool calculateInputErrorGradients)
 {
     if (!outputErrorGradients)
         throw eInvalidArgument("outputErrorGradients may not be null!");
@@ -265,11 +262,11 @@ void tAnnLayer::takeOutputErrorGradients(
     if (!m_prev_da)
         m_prev_da = new fml[m_numInputDims * m_maxCount];
 
-    Map da(outputErrorGradients, numOutputDims, outputCount);
+    MapConst da(outputErrorGradients, numOutputDims, outputCount);
     Map dA(m_dA, numOutputDims, outputCount);
     Map A(m_A, numOutputDims, outputCount);
     Map prev_da(m_prev_da, numInputDims, inputCount);
-    Map inputMap(input, numInputDims, inputCount);
+    MapConst inputMap(input, numInputDims, inputCount);
     Map w(m_w, outputCount, numInputDims);
     Map dw_accum(m_dw_accum, outputCount, numInputDims);
     Map db_accum(m_db_accum, outputCount, 1);
@@ -303,12 +300,15 @@ void tAnnLayer::takeOutputErrorGradients(
         }
     }
 
-    prev_da = (w.transpose() * dA) / ((fml) numInputDims);
+    if (calculateInputErrorGradients)
+        prev_da = (w.transpose() * dA) / ((fml) numInputDims);
 
     dw_accum = (dA * inputMap.transpose()) / ((fml) numInputDims);
     db_accum = dA.rowwise().sum();
 
     fml batchSize = (fml) outputCount;
+
+    // TODO -- update m_b
 
     switch (m_rule)
     {
@@ -394,7 +394,7 @@ void tAnnLayer::takeOutputErrorGradients(
 }
 
 
-fml* tAnnLayer::getInputErrorGradients(u32& numInputDims, u32& count) const
+const fml* tAnnLayer::getInputErrorGradients(u32& numInputDims, u32& count) const
 {
     numInputDims = m_numInputDims;
     count = m_curCount;

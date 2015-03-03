@@ -26,7 +26,7 @@ class iLayer
          * 'numInputDims' denotes the number of rows in the matrix, and 'count'
          * denotes the number of columns in the matrix.
          */
-        virtual void takeInput(fml* input, u32 numInputDims, u32 count) = 0;
+        virtual void takeInput(const fml* input, u32 numInputDims, u32 count) = 0;
 
         /**
          * Obtains the output of this layer. The output will reflect the output
@@ -40,7 +40,7 @@ class iLayer
          * Therefore, also do not hold a reference to the matrix after this
          * layer is destroyed.
          */
-        virtual fml* getOutput(u32& numOutputDims, u32& count) const = 0;
+        virtual const fml* getOutput(u32& numOutputDims, u32& count) const = 0;
 
 
         //////////////////////////////////////////////////////////////////////
@@ -61,10 +61,16 @@ class iLayer
          * remind this layer what the input was, which it will need in order
          * to do its calculations, and this way the layer doesn't have to
          * remember the most recent input on its own.
+         *
+         * If you plan to subsequently call getInputErrorGradients(), you
+         * need to set 'calculateInputErrorGradients' to true. Otherwise,
+         * if you don't need to call getInputErrorGradients(), set it to
+         * false to save calculation time.
          */
         virtual void takeOutputErrorGradients(
-                          fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
-                          fml* input, u32 numInputDims, u32 inputCount) = 0;
+                          const fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
+                          const fml* input, u32 numInputDims, u32 inputCount,
+                          bool calculateInputErrorGradients) = 0;
 
         /**
          * When takeOutputErrorGradients() is called, the error gradients for this
@@ -79,7 +85,7 @@ class iLayer
          * Therefore, also do not hold a reference to the matrix after this
          * layer is destroyed.
          */
-        virtual fml* getInputErrorGradients(u32& numInputDims, u32& count) const = 0;
+        virtual const fml* getInputErrorGradients(u32& numInputDims, u32& count) const = 0;
 
 
         //////////////////////////////////////////////////////////////////////

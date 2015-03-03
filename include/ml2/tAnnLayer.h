@@ -113,15 +113,16 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
         // The iLayer interface:
         ///////////////////////////////////////////////////////////////////////
 
-        void takeInput(fml* input, u32 numInputDims, u32 count);
+        void takeInput(const fml* input, u32 numInputDims, u32 count);
 
-        fml* getOutput(u32& numOutputDims, u32& count) const;
+        const fml* getOutput(u32& numOutputDims, u32& count) const;
 
         void takeOutputErrorGradients(
-                          fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
-                          fml* input, u32 numInputDims, u32 inputCount);
+                          const fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
+                          const fml* input, u32 numInputDims, u32 inputCount,
+                          bool calculateInputErrorGradients);
 
-        fml* getInputErrorGradients(u32& numInputDims, u32& count) const;
+        const fml* getInputErrorGradients(u32& numInputDims, u32& count) const;
 
 
         ///////////////////////////////////////////////////////////////////////
