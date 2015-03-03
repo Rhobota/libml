@@ -64,9 +64,12 @@ void tLayeredLearner::update()
         throw eRuntimeError("Wack m_inputMatrixUsed");
     if ((m_targetMatrixUsed % m_numOutputDims) != 0)
         throw eRuntimeError("Wack m_targetMatrixUsed");
+    u32 correctCount = m_inputMatrixUsed / m_numInputDims;
+    if ((m_targetMatrixUsed / m_numOutputDims) != correctCount)
+        throw eRuntimeError("Wack m_targetMatrixUsed (2)");
 
     m_layers[0]->takeInput(m_inputMatrix, m_numInputDims,
-                           m_inputMatrixUsed / m_numInputDims);
+                           correctCount);
 
     u32 prevOutDims, prevCount;
     const fml* prevOutput = NULL;
@@ -81,7 +84,7 @@ void tLayeredLearner::update()
         prevOutput = m_layers.back()->getOutput(prevOutDims, prevCount);
         if (prevOutDims != m_numOutputDims)
             throw eRuntimeError("Unexpected last layer dimensionality!!!");
-        if (prevCount != (m_targetMatrixUsed / m_numOutputDims))
+        if (prevCount != correctCount)
             throw eRuntimeError("Unexpected last layer count!!!");
         MapConst a(prevOutput, prevOutDims, prevCount);
         Map y(m_targetMatrix, prevOutDims, prevCount);
@@ -102,8 +105,7 @@ void tLayeredLearner::update()
     }
 
     m_layers[0]->takeOutputErrorGradients(output_da, outDims, count,
-                                          m_inputMatrix, m_numInputDims,
-                                          m_inputMatrixUsed / m_numInputDims,
+                                          m_inputMatrix, m_numInputDims, correctCount,
                                           false);
 
     m_inputMatrixUsed = 0;
@@ -172,6 +174,7 @@ void tLayeredLearner::evaluateBatch(std::vector<tIO>::const_iterator inputStart,
 
     m_layers[0]->takeInput(m_inputMatrix, m_numInputDims,
                            m_inputMatrixUsed / m_numInputDims);
+    m_inputMatrixUsed = 0;
 
     u32 prevOutDims, prevCount;
     const fml* prevOutput = NULL;

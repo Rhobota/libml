@@ -7,12 +7,12 @@
 // #endif
 
 
-#define EIGEN_NO_MALLOC 1
+//#define EIGEN_NO_MALLOC 1
 #include "../ml/Eigen/Core"
 
 
 typedef Eigen::Matrix< ml2::fml, Eigen::Dynamic, Eigen::Dynamic > Mat;
-typedef Eigen::Map< Mat, Eigen::Unaligned, Eigen::OuterStride<Eigen::Dynamic> > Map;
-typedef Eigen::Map< const Mat, Eigen::Unaligned, Eigen::OuterStride<Eigen::Dynamic> > MapConst;
+typedef Eigen::Map< Mat > Map;
+typedef Eigen::Map< const Mat > MapConst;
 
 

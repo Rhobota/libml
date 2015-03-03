@@ -885,6 +885,9 @@ void visualize(iLearner* learner, const tIO& example,
                img::tImage* dest)
 {
     // TODO
+    u8 bgColor[3] = { 0, 0, 205 };    // "Medium Blue" from http://www.tayloredmktg.com/rgb/
+    img::tCanvas canvas(img::kRGB24, bgColor, 3);
+    canvas.genImage(dest);
 }
 
 
