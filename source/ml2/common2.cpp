@@ -3,11 +3,16 @@
 #endif
 
 #include <ml2/common.h>
+#include <ml2/iLearner.h>
 
 #include <rho/algo/stat_util.h>
+#include <rho/algo/vector_util.h>
 #include <rho/img/tCanvas.h>
+#include <rho/sync/tTimer.h>
 
+#include <cassert>
 #include <iomanip>
+#include <sstream>
 
 
 namespace ml2
@@ -743,6 +748,833 @@ f64  recall(const tConfusionMatrix& confusionMatrix)
     f64 fn = (f64) confusionMatrix[1][0];
 
     return tp / (tp + fn);
+}
+
+
+bool train(iLearner* learner, const std::vector<tIO>& inputs,
+                              const std::vector<tIO>& targets,
+                              u32 batchSize,
+                              iTrainObserver* trainObserver)
+{
+    if (inputs.size() != targets.size())
+    {
+        throw eInvalidArgument("The number of examples in inputs and targets must "
+                "be the same!");
+    }
+
+    if (inputs.size() == 0)
+    {
+        throw eInvalidArgument("There must be at least one input/target pair!");
+    }
+
+    for (size_t i = 1; i < inputs.size(); i++)
+    {
+        if (inputs[i].size() != inputs[0].size())
+        {
+            throw eInvalidArgument("Every input must have the same dimensionality!");
+        }
+    }
+
+    for (size_t i = 1; i < targets.size(); i++)
+    {
+        if (targets[i].size() != targets[0].size())
+        {
+            throw eInvalidArgument("Every target must have the same dimensionality!");
+        }
+    }
+
+    if (batchSize == 0)
+    {
+        throw eInvalidArgument("batchSize must be positive!");
+    }
+
+    std::vector<tIO> mostRecentBatch(batchSize);
+    u32 batchCounter = 0;
+
+    for (size_t i = 0; i < inputs.size(); i++)
+    {
+        learner->addExample(inputs[i], targets[i]);
+        mostRecentBatch[batchCounter] = inputs[i];
+        batchCounter++;
+        if (batchCounter == batchSize)
+        {
+            learner->update();
+            if (trainObserver && !trainObserver->didUpdate(learner, mostRecentBatch))
+                return false;
+            batchCounter = 0;
+        }
+    }
+    if (batchCounter > 0)
+    {
+        learner->update();
+        mostRecentBatch.resize(batchCounter);
+        if (trainObserver && !trainObserver->didUpdate(learner, mostRecentBatch))
+            return false;
+    }
+
+    return true;
+}
+
+void evaluate(iLearner* learner, const std::vector<tIO>& inputs,
+                                       std::vector<tIO>& outputs,
+                                 u32 batchSize)
+{
+    if (inputs.size() == 0)
+        throw eInvalidArgument("There must be at least one input vector!");
+    if (batchSize == 0)
+        throw eInvalidArgument("The batch size must be positive.");
+    outputs.resize(inputs.size());
+    for (size_t i = 0; i < inputs.size(); i += batchSize)
+    {
+        size_t sizeHere = std::min((size_t)batchSize, inputs.size()-i);
+        learner->evaluateBatch(inputs.begin()+i,
+                               inputs.begin()+i+sizeHere,
+                               outputs.begin()+i);
+    }
+}
+
+/*
+ * This function is used "deinterlace" ("deinterleave" is the correct
+ * term, actually) a vector of repeating component.
+ *
+ * For example, say you have a vector with the contents: a1b2c3d4
+ * And you want to convert that to a vector: abcd1234
+ * To do that call this function with numComponents=2 and unitLength=1.
+ *
+ * Or, say you have a vector with the contents: ab12cd34ef56
+ * And you want to convert that to a vector: abcdef123456
+ * To do that call this function with numComponents=2 and unitLength=2.
+ *
+ * Or, say you have a vector with the contents: RGBRGBRGBRGB
+ * And you want to convert that to a vector: RRRRGGGGBBBB
+ * To do that call this function with numComponents=3 and unitLength=1.
+ *
+ * 'output' must be allocated by the caller, and of course delete by
+ * the caller as well.
+ */
+template <class T>
+void deinterlace(const T* input, T* output, u32 arrayLen, u32 numComponents, u32 unitLength=1)
+{
+    assert((arrayLen % unitLength) == 0);
+    u32 numUnits = arrayLen / unitLength;
+
+    assert((numUnits % numComponents) == 0);
+    u32 groupSize = numUnits / numComponents;
+
+    u32 stride = groupSize * unitLength;
+
+    u32 s = 0;
+
+    for (u32 g = 0; g < groupSize; g++)
+    {
+        u32 d = g * unitLength;
+
+        for (u32 c = 0; c < numComponents; c++)
+        {
+            for (u32 u = 0; u < unitLength; u++)
+                output[d+u] = input[s+u];
+
+            s += unitLength;
+            d += stride;
+        }
+    }
+}
+
+void visualize(iLearner* learner, const tIO& example,
+               bool color, u32 width, bool absolute,
+               img::tImage* dest)
+{
+    // TODO
+}
+
+
+static
+u32  s_ezTrain(iLearner* learner,       std::vector< tIO >& trainInputs,
+                                        std::vector< tIO >& trainTargets,
+                                  const std::vector< tIO >& testInputs,
+                                  const std::vector< tIO >& testTargets,
+                                  u32 batchSize,
+                                  iEZTrainObserver* trainObserver,
+                                  u32 foldIndex, u32 numFolds)
+{
+    if (trainInputs.size() != trainTargets.size())
+        throw eInvalidArgument("The number of training inputs does not match the number of training targets.");
+    if (testInputs.size() != testTargets.size())
+        throw eInvalidArgument("The number of testing inputs does not match the number of testing targets.");
+    if (trainInputs.size() == 0 || testInputs.size() == 0)
+        throw eInvalidArgument("The training and test sets must each be non-empty.");
+    if (batchSize == 0)
+        throw eInvalidArgument("The batch size must be non-zero.");
+
+    u64 trainStartTime = sync::tTimer::usecTime();
+
+    std::vector<tIO> trainOutputs;
+    tConfusionMatrix trainCM;
+
+    std::vector<tIO> testOutputs;
+    tConfusionMatrix testCM;
+
+    algo::tKnuthLCG lcg;
+
+    for (u32 epochs = 0; true; epochs++)
+    {
+        // Note the start time of this epoch.
+        u64 startTime = sync::tTimer::usecTime();
+
+        // Train if this is not the zero'th epoch. This is so that the user will get a
+        // callback before any training has happened, so that the user knows what the
+        // initial state of the learner looks like.
+        if (epochs > 0)
+        {
+            if (! train(learner, trainInputs, trainTargets,
+                        batchSize, trainObserver))
+            {
+                if (trainObserver)
+                {
+                    f64 trainElapsedTime = (f64)(sync::tTimer::usecTime() - trainStartTime);
+                    trainElapsedTime /= 1000000;  // usecs to secs
+                    trainObserver->didFinishTraining(learner, epochs-1, foldIndex, numFolds,
+                                                     trainInputs, trainTargets, testInputs, testTargets,
+                                                     trainElapsedTime);
+                }
+                return epochs-1;
+            }
+
+            // Shuffle the training data for the next iteration.
+            algo::shuffle(trainInputs, trainTargets, lcg);
+        }
+
+        // Call the epoch observer.
+        if (trainObserver)
+        {
+            // Evaluate the learner using the training set.
+            evaluate(learner, trainInputs, trainOutputs, batchSize);
+            buildConfusionMatrix(trainOutputs, trainTargets, trainCM);
+
+            // Evaluate the learner using the test set.
+            evaluate(learner, testInputs, testOutputs, batchSize);
+            buildConfusionMatrix(testOutputs, testTargets, testCM);
+
+            // Calculate the elapsed time.
+            f64 elapsedTime = (f64)(sync::tTimer::usecTime() - startTime);
+            elapsedTime /= 1000000;  // usecs to secs
+
+            if (! trainObserver->didFinishEpoch(learner,
+                                                epochs,
+                                                foldIndex, numFolds,
+                                                trainInputs, trainTargets, trainOutputs, trainCM,
+                                                testInputs, testTargets, testOutputs, testCM,
+                                                elapsedTime))
+            {
+                f64 trainElapsedTime = (f64)(sync::tTimer::usecTime() - trainStartTime);
+                trainElapsedTime /= 1000000;  // usecs to secs
+                trainObserver->didFinishTraining(learner, epochs, foldIndex, numFolds,
+                                                 trainInputs, trainTargets, testInputs, testTargets,
+                                                 trainElapsedTime);
+                return epochs;
+            }
+        }
+    }
+}
+
+u32  ezTrain(iLearner* learner,       std::vector< tIO >& trainInputs,
+                                      std::vector< tIO >& trainTargets,
+                                const std::vector< tIO >& testInputs,
+                                const std::vector< tIO >& testTargets,
+                                u32 batchSize,
+                                iEZTrainObserver* trainObserver)
+{
+    return s_ezTrain(learner,
+                     trainInputs, trainTargets,
+                     testInputs, testTargets,
+                     batchSize,
+                     trainObserver,
+                     0, 1);
+}
+
+u32  ezTrain(iLearner* learner, const std::vector< tIO >& allInputs,
+                                const std::vector< tIO >& allTargets,
+                                u32 batchSize, u32 numFolds,
+                                iEZTrainObserver* trainObserver)
+{
+    if (allInputs.size() != allTargets.size())
+        throw eInvalidArgument("The number of input and target vectors must be the same!");
+    if (allInputs.size() == 0)
+        throw eInvalidArgument("There must be at least one example.");
+    if (numFolds == 0)
+        throw eInvalidArgument("Zero folds makes no sense.");
+    if (numFolds == 1)
+        throw eInvalidArgument("One fold makes no sense.");
+
+    f64 frac = 1.0 / numFolds;
+
+    u32 accumEpochs = 0;
+
+    for (u32 i = 0; i < numFolds; i++)
+    {
+        if (i > 0)
+            learner->reset();
+
+        // Calculate the range of the test set.
+        u32 start = (u32) round((f64)allInputs.size() * frac*i);
+        u32 end   = (u32) round((f64)allInputs.size() * frac*(i+1));
+
+        // Build the training and test inputs.
+        std::vector< tIO > trainInputs = allInputs;
+        trainInputs.erase(trainInputs.begin()+start, trainInputs.begin()+end);
+        std::vector< tIO > testInputs(allInputs.begin()+start, allInputs.begin()+end);
+
+        // Build the training and test targets.
+        std::vector< tIO > trainTargets = allTargets;
+        trainTargets.erase(trainTargets.begin()+start, trainTargets.begin()+end);
+        std::vector< tIO > testTargets(allTargets.begin()+start, allTargets.begin()+end);
+
+        // Train!
+        accumEpochs += s_ezTrain(learner,
+                                 trainInputs, trainTargets,
+                                 testInputs, testTargets,
+                                 batchSize,
+                                 trainObserver,
+                                 i, numFolds);
+    }
+
+    return accumEpochs;
+}
+
+u32  ezTrain(iLearner* learner, const std::vector< tIO >& allInputs,
+                                const std::vector< tIO >& allTargets,
+                                u32 batchSize, std::vector<u32> foldSplitPoints,
+                                iEZTrainObserver* trainObserver)
+{
+    if (allInputs.size() != allTargets.size())
+        throw eInvalidArgument("The number of input and target vectors must be the same!");
+    if (allInputs.size() == 0)
+        throw eInvalidArgument("There must be at least one example.");
+    u32 numFolds = (u32)foldSplitPoints.size() + 1;
+    if (numFolds == 1)
+        throw eInvalidArgument("One fold makes no sense.");
+
+    u32 accumEpochs = 0;
+
+    for (u32 i = 0; i < numFolds; i++)
+    {
+        if (i > 0)
+            learner->reset();
+
+        // Calculate the range of the test set.
+        u32 start = (i == 0) ? 0 : foldSplitPoints[i-1];
+        u32 end   = (i == numFolds-1) ? (u32)allInputs.size() : foldSplitPoints[i];
+
+        // Build the training and test inputs.
+        std::vector< tIO > trainInputs = allInputs;
+        trainInputs.erase(trainInputs.begin()+start, trainInputs.begin()+end);
+        std::vector< tIO > testInputs(allInputs.begin()+start, allInputs.begin()+end);
+
+        // Build the training and test targets.
+        std::vector< tIO > trainTargets = allTargets;
+        trainTargets.erase(trainTargets.begin()+start, trainTargets.begin()+end);
+        std::vector< tIO > testTargets(allTargets.begin()+start, allTargets.begin()+end);
+
+        // Train!
+        accumEpochs += s_ezTrain(learner,
+                                 trainInputs, trainTargets,
+                                 testInputs, testTargets,
+                                 batchSize,
+                                 trainObserver,
+                                 i, numFolds);
+    }
+
+    return accumEpochs;
+}
+
+
+tSmartStoppingWrapper::tSmartStoppingWrapper(u32 minEpochs,
+                                             u32 maxEpochs,
+                                             f64 significantThreshold,
+                                             f64 patienceIncrease,
+                                             iEZTrainObserver* wrappedObserver,
+                                             nPerformanceAttribute performanceAttribute)
+    : m_minEpochs(minEpochs),
+      m_maxEpochs(maxEpochs),
+      m_significantThreshold(significantThreshold),
+      m_patienceIncrease(patienceIncrease),
+      m_obs(wrappedObserver),
+      m_performanceAttribute(performanceAttribute)
+{
+    if (m_minEpochs == 0)
+        throw eInvalidArgument("You must train for at least one epoch minimum.");
+    if (m_maxEpochs < m_minEpochs)
+        throw eInvalidArgument("max epochs must be >= min epochs");
+    if (m_significantThreshold < 0.0)
+        throw eInvalidArgument("The significance threshold cannot be less than zero.");
+    if (m_significantThreshold >= 1.0)
+        throw eInvalidArgument("The significance threshold must be less than 1.0.");
+    if (m_patienceIncrease <= 1.0)
+        throw eInvalidArgument("The patience increase must be greater than 1.0.");
+    m_reset();
+}
+
+bool tSmartStoppingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch)
+{
+    return (!m_obs || m_obs->didUpdate(learner, mostRecentBatch));
+}
+
+bool tSmartStoppingWrapper::didFinishEpoch(iLearner* learner,
+                                           u32 epochsCompleted,
+                                           u32 foldIndex, u32 numFolds,
+                                           const std::vector< tIO >& trainInputs,
+                                           const std::vector< tIO >& trainTargets,
+                                           const std::vector< tIO >& trainOutputs,
+                                           const tConfusionMatrix& trainCM,
+                                           const std::vector< tIO >& testInputs,
+                                           const std::vector< tIO >& testTargets,
+                                           const std::vector< tIO >& testOutputs,
+                                           const tConfusionMatrix& testCM,
+                                           f64 epochTrainTimeInSeconds)
+{
+    if (m_obs && !m_obs->didFinishEpoch(learner,
+                                        epochsCompleted,
+                                        foldIndex,
+                                        numFolds,
+                                        trainInputs,
+                                        trainTargets,
+                                        trainOutputs,
+                                        trainCM,
+                                        testInputs,
+                                        testTargets,
+                                        testOutputs,
+                                        testCM,
+                                        epochTrainTimeInSeconds))
+    {
+        return false;
+    }
+
+    f64 testError;
+    switch (m_performanceAttribute)
+    {
+        case kClassificationErrorRate:
+            testError = (f64) errorRate(testCM);
+            break;
+        case kOutputErrorMeasure:
+            testError = (f64) learner->calculateError(testOutputs, testTargets);
+            break;
+        default:
+            throw eLogicError("Unknown performance attribute");
+    }
+    if (testError <= m_bestTestErrorYet * (1.0 - m_significantThreshold))
+    {
+        m_bestTestErrorYet = testError;
+        m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
+    }
+
+    return (epochsCompleted < m_allowedEpochs && epochsCompleted < m_maxEpochs);
+}
+
+void tSmartStoppingWrapper::didFinishTraining(iLearner* learner,
+                                              u32 epochsCompleted,
+                                              u32 foldIndex, u32 numFolds,
+                                              const std::vector< tIO >& trainInputs,
+                                              const std::vector< tIO >& trainTargets,
+                                              const std::vector< tIO >& testInputs,
+                                              const std::vector< tIO >& testTargets,
+                                              f64 trainingTimeInSeconds)
+{
+    if (m_obs) m_obs->didFinishTraining(learner, epochsCompleted, foldIndex, numFolds,
+                                        trainInputs, trainTargets, testInputs, testTargets,
+                                        trainingTimeInSeconds);
+    m_reset();
+}
+
+void tSmartStoppingWrapper::m_reset()
+{
+    m_bestTestErrorYet = 1e100;
+    m_allowedEpochs = m_minEpochs;
+}
+
+
+tBestRememberingWrapper::tBestRememberingWrapper(iEZTrainObserver* wrappedObserver,
+                                                 nPerformanceAttribute performanceAttribute)
+    : m_obs(wrappedObserver),
+      m_performanceAttribute(performanceAttribute)
+{
+    reset();
+}
+
+void tBestRememberingWrapper::reset()
+{
+    m_bestTestEpochNum = 0;
+    m_bestTestErrorRate = 1e100;
+    m_bestTestOutputs.clear();
+    m_bestTestCM.clear();
+    m_matchingTrainCM.clear();
+    m_serializedLearner.reset();
+}
+
+u32 tBestRememberingWrapper::bestTestEpochNum()  const
+{
+    return m_bestTestEpochNum;
+}
+
+f64 tBestRememberingWrapper::bestTestError() const
+{
+    return m_bestTestErrorRate;
+}
+
+const std::vector<tIO>& tBestRememberingWrapper::bestTestOutputs() const
+{
+    return m_bestTestOutputs;
+}
+
+const tConfusionMatrix& tBestRememberingWrapper::bestTestCM()      const
+{
+    return m_bestTestCM;
+}
+
+const tConfusionMatrix& tBestRememberingWrapper::matchingTrainCM() const
+{
+    return m_matchingTrainCM;
+}
+
+void tBestRememberingWrapper::newBestLearner(iLearner*& learner)   const
+{
+    tByteReadable readable(m_serializedLearner.getBuf());
+    learner = iLearner::newDeserializedLearner(&readable);
+}
+
+bool tBestRememberingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch)
+{
+    return (!m_obs || m_obs->didUpdate(learner, mostRecentBatch));
+}
+
+bool tBestRememberingWrapper::didFinishEpoch(iLearner* learner,
+                                             u32 epochsCompleted,
+                                             u32 foldIndex, u32 numFolds,
+                                             const std::vector< tIO >& trainInputs,
+                                             const std::vector< tIO >& trainTargets,
+                                             const std::vector< tIO >& trainOutputs,
+                                             const tConfusionMatrix& trainCM,
+                                             const std::vector< tIO >& testInputs,
+                                             const std::vector< tIO >& testTargets,
+                                             const std::vector< tIO >& testOutputs,
+                                             const tConfusionMatrix& testCM,
+                                             f64 epochTrainTimeInSeconds)
+{
+    // Delegate to the wrapped object whether or not to quit training.
+    bool retVal = (!m_obs || m_obs->didFinishEpoch(learner,
+                                                   epochsCompleted,
+                                                   foldIndex,
+                                                   numFolds,
+                                                   trainInputs,
+                                                   trainTargets,
+                                                   trainOutputs,
+                                                   trainCM,
+                                                   testInputs,
+                                                   testTargets,
+                                                   testOutputs,
+                                                   testCM,
+                                                   epochTrainTimeInSeconds));
+
+    // If this is the zero'th epoch, reset myself in case there was a fold that
+    // happened before this point, in which case the state will still be for that
+    // training sequence.
+    if (epochsCompleted == 0)
+        reset();
+
+    // Evaluate the error rate on the test set and see if it's the best yet.
+    f64 testErrorRate;
+    switch (m_performanceAttribute)
+    {
+        case kClassificationErrorRate:
+            testErrorRate = (f64) errorRate(testCM);
+            break;
+        case kOutputErrorMeasure:
+            testErrorRate = (f64) learner->calculateError(testOutputs, testTargets);
+            break;
+        default:
+            throw eLogicError("Unknown performance attribute");
+    }
+    if (testErrorRate < m_bestTestErrorRate)
+    {
+        m_bestTestEpochNum = epochsCompleted;
+        m_bestTestErrorRate = testErrorRate;
+        m_bestTestOutputs = testOutputs;
+        m_bestTestCM = testCM;
+        m_matchingTrainCM = trainCM;
+        m_serializedLearner.reset();
+        iLearner::serializeLearner(learner, &m_serializedLearner);
+    }
+
+    return retVal;
+}
+
+void tBestRememberingWrapper::didFinishTraining(iLearner* learner,
+                                                u32 epochsCompleted,
+                                                u32 foldIndex, u32 numFolds,
+                                                const std::vector< tIO >& trainInputs,
+                                                const std::vector< tIO >& trainTargets,
+                                                const std::vector< tIO >& testInputs,
+                                                const std::vector< tIO >& testTargets,
+                                                f64 trainingTimeInSeconds)
+{
+    if (m_obs) m_obs->didFinishTraining(learner, epochsCompleted, foldIndex, numFolds,
+                                        trainInputs, trainTargets, testInputs, testTargets,
+                                        trainingTimeInSeconds);
+}
+
+
+tLoggingWrapper::tLoggingWrapper(u32 logInterval, bool isInputImageColor,
+                                 u32 inputImageWidth, bool shouldDisplayAbsoluteValues,
+                                 u32 cellWidthMultiplier,
+                                 iEZTrainObserver* wrappedObserver,
+                                 bool accumulateFoldIO,
+                                 bool logVisuals,
+                                 std::string fileprefix,
+                                 nPerformanceAttribute performanceAttribute)
+    : tBestRememberingWrapper(wrappedObserver, performanceAttribute),
+      m_logInterval(logInterval),
+      m_isColorInput(isInputImageColor),
+      m_imageWidth(inputImageWidth),
+      m_absoluteImage(shouldDisplayAbsoluteValues),
+      m_cellWidthMultiplier(cellWidthMultiplier),
+      m_accumulateFoldIO(accumulateFoldIO),
+      m_logVisuals(logVisuals),
+      m_fileprefix(fileprefix),
+      m_performanceAttribute(performanceAttribute)
+{
+    if (m_logInterval == 0)
+        throw eInvalidArgument("The log interval cannot be zero...");
+}
+
+tLoggingWrapper::~tLoggingWrapper()
+{
+    m_logfile.close();
+    m_datafile.close();
+}
+
+bool tLoggingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch)
+{
+    // Nothing special to do here, so just call the super method.
+    // The super method will call into the wrapped object.
+    return tBestRememberingWrapper::didUpdate(learner, mostRecentBatch);
+}
+
+bool tLoggingWrapper::didFinishEpoch(iLearner* learner,
+                                     u32 epochsCompleted,
+                                     u32 foldIndex, u32 numFolds,
+                                     const std::vector< tIO >& trainInputs,
+                                     const std::vector< tIO >& trainTargets,
+                                     const std::vector< tIO >& trainOutputs,
+                                     const tConfusionMatrix& trainCM,
+                                     const std::vector< tIO >& testInputs,
+                                     const std::vector< tIO >& testTargets,
+                                     const std::vector< tIO >& testOutputs,
+                                     const tConfusionMatrix& testCM,
+                                     f64 epochTrainTimeInSeconds)
+{
+    // Delegate to the super object whether or not to quit training.
+    // The super method will call into the wrapped object.
+    bool retVal = tBestRememberingWrapper::didFinishEpoch(learner,
+                                                          epochsCompleted,
+                                                          foldIndex,
+                                                          numFolds,
+                                                          trainInputs,
+                                                          trainTargets,
+                                                          trainOutputs,
+                                                          trainCM,
+                                                          testInputs,
+                                                          testTargets,
+                                                          testOutputs,
+                                                          testCM,
+                                                          epochTrainTimeInSeconds);
+
+    // If this is the first callback, open the log files.
+    if (epochsCompleted == 0 && foldIndex == 0)
+    {
+        m_logfile.open((m_fileprefix + learner->learnerInfoString() + ".log").c_str());
+        m_datafile.open((m_fileprefix + learner->learnerInfoString() + ".data").c_str());
+        learner->printLearnerInfo(m_logfile);
+    }
+
+    // Calculate error rates and output error measures for both
+    // the training and test sets.
+    f64 trainErrorRate = errorRate(trainCM);
+    f64 testErrorRate  = errorRate(testCM);
+    fml trainError = learner->calculateError(trainOutputs, trainTargets);
+    fml testError = learner->calculateError(testOutputs, testTargets);
+
+    // Print the training and test error to the human-readable log.
+    m_logfile << "Train error:             " << trainErrorRate*100 << "% "
+                                             << trainError << std::endl;
+    m_logfile << "Test error:              " << testErrorRate*100 << "% "
+                                             << testError << std::endl;
+    m_logfile << "Epoch train time:        " << epochTrainTimeInSeconds << " seconds"
+                                             << std::endl;
+    m_logfile << std::endl;
+
+    // Print the training and test error to the simplified data log.
+    m_datafile << trainErrorRate*100 << " " << trainError << std::endl;
+    m_datafile << testErrorRate*100 << " " << testError << std::endl;
+    m_datafile << std::endl;
+
+    // Save visuals every so many epochs.
+    if ((epochsCompleted % m_logInterval) == 0)
+    {
+        std::ostringstream out;
+        out << m_fileprefix << learner->learnerInfoString() << "__fold" << foldIndex+1 << "__epoch" << epochsCompleted;
+        m_save(out.str(), learner, trainInputs, testInputs, testTargets, testOutputs);
+    }
+
+    return retVal;
+}
+
+static
+void s_accumCM(tConfusionMatrix& accumCM, const tConfusionMatrix& newCM)
+{
+    if (accumCM.size() != newCM.size())
+    {
+        accumCM = newCM;
+    }
+    else
+    {
+        for (size_t i = 0; i < accumCM.size(); i++)
+        {
+            for (size_t j = 0; j < accumCM[i].size(); j++)
+                accumCM[i][j] += newCM[i][j];
+        }
+    }
+}
+
+void tLoggingWrapper::didFinishTraining(iLearner* learner,
+                                        u32 epochsCompleted,
+                                        u32 foldIndex, u32 numFolds,
+                                        const std::vector< tIO >& trainInputs,
+                                        const std::vector< tIO >& trainTargets,
+                                        const std::vector< tIO >& testInputs,
+                                        const std::vector< tIO >& testTargets,
+                                        f64 trainingTimeInSeconds)
+{
+    // The super method will call into the wrapped object.
+    tBestRememberingWrapper::didFinishTraining(learner, epochsCompleted, foldIndex, numFolds,
+                                               trainInputs, trainTargets, testInputs, testTargets,
+                                               trainingTimeInSeconds);
+
+    // Get a copy of the best found learner.
+    iLearner* bestLearner = NULL;
+    newBestLearner(bestLearner);
+
+    // Accumulate the test set vectors and the CM from the best epoch if there will be
+    // many folds.
+    if (numFolds > 1 && m_accumulateFoldIO)
+    {
+        m_accumTestInputs.insert(m_accumTestInputs.end(), testInputs.begin(), testInputs.end());
+        m_accumTestTargets.insert(m_accumTestTargets.end(), testTargets.begin(), testTargets.end());
+        m_accumTestOutputs.insert(m_accumTestOutputs.end(), bestTestOutputs().begin(), bestTestOutputs().end());
+        s_accumCM(m_accumTestCM, bestTestCM());
+        s_accumCM(m_accumTrainCM, matchingTrainCM());
+    }
+
+    // Log the results of this fold.
+    {
+        switch (m_performanceAttribute)
+        {
+            case kClassificationErrorRate:
+                m_logfile << "Best test classification error rate of " << bestTestError() * 100 << "% "
+                          << "found after epoch " << bestTestEpochNum()
+                          << "." << std::endl << std::endl;
+                break;
+            case kOutputErrorMeasure:
+                m_logfile << "Best test output error measure of " << bestTestError() << " "
+                          << "found after epoch " << bestTestEpochNum()
+                          << "." << std::endl << std::endl;
+                break;
+            default:
+                throw eLogicError("Unknown performance attribute");
+        }
+        m_logfile << "Training Set CM (fold=" << foldIndex+1 << '/' << numFolds << "):" << std::endl;
+        print(matchingTrainCM(), m_logfile);
+        m_logfile << "Test Set CM (fold=" << foldIndex+1 << '/' << numFolds << "):" << std::endl;
+        print(bestTestCM(), m_logfile);
+        std::ostringstream out;
+        out << m_fileprefix << bestLearner->learnerInfoString() << "__fold" << foldIndex+1 << "__best";
+        m_save(out.str(), bestLearner, trainInputs, testInputs, testTargets, bestTestOutputs());
+    }
+
+    // If this is the last of many folds, log the accumulated stuff.
+    if (foldIndex+1 == numFolds && numFolds > 1 && m_accumulateFoldIO)
+    {
+        m_logfile << std::endl;
+        m_logfile << "Accumulated Training Set CM:" << std::endl;
+        print(m_accumTrainCM, m_logfile);
+        m_logfile << "Accumulated Test Set CM:" << std::endl;
+        print(m_accumTestCM, m_logfile);
+        m_logfile << std::endl;
+
+        m_logfile << "Num accumulated test examples: " << m_accumTestInputs.size() << std::endl;
+        m_logfile << "Accumulated test classification error rate:   " << errorRate(m_accumTestCM)*100 << "%" << std::endl;
+        m_logfile << std::endl;
+
+        if (m_logVisuals)
+        {
+            img::tImage visualCM;
+            buildVisualConfusionMatrix(m_accumTestInputs, m_isColorInput, m_imageWidth, m_absoluteImage,
+                                       m_accumTestOutputs,
+                                       m_accumTestTargets,
+                                       &visualCM, m_cellWidthMultiplier);
+            std::ostringstream out;
+            out << m_fileprefix << bestLearner->learnerInfoString() << "__accum__cm.png";
+            visualCM.saveToFile(out.str());
+        }
+    }
+
+    // If this is the last fold (even if there was only one fold), save the outputs
+    // of the learner. This is useful for doing post processing, such as for creating
+    // ROC curves, or something like that.
+    if (foldIndex+1 == numFolds && m_accumulateFoldIO)
+    {
+        const std::vector< tIO >& saveTheseTestInputs  = (numFolds > 1) ? m_accumTestInputs  : testInputs;
+        const std::vector< tIO >& saveTheseTestTargets = (numFolds > 1) ? m_accumTestTargets : testTargets;
+        const std::vector< tIO >& saveTheseTestOutputs = (numFolds > 1) ? m_accumTestOutputs : bestTestOutputs();
+        tFileWritable outfile(m_fileprefix + bestLearner->learnerInfoString() + "__outputs.bin");
+        rho::pack(&outfile, saveTheseTestInputs);
+        rho::pack(&outfile, saveTheseTestTargets);
+        rho::pack(&outfile, saveTheseTestOutputs);
+    }
+
+    // Delete the copy of the best learner.
+    delete bestLearner;
+}
+
+void tLoggingWrapper::m_save(std::string filebasename,
+                             iLearner* learner,
+                             const std::vector<tIO>& trainInputs,
+                             const std::vector<tIO>& testInputs,
+                             const std::vector<tIO>& testTargets,
+                             const std::vector<tIO>& testOutputs)
+{
+    // Save the learner.
+    {
+        tFileWritable file(filebasename + ".learner");
+        iLearner::serializeLearner(learner, &file);
+    }
+
+    // Save a visual confusion matrix.
+    if (m_logVisuals)
+    {
+        img::tImage visualCM;
+        buildVisualConfusionMatrix(testInputs, m_isColorInput, m_imageWidth, m_absoluteImage,
+                                   testOutputs,
+                                   testTargets,
+                                   &visualCM, m_cellWidthMultiplier);
+        visualCM.saveToFile(filebasename + "__cm.png");
+    }
+
+    // Save a visual of the learner.
+    if (m_logVisuals)
+    {
+        img::tImage image;
+        visualize(learner, trainInputs.front(), m_isColorInput, m_imageWidth, m_absoluteImage, &image);
+        image.saveToFile(filebasename + "__viz.png");
+    }
 }
 
 
