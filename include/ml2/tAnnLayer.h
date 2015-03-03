@@ -124,6 +124,17 @@ class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
 
         const fml* getInputErrorGradients(u32& numInputDims, u32& count) const;
 
+        fml calculateError(const tIO& output, const tIO& target);
+
+        fml calculateError(const std::vector<tIO>& outputs,
+                           const std::vector<tIO>& targets);
+
+        void reset();
+
+        void printLayerInfo(std::ostream& out) const;
+
+        std::string layerInfoString() const;
+
 
         ///////////////////////////////////////////////////////////////////////
         // The iPackable interface:

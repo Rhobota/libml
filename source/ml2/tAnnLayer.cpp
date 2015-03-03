@@ -402,6 +402,43 @@ const fml* tAnnLayer::getInputErrorGradients(u32& numInputDims, u32& count) cons
 }
 
 
+fml tAnnLayer::calculateError(const tIO& output, const tIO& target)
+{
+    if (m_type == kLayerTypeSoftmax)
+        return crossEntropyCost(output, target);
+    else
+        return standardSquaredError(output, target);
+}
+
+
+fml tAnnLayer::calculateError(const std::vector<tIO>& outputs,
+                              const std::vector<tIO>& targets)
+{
+    if (m_type == kLayerTypeSoftmax)
+        return crossEntropyCost(outputs, targets);
+    else
+        return standardSquaredError(outputs, targets);
+}
+
+
+void tAnnLayer::reset()
+{
+    // TODO
+}
+
+
+void tAnnLayer::printLayerInfo(std::ostream& out) const
+{
+    // TODO
+}
+
+
+std::string tAnnLayer::layerInfoString() const
+{
+    // TODO
+}
+
+
 void tAnnLayer::pack(iWritable* out) const
 {
     // TODO

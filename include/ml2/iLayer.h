@@ -90,6 +90,46 @@ class iLayer
 
         //////////////////////////////////////////////////////////////////////
         //
+        // Methods for misc things.
+        //
+        //////////////////////////////////////////////////////////////////////
+
+        /**
+         * Asks the layer to calculate the error between the given output
+         * and the given target. For example, the layer may calculate
+         * the standard squared error or the cross-entropy loss, if one of
+         * those is appropriate. Or the layer may do something else.
+         */
+        virtual fml calculateError(const tIO& output, const tIO& target) = 0;
+
+        /**
+         * Asks the layer to calculate the error between all the given
+         * output/target pairs. For example, the layer may calculate
+         * the average standard squared error or the average cross-entropy
+         * loss, if one of those is appropriate. Or the layer may do
+         * something else.
+         */
+        virtual fml calculateError(const std::vector<tIO>& outputs,
+                                   const std::vector<tIO>& targets) = 0;
+
+        /**
+         * Resets the layer to its initial state.
+         */
+        virtual void reset() = 0;
+
+        /**
+         * Prints the layer's configuration in a readable format.
+         */
+        virtual void printLayerInfo(std::ostream& out) const = 0;
+
+        /**
+         * Returns a single-line version of printLayerInfo().
+         */
+        virtual std::string layerInfoString() const = 0;
+
+
+        //////////////////////////////////////////////////////////////////////
+        //
         // Virtual destructor.
         //
         //////////////////////////////////////////////////////////////////////
