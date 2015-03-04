@@ -102,18 +102,29 @@ class iLearner : public iPackable
     public:
 
         /**
-         * Deserialize from the input stream a new copy of an iLearner
-         * object.
-         *
-         * The caller of this method must call delete on the returned
-         * value when they are finished using it.
+         * Functions of this signature know how to read a specific learner
+         * subclass from a stream.
          */
-        static iLearner* newDeserializedLearner(iReadable* readable);
+        typedef iLearner* (*newLearnerFunc)(iReadable* in);
 
         /**
-         * Serializes a learner to the given output stream.
+         * Use this method in each learner subclass to register itself so
+         * that it can be read from a stream by newLearnerFromStream().
          */
-        static void serializeLearner(iLearner* learner, iWritable* writable);
+        static bool registerLearnerFuncWithHeaderId(newLearnerFunc func, u32 headerId);
+
+        /**
+         * Call this to read a learner from a stream. The specific learner subclass
+         * that is built will not be known by the caller, but that's the beauty
+         * of it! For this to work, each learner subclass must register itself
+         * by calling registerLearnerFuncWithHeaderId() before you call newLearnerFromStream().
+         */
+        static iLearner* newLearnerFromStream(iReadable* in);
+
+        /**
+         * Writes the given learner to the stream.
+         */
+        static void writeLearnerToStream(iLearner* learner, iWritable* out);
 };
 
 

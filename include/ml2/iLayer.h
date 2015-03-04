@@ -149,12 +149,29 @@ class iLayer : public iPackable
         //
         //////////////////////////////////////////////////////////////////////
 
+        /**
+         * Functions of this signature know how to read a specific layer
+         * subclass from a stream.
+         */
         typedef iLayer* (*newLayerFunc)(iReadable* in);
 
+        /**
+         * Use this method in each layer subclass to register itself so
+         * that it can be read from a stream by newLayerFromStream().
+         */
         static bool registerLayerFuncWithHeaderId(newLayerFunc func, u32 headerId);
 
+        /**
+         * Call this to read a layer from a stream. The specific layer subclass
+         * that is built will not be known by the caller, but that's the beauty
+         * of it! For this to work, each layer subclass must register itself
+         * by calling registerLayerFuncWithHeaderId() before you call newLayerFromStream().
+         */
         static iLayer* newLayerFromStream(iReadable* in);
 
+        /**
+         * Writes the given layer to the stream.
+         */
         static void writeLayerToStream(iLayer* layer, iWritable* out);
 };
 

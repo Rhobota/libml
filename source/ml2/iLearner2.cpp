@@ -5,14 +5,19 @@ namespace ml2
 {
 
 
-iLearner* iLearner::newDeserializedLearner(iReadable* readable)
+bool iLearner::registerLearnerFuncWithHeaderId(newLearnerFunc func, u32 headerId)
 {
     // TODO
-    return NULL;
 }
 
 
-void iLearner::serializeLearner(iLearner* learner, iWritable* writable)
+iLearner* iLearner::newLearnerFromStream(iReadable* in)
+{
+    // TODO
+}
+
+
+void iLearner::writeLearnerToStream(iLearner* learner, iWritable* out)
 {
     // TODO
 }
