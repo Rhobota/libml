@@ -1,11 +1,3 @@
-// #if NDEBUG
-// #include "../ml/Eigen/Core"
-// #else
-// #define NDEBUG 1                   // <-- comment-out these two lines if you need to debug
-// #include "../ml/Eigen/Core"        //     stuff, especially if your program is crashing
-// #undef NDEBUG                      // <-- somewhere inside Eigen doing so will help a lot
-// #endif
-
 
 /*
  * Uncomment the following two lines to ensure that no heap allocations
@@ -13,8 +5,8 @@
  * run your code and hope that no exceptions are thrown or asserts are
  * hit.)
  */
-#define EIGEN_NO_MALLOC 1
-#define EIGEN_DONT_PARALLELIZE 1
+#define EIGEN_NO_MALLOC
+#define EIGEN_DONT_PARALLELIZE
 
 
 /*
@@ -25,9 +17,17 @@
 
 
 /*
+ * Uncomment the following line to put Eigen in no-asserts mode. Only
+ * do this if you have tested a lot since your last changes. Having
+ * Eigen in no-asserts mode will make it run slightly faster.
+ */
+//#define NDEBUG 1
+
+
+/*
  * The Eigen include file:
  */
-#include "../ml/Eigen/Core"
+#include "Eigen/Core"
 
 
 /*
@@ -36,5 +36,4 @@
 typedef Eigen::Matrix< ml2::fml, Eigen::Dynamic, Eigen::Dynamic > Mat;
 typedef Eigen::Map< Mat > Map;
 typedef Eigen::Map< const Mat > MapConst;
-
 
