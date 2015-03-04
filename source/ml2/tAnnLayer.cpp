@@ -440,6 +440,12 @@ std::string tAnnLayer::layerInfoString() const
 }
 
 
+u32 tAnnLayer::headerId() const
+{
+    return 27424;
+}
+
+
 static
 void s_assert_writeAll(iWritable* out, const fml* buf, u32 size)
 {

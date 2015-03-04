@@ -127,6 +127,12 @@ class iLayer : public iPackable
          */
         virtual std::string layerInfoString() const = 0;
 
+        /**
+         * Returns the header id of this layer type.
+         * Each subclass should return a unique id here!
+         */
+        virtual u32 headerId() const = 0;
+
 
         //////////////////////////////////////////////////////////////////////
         //

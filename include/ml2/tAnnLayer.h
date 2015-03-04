@@ -134,6 +134,8 @@ class tAnnLayer : public iLayer, public bNonCopyable
 
         std::string layerInfoString() const;
 
+        u32 headerId() const;
+
 
         ///////////////////////////////////////////////////////////////////////
         // The iPackable interface:
