@@ -39,6 +39,10 @@ tLayeredLearner::~tLayeredLearner()
 
     delete [] m_targetMatrix;
     m_targetMatrix = NULL;
+
+    for (size_t i = 0; i < m_layers.size(); i++)
+        delete m_layers[i];
+    m_layers.clear();
 }
 
 void tLayeredLearner::addLayer(iLayer* layer)
@@ -249,12 +253,45 @@ std::string tLayeredLearner::learnerInfoString() const
 
 void tLayeredLearner::pack(iWritable* out) const
 {
-    // TODO
+    if (m_layers.size() == 0)
+        throw eRuntimeError("Cannot pack when there are no layers!");
+    rho::pack(out, (u32)(m_layers.size()));
+
+    for (size_t i = 0; i < m_layers.size(); i++)
+        m_layers[i]->pack(out);
+
+    rho::pack(out, m_numInputDims);
+    rho::pack(out, m_numOutputDims);
 }
 
 void tLayeredLearner::unpack(iReadable* in)
 {
-    // TODO
+    u32 numLayers; rho::unpack(in, numLayers);
+    if (numLayers == 0)
+        throw eRuntimeError("Cannot unpack layered learner with no layers!");
+
+    for (size_t i = 0; i < m_layers.size(); i++)
+        delete m_layers[i];
+    m_layers.clear();
+    for (u32 i = 0; i < numLayers; i++)
+        m_layers.push_back(iLayer::newLayerFromStream(in));
+
+    rho::unpack(in, m_numInputDims);
+    if (m_numInputDims == 0)
+        throw eInvalidArgument("The number of input dimensions may not be zero.");
+    rho::unpack(in, m_numOutputDims);
+    if (m_numOutputDims == 0)
+        throw eInvalidArgument("The number of output dimensions may not be zero.");
+
+    delete [] m_inputMatrix;
+    m_inputMatrixSize = 1024;
+    m_inputMatrix = new fml[m_inputMatrixSize];
+    m_inputMatrixUsed = 0;
+
+    delete [] m_targetMatrix;
+    m_targetMatrixSize = 1024;
+    m_targetMatrix = new fml[m_targetMatrixSize];
+    m_targetMatrixUsed = 0;
 }
 
 void tLayeredLearner::m_growInputMatrix(u32 newSize)

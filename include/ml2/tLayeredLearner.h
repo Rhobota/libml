@@ -18,7 +18,7 @@ class tLayeredLearner : public iLearner, public bNonCopyable
 
         ~tLayeredLearner();
 
-        void addLayer(iLayer* layer);
+        void addLayer(iLayer* layer);  // <-- takes ownership of the layer
 
 
         ///////////////////////////////////////////////////////////////////////

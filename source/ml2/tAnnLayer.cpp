@@ -440,15 +440,84 @@ std::string tAnnLayer::layerInfoString() const
 }
 
 
+static
+void s_assert_writeAll(iWritable* out, const fml* buf, u32 size)
+{
+    for (u32 i = 0; i < size; i++)
+        rho::pack(out, buf[i]);
+}
+
+
+static
+void s_assert_readAll(iReadable* in, fml* buf, u32 size)
+{
+    for (u32 i = 0; i < size; i++)
+        rho::unpack(in, buf[i]);
+}
+
+
 void tAnnLayer::pack(iWritable* out) const
 {
-    // TODO
+    rho::pack(out, (i32)m_type);
+    rho::pack(out, (i32)m_rule);
+
+    rho::pack(out, m_alpha);
+    rho::pack(out, m_viscosity);
+
+    rho::pack(out, m_numInputDims);
+    rho::pack(out, m_numNeurons);
+
+    s_assert_writeAll(out, m_w, m_numInputDims * m_numNeurons);
+    s_assert_writeAll(out, m_b, m_numNeurons);
 }
 
 
 void tAnnLayer::unpack(iReadable* in)
 {
-    // TODO
+    i32 type, rule;
+    rho::unpack(in, type);
+    rho::unpack(in, rule);
+    m_type = (nAnnLayerType)type;
+    m_rule = (nAnnLayerWeightUpdateRule)rule;
+
+    rho::unpack(in, m_alpha);
+    rho::unpack(in, m_viscosity);
+
+    rho::unpack(in, m_numInputDims);
+    if (m_numInputDims == 0)
+        throw eInvalidArgument("The number of input dimensions may not be zero.");
+    rho::unpack(in, m_numNeurons);
+    if (m_numNeurons == 0)
+        throw eInvalidArgument("The number of neurons may not be zero.");
+
+    delete [] m_w; m_w = NULL;
+    delete [] m_b; m_b = NULL;
+    delete [] m_dw_accum; m_dw_accum = NULL;
+    delete [] m_db_accum; m_db_accum = NULL;
+
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    m_w = new fml[numWeights];
+    s_assert_readAll(in, m_w, numWeights);
+    m_dw_accum = new fml[numWeights];
+    for (u32 i = 0; i < numWeights; i++)
+        m_dw_accum[i] = FML(0.0);
+
+    u32 numBiases = m_numNeurons;
+    m_b = new fml[numBiases];
+    s_assert_readAll(in, m_b, numBiases);
+    m_db_accum = new fml[numBiases];
+    for (u32 i = 0; i < numBiases; i++)
+        m_db_accum[i] = FML(0.0);
+
+    m_curCount = 0;
+    m_maxCount = 0;
+
+    delete [] m_A; m_A = NULL;
+    delete [] m_a; m_a = NULL;
+    delete [] m_dA; m_dA = NULL;
+    delete [] m_prev_da; m_prev_da = NULL;
+    delete [] m_vel; m_vel = NULL;
+    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
 }
 
 
