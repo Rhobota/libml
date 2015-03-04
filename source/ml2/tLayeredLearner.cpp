@@ -251,6 +251,12 @@ std::string tLayeredLearner::learnerInfoString() const
     return str;
 }
 
+u32 tLayeredLearner::headerId() const
+{
+    // TODO
+    return 934;
+}
+
 void tLayeredLearner::pack(iWritable* out) const
 {
     if (m_layers.size() == 0)

@@ -49,6 +49,8 @@ class tLayeredLearner : public iLearner, public bNonCopyable
 
         std::string learnerInfoString() const;
 
+        u32 headerId() const;
+
 
         ///////////////////////////////////////////////////////////////////////
         // The iPackable interface:
