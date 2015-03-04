@@ -15,7 +15,7 @@ bool iLearner::registerLearnerFuncWithHeaderId(newLearnerFunc func, u32 headerId
     if (gNewLearnerFuncs->find(headerId) == gNewLearnerFuncs->end())
     {
         (*gNewLearnerFuncs)[headerId] = func;
-        std::cout << "Registered learner with header id: " << headerId << std::endl;
+        //std::cout << "Registered learner with header id: " << headerId << std::endl;
         return true;
     }
     else

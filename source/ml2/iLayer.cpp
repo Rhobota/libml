@@ -15,7 +15,7 @@ bool iLayer::registerLayerFuncWithHeaderId(newLayerFunc func, u32 headerId)
     if (gNewLayerFuncs->find(headerId) == gNewLayerFuncs->end())
     {
         (*gNewLayerFuncs)[headerId] = func;
-        std::cout << "Registered layer with header id: " << headerId << std::endl;
+        //std::cout << "Registered layer with header id: " << headerId << std::endl;
         return true;
     }
     else

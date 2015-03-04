@@ -288,7 +288,7 @@ void tLayeredLearner::pack(iWritable* out) const
     rho::pack(out, (u32)(m_layers.size()));
 
     for (size_t i = 0; i < m_layers.size(); i++)
-        m_layers[i]->pack(out);
+        iLayer::writeLayerToStream(m_layers[i], out);
 
     rho::pack(out, m_numInputDims);
     rho::pack(out, m_numOutputDims);
