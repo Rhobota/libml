@@ -2,13 +2,7 @@
 
 #include <rho/algo/tLCG.h>
 
-#if NDEBUG
-#include "Eigen/Core"
-#else
-#define NDEBUG 1             // <-- comment-out these two lines if you need to debug tANN
-#include "Eigen/Core"        //     or tCNN, especially if your program is crashing
-#undef NDEBUG                // <-- somewhere inside Eigen doing so will help a lot
-#endif
+#include "Eigen.h"
 
 #include <cassert>
 #include <iomanip>

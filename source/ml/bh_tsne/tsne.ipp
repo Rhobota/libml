@@ -32,7 +32,7 @@
 
 
 
-#include "../Eigen/Core"
+#include "../Eigen.h"
 
 #include <cfloat>
 #include <cstdlib>
