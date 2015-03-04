@@ -1237,7 +1237,7 @@ const tConfusionMatrix& tBestRememberingWrapper::matchingTrainCM() const
 void tBestRememberingWrapper::newBestLearner(iLearner*& learner)   const
 {
     tByteReadable readable(m_serializedLearner.getBuf());
-    learner = iLearner::newDeserializedLearner(&readable);
+    learner = iLearner::newLearnerFromStream(&readable);
 }
 
 bool tBestRememberingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch)
@@ -1300,7 +1300,7 @@ bool tBestRememberingWrapper::didFinishEpoch(iLearner* learner,
         m_bestTestCM = testCM;
         m_matchingTrainCM = trainCM;
         m_serializedLearner.reset();
-        iLearner::serializeLearner(learner, &m_serializedLearner);
+        iLearner::writeLearnerToStream(learner, &m_serializedLearner);
     }
 
     return retVal;
@@ -1553,7 +1553,7 @@ void tLoggingWrapper::m_save(std::string filebasename,
     // Save the learner.
     {
         tFileWritable file(filebasename + ".learner");
-        iLearner::serializeLearner(learner, &file);
+        iLearner::writeLearnerToStream(learner, &file);
     }
 
     // Save a visual confusion matrix.
