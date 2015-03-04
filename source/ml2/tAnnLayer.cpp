@@ -202,9 +202,11 @@ void tAnnLayer::takeInput(const fml* input, u32 numInputDims, u32 count)
     Map A(m_A, m_numNeurons, count);
     Map a(m_a, m_numNeurons, count);
 
-    A.noalias() = (FML(1.0) / ((fml) numInputDims)) * w * inputMap;
+    fml n = FML(1.0) / ((fml) numInputDims);
+
+    A.noalias() = n * w * inputMap;
     for (u32 c = 0; c < count; c++)
-        A.col(c) += b;
+        A.col(c) += n * b;
 
     switch (m_type)
     {
@@ -325,11 +327,13 @@ void tAnnLayer::takeOutputErrorGradients(
         }
     }
 
-    if (calculateInputErrorGradients)
-        prev_da.noalias() = (FML(1.0) / ((fml) numInputDims)) * w.transpose() * dA;
+    fml n = FML(1.0) / ((fml) numInputDims);
 
-    dw_accum.noalias() = (FML(1.0) / ((fml) numInputDims)) * dA * inputMap.transpose();
-    db_accum = dA.rowwise().sum();
+    if (calculateInputErrorGradients)
+        prev_da.noalias() = n * w.transpose() * dA;
+
+    dw_accum.noalias() = n * dA * inputMap.transpose();
+    db_accum = n * dA.rowwise().sum();
 
     fml batchSize = (fml) outputCount;
 
@@ -358,17 +362,26 @@ void tAnnLayer::takeOutputErrorGradients(
                 throw eLogicError("When using the momentum update rule, viscosity must be set.");
             if (!m_vel)
             {
-                u32 numWeights = m_numInputDims * m_numNeurons;
+                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
                 m_vel = new fml[numWeights];
                 for (u32 i = 0; i < numWeights; i++)
                     m_vel[i] = FML(0.0);
             }
-            Map vel(m_vel, m_numNeurons, m_numInputDims);
             fml mult = (FML(10.0) / batchSize) * m_alpha;
-            vel *= m_viscosity;
-            vel -= mult*dw_accum;
-            w += vel;
-            // TODO update b
+            {
+                // Update w:
+                Map vel(m_vel, m_numNeurons, m_numInputDims);
+                vel *= m_viscosity;
+                vel -= mult*dw_accum;
+                w += vel;
+            }
+            {
+                // Update b:
+                Map vel(m_vel+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+                vel *= m_viscosity;
+                vel -= mult*db_accum;
+                b += vel;
+            }
             break;
         }
 
