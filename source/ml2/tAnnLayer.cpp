@@ -292,6 +292,7 @@ void tAnnLayer::takeOutputErrorGradients(
     Map prev_da(m_prev_da, numInputDims, inputCount);
     MapConst inputMap(input, numInputDims, inputCount);
     Map w(m_w, numOutputDims, numInputDims);
+    Map b(m_b, numOutputDims, 1);
     Map dw_accum(m_dw_accum, numOutputDims, numInputDims);
     Map db_accum(m_db_accum, numOutputDims, 1);
 
@@ -332,8 +333,6 @@ void tAnnLayer::takeOutputErrorGradients(
 
     fml batchSize = (fml) outputCount;
 
-    // TODO -- update m_b
-
     switch (m_rule)
     {
         case kWeightUpRuleNone:
@@ -347,6 +346,7 @@ void tAnnLayer::takeOutputErrorGradients(
                 throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
             fml mult = (FML(10.0) / batchSize) * m_alpha;
             w -= mult * dw_accum;
+            b -= mult * db_accum;
             break;
         }
 
@@ -368,6 +368,7 @@ void tAnnLayer::takeOutputErrorGradients(
             vel *= m_viscosity;
             vel -= mult*dw_accum;
             w += vel;
+            // TODO update b
             break;
         }
 
@@ -400,6 +401,7 @@ void tAnnLayer::takeOutputErrorGradients(
             dw_accum_avg *= FML(0.9);
             dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
             w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_wUpdate());
+            // TODO update b
             break;
         }
 
