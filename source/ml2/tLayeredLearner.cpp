@@ -251,10 +251,19 @@ std::string tLayeredLearner::learnerInfoString() const
     return str;
 }
 
+static
+iLearner* s_newLearnerFunc(iReadable* in)
+{
+    return new tLayeredLearner(in);
+}
+
 u32 tLayeredLearner::headerId() const
 {
-    // TODO
-    return 934;
+    static u32 learnerId = 2742490;
+    static bool didRegister = iLearner::registerLearnerFuncWithHeaderId(s_newLearnerFunc, learnerId);
+    if (!didRegister)
+        throw eRuntimeError("Registering my learner id didn't work!");
+    return learnerId;
 }
 
 void tLayeredLearner::pack(iWritable* out) const
