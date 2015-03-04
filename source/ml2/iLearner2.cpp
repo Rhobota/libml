@@ -5,14 +5,17 @@ namespace ml2
 {
 
 
-static std::map<u32, iLearner::newLearnerFunc> gNewLearnerFuncs;
+static std::map<u32, iLearner::newLearnerFunc>* gNewLearnerFuncs = NULL;
 
 
 bool iLearner::registerLearnerFuncWithHeaderId(newLearnerFunc func, u32 headerId)
 {
-    if (gNewLearnerFuncs.find(headerId) == gNewLearnerFuncs.end())
+    if (gNewLearnerFuncs == NULL)
+        gNewLearnerFuncs = new std::map<u32, iLearner::newLearnerFunc>();
+    if (gNewLearnerFuncs->find(headerId) == gNewLearnerFuncs->end())
     {
-        gNewLearnerFuncs[headerId] = func;
+        (*gNewLearnerFuncs)[headerId] = func;
+        std::cout << "Registered learner with header id: " << headerId << std::endl;
         return true;
     }
     else
@@ -27,12 +30,12 @@ iLearner* iLearner::newLearnerFromStream(iReadable* in)
     u32 headerId;
     rho::unpack(in, headerId);
 
-    if (gNewLearnerFuncs.find(headerId) == gNewLearnerFuncs.end())
+    if (gNewLearnerFuncs == NULL || gNewLearnerFuncs->find(headerId) == gNewLearnerFuncs->end())
     {
         throw eRuntimeError("No newLearnerFunc registered for that header id. Call iLearner::registerLearnerFuncWithHeaderId() with this header id before you call iLearner::newLearnerFromStream().");
     }
 
-    newLearnerFunc func = gNewLearnerFuncs[headerId];
+    newLearnerFunc func = (*gNewLearnerFuncs)[headerId];
     return func(in);
 }
 

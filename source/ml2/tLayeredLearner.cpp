@@ -271,10 +271,11 @@ iLearner* s_newLearnerFunc(iReadable* in)
     return new tLayeredLearner(in);
 }
 
+static u32 learnerId = 2742490;
+static bool didRegister = iLearner::registerLearnerFuncWithHeaderId(s_newLearnerFunc, learnerId);
+
 u32 tLayeredLearner::headerId() const
 {
-    static u32 learnerId = 2742490;
-    static bool didRegister = iLearner::registerLearnerFuncWithHeaderId(s_newLearnerFunc, learnerId);
     if (!didRegister)
         throw eRuntimeError("Registering my learner id didn't work!");
     return learnerId;

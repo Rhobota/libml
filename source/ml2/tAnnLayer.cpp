@@ -471,10 +471,12 @@ iLayer* s_newLayerFunc(iReadable* in)
 }
 
 
+static u32 layerId = 27424;
+static bool didRegister = iLayer::registerLayerFuncWithHeaderId(s_newLayerFunc, layerId);
+
+
 u32 tAnnLayer::headerId() const
 {
-    static u32 layerId = 27424;
-    static bool didRegister = iLayer::registerLayerFuncWithHeaderId(s_newLayerFunc, layerId);
     if (!didRegister)
         throw eRuntimeError("Registering my layer id didn't work!");
     return layerId;
