@@ -32,6 +32,20 @@ tLayeredLearner::tLayeredLearner(u32 numInputDims, u32 numOutputDims)
     m_targetMatrix = new fml[m_targetMatrixSize];
 }
 
+tLayeredLearner::tLayeredLearner(iReadable* in)
+    : m_layers(),
+      m_numInputDims(0),
+      m_numOutputDims(0),
+      m_inputMatrix(NULL),
+      m_inputMatrixSize(0),
+      m_inputMatrixUsed(0),
+      m_targetMatrix(NULL),
+      m_targetMatrixSize(0),
+      m_targetMatrixUsed(0)
+{
+    this->unpack(in);
+}
+
 tLayeredLearner::~tLayeredLearner()
 {
     delete [] m_inputMatrix;

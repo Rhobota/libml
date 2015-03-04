@@ -16,6 +16,8 @@ class tLayeredLearner : public iLearner, public bNonCopyable
 
         tLayeredLearner(u32 numInputDims, u32 numOutputDims);
 
+        tLayeredLearner(iReadable* in);
+
         ~tLayeredLearner();
 
         void addLayer(iLayer* layer);  // <-- takes ownership of the layer
