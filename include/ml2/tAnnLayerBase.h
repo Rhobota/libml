@@ -114,7 +114,7 @@ class tAnnLayerBase : public iLayer, public bNonCopyable
 
 
         ///////////////////////////////////////////////////////////////////////
-        // The iLayer interface:
+        // The iLayer interface:   (partial interface only)
         ///////////////////////////////////////////////////////////////////////
 
         fml calculateError(const tIO& output, const tIO& target);

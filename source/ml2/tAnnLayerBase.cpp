@@ -1,6 +1,8 @@
 #include <ml2/tAnnLayerBase.h>
 
+#include <cassert>
 #include <iomanip>
+#include <sstream>
 
 
 namespace ml2
@@ -341,7 +343,8 @@ std::string tAnnLayerBase::layerInfoString() const
 static
 iLayer* s_newLayerFunc(iReadable* in)
 {
-    return new tAnnLayerBase(in);
+    // TODO
+    return NULL;
 }
 
 
