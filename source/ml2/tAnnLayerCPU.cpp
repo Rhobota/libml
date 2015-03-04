@@ -359,4 +359,16 @@ const fml* tAnnLayerCPU::getInputErrorGradients(u32& numInputDims, u32& count) c
 }
 
 
+void tAnnLayerCPU::pack(iWritable* out) const
+{
+    tAnnLayerBase::pack(out);
+}
+
+
+void tAnnLayerCPU::unpack(iReadable* in)
+{
+    tAnnLayerBase::unpack(in);
+}
+
+
 }   // namespace ml2
