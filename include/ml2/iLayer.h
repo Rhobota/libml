@@ -141,6 +141,21 @@ class iLayer : public iPackable
         //////////////////////////////////////////////////////////////////////
 
         virtual ~iLayer() { }
+
+
+        //////////////////////////////////////////////////////////////////////
+        //
+        // Static methods.
+        //
+        //////////////////////////////////////////////////////////////////////
+
+        typedef iLayer* (*newLayerFunc)(iReadable* in);
+
+        static void registerLayerFuncWithHeaderId(newLayerFunc func, u32 headerId);
+
+        static iLayer* newLayerFromStream(iReadable* in);
+
+        static void writeLayerToStream(iLayer* layer, iWritable* out);
 };
 
 
