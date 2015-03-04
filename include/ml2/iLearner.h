@@ -95,6 +95,12 @@ class iLearner : public iPackable
         virtual std::string learnerInfoString() const = 0;
 
         /**
+         * Returns the header id of this learner type.
+         * Each subclass should return a unique id here!
+         */
+        virtual u32 headerId() const = 0;
+
+        /**
          * Virtual dtor...
          */
         virtual ~iLearner() { }
