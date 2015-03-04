@@ -5,21 +5,36 @@ namespace ml2
 {
 
 
+static std::map<u32, iLearner::newLearnerFunc> gNewLearnerFuncs;
+
+
 bool iLearner::registerLearnerFuncWithHeaderId(newLearnerFunc func, u32 headerId)
 {
-    // TODO
+    gNewLearnerFuncs[headerId] = func;
+    return true;
 }
 
 
 iLearner* iLearner::newLearnerFromStream(iReadable* in)
 {
-    // TODO
+    u32 headerId;
+    rho::unpack(in, headerId);
+
+    if (gNewLearnerFuncs.find(headerId) == gNewLearnerFuncs.end())
+    {
+        throw eRuntimeError("No newLearnerFunc registered for that header id. Call iLearner::registerLearnerFuncWithHeaderId() with this header id before you call iLearner::newLearnerFromStream().");
+    }
+
+    newLearnerFunc func = gNewLearnerFuncs[headerId];
+    return func(in);
 }
 
 
 void iLearner::writeLearnerToStream(iLearner* learner, iWritable* out)
 {
-    // TODO
+    u32 headerId = learner->headerId();
+    rho::pack(out, headerId);
+    learner->pack(out);
 }
 
 
