@@ -3,7 +3,7 @@
 #include <cassert>
 #include <iomanip>
 
-#include "Eigen.h"
+#include "../ml/Eigen.h"
 
 
 namespace ml2

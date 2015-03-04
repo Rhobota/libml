@@ -1,6 +1,6 @@
 #include <ml2/tAnnLayerCPU.h>
 
-#include "Eigen.h"
+#include "../ml/Eigen.h"
 
 
 namespace ml2
