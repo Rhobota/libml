@@ -4,7 +4,6 @@
 
 #include <ml2/iLayer.h>
 
-#include <rho/iPackable.h>
 #include <rho/bNonCopyable.h>
 #include <rho/algo/tLCG.h>
 
@@ -13,7 +12,7 @@ namespace ml2
 {
 
 
-class tAnnLayer : public iLayer, public iPackable, public bNonCopyable
+class tAnnLayer : public iLayer, public bNonCopyable
 {
     public:
 

@@ -9,7 +9,7 @@ namespace ml2
 {
 
 
-class iLayer
+class iLayer : public iPackable
 {
     public:
 
