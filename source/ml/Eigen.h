@@ -33,7 +33,11 @@
 /*
  * These are typedefs we'll use a lot:
  */
-typedef Eigen::Matrix< ml2::fml, Eigen::Dynamic, Eigen::Dynamic > Mat;
-typedef Eigen::Map< Mat > Map;
-typedef Eigen::Map< const Mat > MapConst;
+#include <ml2/common.h>
+namespace ml2
+{
+    typedef Eigen::Matrix< ml2::fml, Eigen::Dynamic, Eigen::Dynamic > Mat;
+    typedef Eigen::Map< Mat > Map;
+    typedef Eigen::Map< const Mat > MapConst;
+}
 
