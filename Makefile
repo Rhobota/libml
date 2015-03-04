@@ -34,20 +34,6 @@ CPP_OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPP_SRC_FILES))
 
 all : $(CPP_OBJ_FILES)
 
-install : ensure_root uninstall all
-	@echo
-	@cp -r $(INCLUDE_DIR)/* /usr/local/include
-	@cp $(OBJ_DIR)/$(STATIC_LIB_NAME) /usr/local/lib
-	@echo "Install successful."
-
-uninstall : ensure_root
-	@(cd $(INCLUDE_DIR) && for i in *; do rm -rf /usr/local/include/$$i; done)
-
-ensure_root :
-	$(if $(shell whoami | grep root),,\
-	@echo 'You must be root to run to perform that operation.' && exit 1; \
-	)
-
 test : all
 	@$(TESTS_DIR)/RunTests.bash
 
@@ -62,4 +48,4 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	$(AR) crsv $(OBJ_DIR)/$(STATIC_LIB_NAME) $@
 	@echo
 
-.PHONY : all install uninstall ensure_root test clean
+.PHONY : all test clean
