@@ -151,7 +151,7 @@ class iLayer : public iPackable
 
         typedef iLayer* (*newLayerFunc)(iReadable* in);
 
-        static void registerLayerFuncWithHeaderId(newLayerFunc func, u32 headerId);
+        static bool registerLayerFuncWithHeaderId(newLayerFunc func, u32 headerId);
 
         static iLayer* newLayerFromStream(iReadable* in);
 

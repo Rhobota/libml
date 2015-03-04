@@ -8,9 +8,10 @@ namespace ml2
 static std::map<u32, iLayer::newLayerFunc> gNewLayerFuncs;
 
 
-void iLayer::registerLayerFuncWithHeaderId(newLayerFunc func, u32 headerId)
+bool iLayer::registerLayerFuncWithHeaderId(newLayerFunc func, u32 headerId)
 {
     gNewLayerFuncs[headerId] = func;
+    return true;
 }
 
 
