@@ -163,6 +163,10 @@ class tAnnLayer : public iLayer, public bNonCopyable
 
         fml* m_w;
         fml* m_b;
+
+        fml* m_w_orig;
+        fml* m_b_orig;
+
         fml* m_dw_accum;
         fml* m_db_accum;
 

@@ -259,9 +259,9 @@ void tLayeredLearner::printLearnerInfo(std::ostream& out) const
     out << std::endl;
 
     out << std::setw(w) << "Input Layer:";
-    out << std::setw(w) << " ";
-    out << std::setw(w) << " ";
-    out << std::setw(w) << " ";
+    out << std::setw(w) << "-";
+    out << std::setw(w) << "-";
+    out << std::setw(w) << "-";
     out << std::setw(w) << m_numInputDims;
     out << std::endl;
 

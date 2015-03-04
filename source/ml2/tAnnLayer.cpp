@@ -168,6 +168,8 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_numNeurons(numNeurons),
       m_w(NULL),
       m_b(NULL),
+      m_w_orig(NULL),
+      m_b_orig(NULL),
       m_dw_accum(NULL),
       m_db_accum(NULL),
       m_curCount(0),
@@ -186,16 +188,18 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
 
     u32 numWeights = m_numInputDims * m_numNeurons;
     m_w = new fml[numWeights];
+    m_w_orig = new fml[numWeights];
     for (u32 i = 0; i < numWeights; i++)
-        m_w[i] = s_randInRange(lcg, randWeightMin, randWeightMax);
+        m_w[i] = m_w_orig[i] = s_randInRange(lcg, randWeightMin, randWeightMax);
     m_dw_accum = new fml[numWeights];
     for (u32 i = 0; i < numWeights; i++)
         m_dw_accum[i] = FML(0.0);
 
     u32 numBiases = m_numNeurons;
     m_b = new fml[numBiases];
+    m_b_orig = new fml[numBiases];
     for (u32 i = 0; i < numBiases; i++)
-        m_b[i] = s_randInRange(lcg, randWeightMin, randWeightMax);
+        m_b[i] = m_b_orig[i] = s_randInRange(lcg, randWeightMin, randWeightMax);
     m_db_accum = new fml[numBiases];
     for (u32 i = 0; i < numBiases; i++)
         m_db_accum[i] = FML(0.0);
@@ -211,6 +215,8 @@ tAnnLayer::tAnnLayer(iReadable* in)
       m_numNeurons(0),
       m_w(NULL),
       m_b(NULL),
+      m_w_orig(NULL),
+      m_b_orig(NULL),
       m_dw_accum(NULL),
       m_db_accum(NULL),
       m_curCount(0),
@@ -230,6 +236,8 @@ tAnnLayer::~tAnnLayer()
 {
     delete [] m_w; m_w = NULL;
     delete [] m_b; m_b = NULL;
+    delete [] m_w_orig; m_w_orig = NULL;
+    delete [] m_b_orig; m_b_orig = NULL;
     delete [] m_dw_accum; m_dw_accum = NULL;
     delete [] m_db_accum; m_db_accum = NULL;
     delete [] m_A; m_A = NULL;
@@ -558,7 +566,16 @@ fml tAnnLayer::calculateError(const std::vector<tIO>& outputs,
 
 void tAnnLayer::reset()
 {
-    // TODO
+    if (!m_w_orig || !m_b_orig)
+        throw eRuntimeError("Cannot reset this ann layer because there is no original data. This is probably because you unpacked this layer from a stream.");
+
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    for (u32 i = 0; i < numWeights; i++)
+        m_w[i] = m_w_orig[i];
+
+    u32 numBiases = m_numNeurons;
+    for (u32 i = 0; i < numBiases; i++)
+        m_b[i] = m_b_orig[i];
 }
 
 
@@ -674,6 +691,8 @@ void tAnnLayer::unpack(iReadable* in)
 
     delete [] m_w; m_w = NULL;
     delete [] m_b; m_b = NULL;
+    delete [] m_w_orig; m_w_orig = NULL;
+    delete [] m_b_orig; m_b_orig = NULL;
     delete [] m_dw_accum; m_dw_accum = NULL;
     delete [] m_db_accum; m_db_accum = NULL;
 
