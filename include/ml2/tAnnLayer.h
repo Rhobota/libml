@@ -79,6 +79,11 @@ class tAnnLayer : public iLayer, public bNonCopyable
                   fml randWeightMin = -1.0, fml randWeightMax = 1.0);
 
         /**
+         * Constructs a tAnnLayer from a stream.
+         */
+        tAnnLayer(iReadable* in);
+
+        /**
          * D'tor.
          */
         ~tAnnLayer();

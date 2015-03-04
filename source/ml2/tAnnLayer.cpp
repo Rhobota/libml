@@ -116,6 +116,30 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
 }
 
 
+tAnnLayer::tAnnLayer(iReadable* in)
+    : m_type(kLayerTypeLogistic),
+      m_rule(kWeightUpRuleNone),
+      m_alpha(FML(0.0)),
+      m_viscosity(FML(0.0)),
+      m_numInputDims(0),
+      m_numNeurons(0),
+      m_w(NULL),
+      m_b(NULL),
+      m_dw_accum(NULL),
+      m_db_accum(NULL),
+      m_curCount(0),
+      m_maxCount(0),
+      m_A(NULL),
+      m_a(NULL),
+      m_dA(NULL),
+      m_prev_da(NULL),
+      m_vel(NULL),
+      m_dw_accum_avg(NULL)
+{
+    this->unpack(in);
+}
+
+
 tAnnLayer::~tAnnLayer()
 {
     delete [] m_w; m_w = NULL;
@@ -440,9 +464,20 @@ std::string tAnnLayer::layerInfoString() const
 }
 
 
+static
+iLayer* s_newLayerFunc(iReadable* in)
+{
+    return new tAnnLayer(in);
+}
+
+
 u32 tAnnLayer::headerId() const
 {
-    return 27424;
+    static u32 layerId = 27424;
+    static bool didRegister = iLayer::registerLayerFuncWithHeaderId(s_newLayerFunc, layerId);
+    if (!didRegister)
+        throw eRuntimeError("Registering my layer id didn't work!");
+    return layerId;
 }
 
 
