@@ -1,4 +1,4 @@
-#include <ml2/tAnnLayer.h>
+#include <ml2/tAnnLayerCPU.h>
 
 #include <iomanip>
 
@@ -10,15 +10,15 @@ namespace ml2
 
 
 static
-std::string s_layerTypeToString(tAnnLayer::nAnnLayerType type)
+std::string s_layerTypeToString(tAnnLayerCPU::nAnnLayerType type)
 {
     switch (type)
     {
-        case tAnnLayer::kLayerTypeLogistic:
+        case tAnnLayerCPU::kLayerTypeLogistic:
             return "logistic";
-        case tAnnLayer::kLayerTypeHyperbolic:
+        case tAnnLayerCPU::kLayerTypeHyperbolic:
             return "hyperbolic";
-        case tAnnLayer::kLayerTypeSoftmax:
+        case tAnnLayerCPU::kLayerTypeSoftmax:
             return "softmax";
         default:
             assert(false);
@@ -27,15 +27,15 @@ std::string s_layerTypeToString(tAnnLayer::nAnnLayerType type)
 
 
 static
-char s_layerTypeToChar(tAnnLayer::nAnnLayerType type)
+char s_layerTypeToChar(tAnnLayerCPU::nAnnLayerType type)
 {
     switch (type)
     {
-        case tAnnLayer::kLayerTypeLogistic:
+        case tAnnLayerCPU::kLayerTypeLogistic:
             return 'l';
-        case tAnnLayer::kLayerTypeHyperbolic:
+        case tAnnLayerCPU::kLayerTypeHyperbolic:
             return 'h';
-        case tAnnLayer::kLayerTypeSoftmax:
+        case tAnnLayerCPU::kLayerTypeSoftmax:
             return 's';
         default:
             assert(false);
@@ -44,23 +44,23 @@ char s_layerTypeToChar(tAnnLayer::nAnnLayerType type)
 
 
 static
-std::string s_weightUpRuleToString(tAnnLayer::nAnnLayerWeightUpdateRule rule)
+std::string s_weightUpRuleToString(tAnnLayerCPU::nAnnLayerWeightUpdateRule rule)
 {
     switch (rule)
     {
-        case tAnnLayer::kWeightUpRuleNone:
+        case tAnnLayerCPU::kWeightUpRuleNone:
             return "none";
-        case tAnnLayer::kWeightUpRuleFixedLearningRate:
+        case tAnnLayerCPU::kWeightUpRuleFixedLearningRate:
             return "fixed rate";
-        case tAnnLayer::kWeightUpRuleMomentum:
+        case tAnnLayerCPU::kWeightUpRuleMomentum:
             return "momentum";
-        case tAnnLayer::kWeightUpRuleAdaptiveRates:
+        case tAnnLayerCPU::kWeightUpRuleAdaptiveRates:
             return "adaptive rates";
-        case tAnnLayer::kWeightUpRuleRPROP:
+        case tAnnLayerCPU::kWeightUpRuleRPROP:
             return "rprop";
-        case tAnnLayer::kWeightUpRuleRMSPROP:
+        case tAnnLayerCPU::kWeightUpRuleRMSPROP:
             return "rmsprop";
-        case tAnnLayer::kWeightUpRuleARMS:
+        case tAnnLayerCPU::kWeightUpRuleARMS:
             return "arms";
         default:
             assert(false);
@@ -69,23 +69,23 @@ std::string s_weightUpRuleToString(tAnnLayer::nAnnLayerWeightUpdateRule rule)
 
 
 static
-char s_weightUpRuleToChar(tAnnLayer::nAnnLayerWeightUpdateRule rule)
+char s_weightUpRuleToChar(tAnnLayerCPU::nAnnLayerWeightUpdateRule rule)
 {
     switch (rule)
     {
-        case tAnnLayer::kWeightUpRuleNone:
+        case tAnnLayerCPU::kWeightUpRuleNone:
             return 'n';
-        case tAnnLayer::kWeightUpRuleFixedLearningRate:
+        case tAnnLayerCPU::kWeightUpRuleFixedLearningRate:
             return 'f';
-        case tAnnLayer::kWeightUpRuleMomentum:
+        case tAnnLayerCPU::kWeightUpRuleMomentum:
             return 'm';
-        case tAnnLayer::kWeightUpRuleAdaptiveRates:
+        case tAnnLayerCPU::kWeightUpRuleAdaptiveRates:
             return 'a';
-        case tAnnLayer::kWeightUpRuleRPROP:
+        case tAnnLayerCPU::kWeightUpRuleRPROP:
             return 'r';
-        case tAnnLayer::kWeightUpRuleRMSPROP:
+        case tAnnLayerCPU::kWeightUpRuleRMSPROP:
             return 'R';
-        case tAnnLayer::kWeightUpRuleARMS:
+        case tAnnLayerCPU::kWeightUpRuleARMS:
             return 'A';
         default:
             assert(false);
@@ -157,9 +157,9 @@ fml s_randInRange(algo::iLCG& lcg, fml randWeightMin, fml randWeightMax)
 }
 
 
-tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
-                     u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                     fml randWeightMin, fml randWeightMax)
+tAnnLayerCPU::tAnnLayerCPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+                           u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
+                           fml randWeightMin, fml randWeightMax)
     : m_type(type),
       m_rule(rule),
       m_alpha(FML(0.0)),
@@ -206,7 +206,7 @@ tAnnLayer::tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
 }
 
 
-tAnnLayer::tAnnLayer(iReadable* in)
+tAnnLayerCPU::tAnnLayerCPU(iReadable* in)
     : m_type(kLayerTypeLogistic),
       m_rule(kWeightUpRuleNone),
       m_alpha(FML(0.0)),
@@ -232,7 +232,7 @@ tAnnLayer::tAnnLayer(iReadable* in)
 }
 
 
-tAnnLayer::~tAnnLayer()
+tAnnLayerCPU::~tAnnLayerCPU()
 {
     delete [] m_w; m_w = NULL;
     delete [] m_b; m_b = NULL;
@@ -249,7 +249,7 @@ tAnnLayer::~tAnnLayer()
 }
 
 
-void tAnnLayer::setAlpha(fml alpha)
+void tAnnLayerCPU::setAlpha(fml alpha)
 {
     if (alpha <= FML(0.0))
         throw eInvalidArgument("Alpha must be greater than zero.");
@@ -257,7 +257,7 @@ void tAnnLayer::setAlpha(fml alpha)
 }
 
 
-void tAnnLayer::setViscosity(fml viscosity)
+void tAnnLayerCPU::setViscosity(fml viscosity)
 {
     if (viscosity <= FML(0.0) || viscosity >= FML(1.0))
         throw eInvalidArgument("Viscosity must be greater than zero and less than one.");
@@ -265,7 +265,7 @@ void tAnnLayer::setViscosity(fml viscosity)
 }
 
 
-void tAnnLayer::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tAnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 {
     if (!input)
         throw eInvalidArgument("The input matrix may not be null.");
@@ -342,7 +342,7 @@ void tAnnLayer::takeInput(const fml* input, u32 numInputDims, u32 count)
 }
 
 
-const fml* tAnnLayer::getOutput(u32& numOutputDims, u32& count) const
+const fml* tAnnLayerCPU::getOutput(u32& numOutputDims, u32& count) const
 {
     numOutputDims = m_numNeurons;
     count = m_curCount;
@@ -350,7 +350,7 @@ const fml* tAnnLayer::getOutput(u32& numOutputDims, u32& count) const
 }
 
 
-void tAnnLayer::takeOutputErrorGradients(
+void tAnnLayerCPU::takeOutputErrorGradients(
                   const fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
                   const fml* input, u32 numInputDims, u32 inputCount,
                   bool calculateInputErrorGradients)
@@ -537,7 +537,7 @@ void tAnnLayer::takeOutputErrorGradients(
 }
 
 
-const fml* tAnnLayer::getInputErrorGradients(u32& numInputDims, u32& count) const
+const fml* tAnnLayerCPU::getInputErrorGradients(u32& numInputDims, u32& count) const
 {
     numInputDims = m_numInputDims;
     count = m_curCount;
@@ -545,7 +545,7 @@ const fml* tAnnLayer::getInputErrorGradients(u32& numInputDims, u32& count) cons
 }
 
 
-fml tAnnLayer::calculateError(const tIO& output, const tIO& target)
+fml tAnnLayerCPU::calculateError(const tIO& output, const tIO& target)
 {
     if (m_type == kLayerTypeSoftmax)
         return crossEntropyCost(output, target);
@@ -554,8 +554,8 @@ fml tAnnLayer::calculateError(const tIO& output, const tIO& target)
 }
 
 
-fml tAnnLayer::calculateError(const std::vector<tIO>& outputs,
-                              const std::vector<tIO>& targets)
+fml tAnnLayerCPU::calculateError(const std::vector<tIO>& outputs,
+                                 const std::vector<tIO>& targets)
 {
     if (m_type == kLayerTypeSoftmax)
         return crossEntropyCost(outputs, targets);
@@ -564,7 +564,7 @@ fml tAnnLayer::calculateError(const std::vector<tIO>& outputs,
 }
 
 
-void tAnnLayer::reset()
+void tAnnLayerCPU::reset()
 {
     if (!m_w_orig || !m_b_orig)
         throw eRuntimeError("Cannot reset this ann layer because there is no original data. This is probably because you unpacked this layer from a stream.");
@@ -579,7 +579,7 @@ void tAnnLayer::reset()
 }
 
 
-void tAnnLayer::printLayerInfo(std::ostream& out) const
+void tAnnLayerCPU::printLayerInfo(std::ostream& out) const
 {
     int w = 25;
 
@@ -601,7 +601,7 @@ void tAnnLayer::printLayerInfo(std::ostream& out) const
 }
 
 
-std::string tAnnLayer::layerInfoString() const
+std::string tAnnLayerCPU::layerInfoString() const
 {
     std::ostringstream o;
 
@@ -623,7 +623,7 @@ std::string tAnnLayer::layerInfoString() const
 static
 iLayer* s_newLayerFunc(iReadable* in)
 {
-    return new tAnnLayer(in);
+    return new tAnnLayerCPU(in);
 }
 
 
@@ -631,7 +631,7 @@ static u32 layerId = 27424;
 static bool didRegister = iLayer::registerLayerFuncWithHeaderId(s_newLayerFunc, layerId);
 
 
-u32 tAnnLayer::headerId() const
+u32 tAnnLayerCPU::headerId() const
 {
     if (!didRegister)
         throw eRuntimeError("Registering my layer id didn't work!");
@@ -655,7 +655,7 @@ void s_assert_readAll(iReadable* in, fml* buf, u32 size)
 }
 
 
-void tAnnLayer::pack(iWritable* out) const
+void tAnnLayerCPU::pack(iWritable* out) const
 {
     rho::pack(out, (i32)m_type);
     rho::pack(out, (i32)m_rule);
@@ -671,7 +671,7 @@ void tAnnLayer::pack(iWritable* out) const
 }
 
 
-void tAnnLayer::unpack(iReadable* in)
+void tAnnLayerCPU::unpack(iReadable* in)
 {
     i32 type, rule;
     rho::unpack(in, type);

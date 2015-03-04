@@ -1,5 +1,5 @@
-#ifndef __ml2_tAnnLayer_h__
-#define __ml2_tAnnLayer_h__
+#ifndef __ml2_tAnnLayerCPU_h__
+#define __ml2_tAnnLayerCPU_h__
 
 
 #include <ml2/iLayer.h>
@@ -12,7 +12,7 @@ namespace ml2
 {
 
 
-class tAnnLayer : public iLayer, public bNonCopyable
+class tAnnLayerCPU : public iLayer, public bNonCopyable
 {
     public:
 
@@ -74,19 +74,19 @@ class tAnnLayer : public iLayer, public bNonCopyable
          *         -- requires setAlpha()
          *         -- very similar to RMSPROP, but has an adaptive alpha
          */
-        tAnnLayer(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
-                  u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                  fml randWeightMin = -1.0, fml randWeightMax = 1.0);
+        tAnnLayerCPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+                     u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
+                     fml randWeightMin = -1.0, fml randWeightMax = 1.0);
 
         /**
-         * Constructs a tAnnLayer from a stream.
+         * Constructs a tAnnLayerCPU from a stream.
          */
-        tAnnLayer(iReadable* in);
+        tAnnLayerCPU(iReadable* in);
 
         /**
          * D'tor.
          */
-        ~tAnnLayer();
+        ~tAnnLayerCPU();
 
         /**
          * Sets the alpha parameter for this layer. The alpha parameter is
@@ -186,4 +186,4 @@ class tAnnLayer : public iLayer, public bNonCopyable
 }   // namespace ml2
 
 
-#endif   // __ml2_tAnnLayer_h__
+#endif   // __ml2_tAnnLayerCPU_h__
