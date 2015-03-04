@@ -378,16 +378,4 @@ u32 tAnnLayerCPU::headerId() const
 }
 
 
-void tAnnLayerCPU::pack(iWritable* out) const
-{
-    tAnnLayerBase::pack(out);
-}
-
-
-void tAnnLayerCPU::unpack(iReadable* in)
-{
-    tAnnLayerBase::unpack(in);
-}
-
-
 }   // namespace ml2

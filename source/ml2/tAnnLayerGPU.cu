@@ -125,16 +125,4 @@ u32 tAnnLayerGPU::headerId() const
 }
 
 
-void tAnnLayerGPU::pack(iWritable* out) const
-{
-    tAnnLayerBase::pack(out);
-}
-
-
-void tAnnLayerGPU::unpack(iReadable* in)
-{
-    tAnnLayerBase::unpack(in);
-}
-
-
 }   // namespace ml2

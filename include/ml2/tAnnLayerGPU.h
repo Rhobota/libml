@@ -49,14 +49,6 @@ class tAnnLayerGPU : public tAnnLayerBase
         u32 headerId() const;
 
 
-        ///////////////////////////////////////////////////////////////////////
-        // The iPackable interface:
-        ///////////////////////////////////////////////////////////////////////
-
-        void pack(iWritable* out) const;
-        void unpack(iReadable* in);
-
-
     private:
 
 };
