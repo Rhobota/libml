@@ -247,6 +247,16 @@ std::string tLayeredLearner::learnerInfoString() const
     return str;
 }
 
+void tLayeredLearner::pack(iWritable* out) const
+{
+    // TODO
+}
+
+void tLayeredLearner::unpack(iReadable* in)
+{
+    // TODO
+}
+
 void tLayeredLearner::m_growInputMatrix(u32 newSize)
 {
     while (newSize >= m_inputMatrixSize)

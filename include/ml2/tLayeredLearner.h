@@ -20,6 +20,7 @@ class tLayeredLearner : public iLearner, public bNonCopyable
 
         void addLayer(iLayer* layer);
 
+
         ///////////////////////////////////////////////////////////////////////
         // iLearner interface:
         ///////////////////////////////////////////////////////////////////////
@@ -47,6 +48,15 @@ class tLayeredLearner : public iLearner, public bNonCopyable
         void printLearnerInfo(std::ostream& out) const;
 
         std::string learnerInfoString() const;
+
+
+        ///////////////////////////////////////////////////////////////////////
+        // The iPackable interface:
+        ///////////////////////////////////////////////////////////////////////
+
+        void pack(iWritable* out) const;
+        void unpack(iReadable* in);
+
 
     private:
 

@@ -14,7 +14,7 @@ namespace ml2
 /**
  * This learner learns with vector data input and vector data output.
  */
-class iLearner
+class iLearner : public iPackable
 {
     public:
 
