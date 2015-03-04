@@ -1,6 +1,7 @@
 #include <ml2/tLayeredLearner.h>
 
 #include <cassert>
+#include <iomanip>
 
 #include "Eigen.h"
 
@@ -247,22 +248,40 @@ void tLayeredLearner::printLearnerInfo(std::ostream& out) const
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot print learner info when there are no layers!");
+
+    int w = 25;
+
+    out << std::setw(w) << " ";
+    out << std::setw(w) << "Process Type:";
+    out << std::setw(w) << "Train Rule:";
+    out << std::setw(w) << "Train Parameters:";
+    out << std::setw(w) << "# Output Dimensions:";
+    out << std::endl;
+
+    out << std::setw(w) << "Input Layer:";
+    out << std::setw(w) << " ";
+    out << std::setw(w) << " ";
+    out << std::setw(w) << " ";
+    out << std::setw(w) << m_numInputDims;
+    out << std::endl;
+
     for (size_t i = 0; i < m_layers.size(); i++)
         m_layers[i]->printLayerInfo(out);
+    out << std::endl;
 }
 
 std::string tLayeredLearner::learnerInfoString() const
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot get learner info string when there are no layers!");
-    std::string str;
+    std::ostringstream out;
+    out << m_numInputDims;
     for (size_t i = 0; i < m_layers.size(); i++)
     {
-        if (i > 0)
-            str += "__";
-        str += m_layers[i]->layerInfoString();
+        out << "__";
+        out << m_layers[i]->layerInfoString();
     }
-    return str;
+    return out.str();
 }
 
 static

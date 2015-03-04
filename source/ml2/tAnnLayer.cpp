@@ -1,10 +1,96 @@
 #include <ml2/tAnnLayer.h>
 
+#include <iomanip>
+
 #include "Eigen.h"
 
 
 namespace ml2
 {
+
+
+static
+std::string s_layerTypeToString(tAnnLayer::nAnnLayerType type)
+{
+    switch (type)
+    {
+        case tAnnLayer::kLayerTypeLogistic:
+            return "logistic";
+        case tAnnLayer::kLayerTypeHyperbolic:
+            return "hyperbolic";
+        case tAnnLayer::kLayerTypeSoftmax:
+            return "softmax";
+        default:
+            assert(false);
+    }
+}
+
+
+static
+char s_layerTypeToChar(tAnnLayer::nAnnLayerType type)
+{
+    switch (type)
+    {
+        case tAnnLayer::kLayerTypeLogistic:
+            return 'l';
+        case tAnnLayer::kLayerTypeHyperbolic:
+            return 'h';
+        case tAnnLayer::kLayerTypeSoftmax:
+            return 's';
+        default:
+            assert(false);
+    }
+}
+
+
+static
+std::string s_weightUpRuleToString(tAnnLayer::nAnnLayerWeightUpdateRule rule)
+{
+    switch (rule)
+    {
+        case tAnnLayer::kWeightUpRuleNone:
+            return "none";
+        case tAnnLayer::kWeightUpRuleFixedLearningRate:
+            return "fixed rate";
+        case tAnnLayer::kWeightUpRuleMomentum:
+            return "momentum";
+        case tAnnLayer::kWeightUpRuleAdaptiveRates:
+            return "adaptive rates";
+        case tAnnLayer::kWeightUpRuleRPROP:
+            return "rprop";
+        case tAnnLayer::kWeightUpRuleRMSPROP:
+            return "rmsprop";
+        case tAnnLayer::kWeightUpRuleARMS:
+            return "arms";
+        default:
+            assert(false);
+    }
+}
+
+
+static
+char s_weightUpRuleToChar(tAnnLayer::nAnnLayerWeightUpdateRule rule)
+{
+    switch (rule)
+    {
+        case tAnnLayer::kWeightUpRuleNone:
+            return 'n';
+        case tAnnLayer::kWeightUpRuleFixedLearningRate:
+            return 'f';
+        case tAnnLayer::kWeightUpRuleMomentum:
+            return 'm';
+        case tAnnLayer::kWeightUpRuleAdaptiveRates:
+            return 'a';
+        case tAnnLayer::kWeightUpRuleRPROP:
+            return 'r';
+        case tAnnLayer::kWeightUpRuleRMSPROP:
+            return 'R';
+        case tAnnLayer::kWeightUpRuleARMS:
+            return 'A';
+        default:
+            assert(false);
+    }
+}
 
 
 class tExpFunc
@@ -478,14 +564,42 @@ void tAnnLayer::reset()
 
 void tAnnLayer::printLayerInfo(std::ostream& out) const
 {
-    // TODO
+    int w = 25;
+
+    out << std::setw(w) << "ANN Layer:";
+    out << std::setw(w) << s_layerTypeToString(m_type);
+    out << std::setw(w) << s_weightUpRuleToString(m_rule);
+
+    {
+        std::ostringstream o;
+        o << "a=" << m_alpha;
+        if (m_rule == kWeightUpRuleMomentum)
+            o << " v=" << m_viscosity;
+        out << std::setw(w) << o.str();
+    }
+
+    out << std::setw(w) << m_numNeurons;
+
+    out << std::endl;
 }
 
 
 std::string tAnnLayer::layerInfoString() const
 {
-    // TODO
-    return "";
+    std::ostringstream o;
+
+    o << m_numNeurons;
+    o << s_layerTypeToChar(m_type);
+    o << '-';
+
+    o << s_weightUpRuleToChar(m_rule);
+    o << '-';
+
+    o << "a" << m_alpha;
+    if (m_rule == kWeightUpRuleMomentum)
+        o << "v" << m_viscosity;
+
+    return o.str();
 }
 
 
