@@ -1,7 +1,3 @@
-#if __linux__
-#pragma GCC optimize 3
-#endif
-
 #include <ml/tANN.h>
 
 #include <rho/algo/tLCG.h>

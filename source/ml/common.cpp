@@ -1,7 +1,3 @@
-#if __linux__
-#pragma GCC optimize 3
-#endif
-
 #include <ml/common.h>
 #include <ml/tANN.h>
 #include <ml/tCNN.h>

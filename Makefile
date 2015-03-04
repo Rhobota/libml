@@ -9,7 +9,7 @@ STATIC_LIB_NAME := libml.a
 CC := $(TARGET)g++
 AR := $(TARGET)ar
 CC_FLAGS_LOCAL := $(CC_FLAGS) \
-	-g -O2 -fvisibility=hidden -Wall -Wextra -Werror -pedantic \
+	-g -O3 -fvisibility=hidden -Wall -Wextra -Werror -pedantic \
 	-Wswitch-default -Wcast-qual -Wcast-align -Wconversion \
 	-Wno-unused-parameter -Wno-long-long -Wno-sign-conversion \
 	-fopenmp \

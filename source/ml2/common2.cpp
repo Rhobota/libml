@@ -1,7 +1,3 @@
-#if __linux__
-#pragma GCC optimize 3
-#endif
-
 #include <ml2/common.h>
 #include <ml2/iLearner.h>
 
