@@ -10,8 +10,15 @@ static std::map<u32, iLearner::newLearnerFunc> gNewLearnerFuncs;
 
 bool iLearner::registerLearnerFuncWithHeaderId(newLearnerFunc func, u32 headerId)
 {
-    gNewLearnerFuncs[headerId] = func;
-    return true;
+    if (gNewLearnerFuncs.find(headerId) == gNewLearnerFuncs.end())
+    {
+        gNewLearnerFuncs[headerId] = func;
+        return true;
+    }
+    else
+    {
+        throw eRuntimeError("Two learners have registered with the same header id!");
+    }
 }
 
 

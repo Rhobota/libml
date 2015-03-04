@@ -10,8 +10,15 @@ static std::map<u32, iLayer::newLayerFunc> gNewLayerFuncs;
 
 bool iLayer::registerLayerFuncWithHeaderId(newLayerFunc func, u32 headerId)
 {
-    gNewLayerFuncs[headerId] = func;
-    return true;
+    if (gNewLayerFuncs.find(headerId) == gNewLayerFuncs.end())
+    {
+        gNewLayerFuncs[headerId] = func;
+        return true;
+    }
+    else
+    {
+        throw eRuntimeError("Two layers have registered with the same header id!");
+    }
 }
 
 
