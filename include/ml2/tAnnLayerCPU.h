@@ -46,6 +46,8 @@ class tAnnLayerCPU : public tAnnLayerBase
 
         const fml* getInputErrorGradients(u32& numInputDims, u32& count) const;
 
+        u32 headerId() const;
+
 
         ///////////////////////////////////////////////////////////////////////
         // The iPackable interface:

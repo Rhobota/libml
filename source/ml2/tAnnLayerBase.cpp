@@ -341,26 +341,6 @@ std::string tAnnLayerBase::layerInfoString() const
 
 
 static
-iLayer* s_newLayerFunc(iReadable* in)
-{
-    // TODO
-    return NULL;
-}
-
-
-static u32 layerId = 27424;
-static bool didRegister = iLayer::registerLayerFuncWithHeaderId(s_newLayerFunc, layerId);
-
-
-u32 tAnnLayerBase::headerId() const
-{
-    if (!didRegister)
-        throw eRuntimeError("Registering my layer id didn't work!");
-    return layerId;
-}
-
-
-static
 void s_assert_writeAll(iWritable* out, const fml* buf, u32 size)
 {
     for (u32 i = 0; i < size; i++)

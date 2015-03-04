@@ -359,6 +359,25 @@ const fml* tAnnLayerCPU::getInputErrorGradients(u32& numInputDims, u32& count) c
 }
 
 
+static
+iLayer* s_newLayerFunc(iReadable* in)
+{
+    return new tAnnLayerCPU(in);
+}
+
+
+static u32 layerId = 27424;
+static bool didRegister = iLayer::registerLayerFuncWithHeaderId(s_newLayerFunc, layerId);
+
+
+u32 tAnnLayerCPU::headerId() const
+{
+    if (!didRegister)
+        throw eRuntimeError("Registering my layer id didn't work!");
+    return layerId;
+}
+
+
 void tAnnLayerCPU::pack(iWritable* out) const
 {
     tAnnLayerBase::pack(out);
