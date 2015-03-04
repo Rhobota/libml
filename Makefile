@@ -29,10 +29,20 @@ else
 endif
 endif
 
+CC_CUDA := /usr/local/cuda/bin/nvcc
+CC_CUDA_FLAGS_LOCAL := $(CC_FLAGS) \
+	-g -O3 \
+	-D_FILE_OFFSET_BITS=64 \
+	-I ../librho/include \
+	-I $(INCLUDE_DIR)
+
 CPP_SRC_FILES = $(shell find $(SRC_DIR) -name '*.cpp' -type f)
 CPP_OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPP_SRC_FILES))
 
-all : $(CPP_OBJ_FILES)
+CU_SRC_FILES = $(shell find $(SRC_DIR) -name '*.cu' -type f)
+CU_OBJ_FILES = $(patsubst $(SRC_DIR)/%.cu,$(OBJ_DIR)/%.o,$(CU_SRC_FILES))
+
+all : $(CPP_OBJ_FILES) $(CU_OBJ_FILES)
 
 test : all
 	@$(TESTS_DIR)/RunTests.bash
@@ -45,6 +55,13 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	@echo "Compiling $< ..."
 	@mkdir -p $(@D)
 	$(CC) $(CC_FLAGS_LOCAL) -c -o $@ $<
+	$(AR) crsv $(OBJ_DIR)/$(STATIC_LIB_NAME) $@
+	@echo
+
+$(OBJ_DIR)/%.o : $(SRC_DIR)/%.cu
+	@echo "Compiling $< ..."
+	@mkdir -p $(@D)
+	$(CC_CUDA) $(CC_CUDA_FLAGS_LOCAL) -c -o $@ $<
 	$(AR) crsv $(OBJ_DIR)/$(STATIC_LIB_NAME) $@
 	@echo
 
