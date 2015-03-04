@@ -178,7 +178,7 @@ void tAnnLayer::takeInput(const fml* input, u32 numInputDims, u32 count)
     Map A(m_A, m_numNeurons, count);
     Map a(m_a, m_numNeurons, count);
 
-    A = (w * inputMap) / ((fml) numInputDims);
+    A.noalias() = (FML(1.0) / ((fml) numInputDims)) * (w * inputMap);
     for (u32 c = 0; c < count; c++)
         A.col(c) += b;
 
