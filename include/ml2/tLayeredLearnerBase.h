@@ -1,5 +1,5 @@
-#ifndef __ml2_tLayeredLearner_h__
-#define __ml2_tLayeredLearner_h__
+#ifndef __ml2_tLayeredLearnerBase_h__
+#define __ml2_tLayeredLearnerBase_h__
 
 
 #include <ml2/iLearner.h>
@@ -10,15 +10,15 @@ namespace ml2
 {
 
 
-class tLayeredLearner : public iLearner, public bNonCopyable
+class tLayeredLearnerBase : public iLearner, public bNonCopyable
 {
     public:
 
-        tLayeredLearner(u32 numInputDims, u32 numOutputDims);
+        tLayeredLearnerBase(u32 numInputDims, u32 numOutputDims);
 
-        tLayeredLearner(iReadable* in);
+        tLayeredLearnerBase(iReadable* in);
 
-        ~tLayeredLearner();
+        ~tLayeredLearnerBase();
 
         void addLayer(iLayer* layer);  // <-- takes ownership of the layer
 
@@ -90,4 +90,4 @@ class tLayeredLearner : public iLearner, public bNonCopyable
 }   // namespace ml2
 
 
-#endif   // __ml2_tLayeredLearner_h__
+#endif   // __ml2_tLayeredLearnerBase_h__

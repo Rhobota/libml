@@ -1,4 +1,4 @@
-#include <ml2/tLayeredLearner.h>
+#include <ml2/tLayeredLearnerBase.h>
 
 #include <cassert>
 #include <iomanip>
@@ -10,7 +10,7 @@ namespace ml2
 {
 
 
-tLayeredLearner::tLayeredLearner(u32 numInputDims, u32 numOutputDims)
+tLayeredLearnerBase::tLayeredLearnerBase(u32 numInputDims, u32 numOutputDims)
     : m_layers(),
       m_numInputDims(numInputDims),
       m_numOutputDims(numOutputDims),
@@ -33,7 +33,7 @@ tLayeredLearner::tLayeredLearner(u32 numInputDims, u32 numOutputDims)
     m_targetMatrix = new fml[m_targetMatrixSize];
 }
 
-tLayeredLearner::tLayeredLearner(iReadable* in)
+tLayeredLearnerBase::tLayeredLearnerBase(iReadable* in)
     : m_layers(),
       m_numInputDims(0),
       m_numOutputDims(0),
@@ -47,7 +47,7 @@ tLayeredLearner::tLayeredLearner(iReadable* in)
     this->unpack(in);
 }
 
-tLayeredLearner::~tLayeredLearner()
+tLayeredLearnerBase::~tLayeredLearnerBase()
 {
     delete [] m_inputMatrix;
     m_inputMatrix = NULL;
@@ -60,18 +60,18 @@ tLayeredLearner::~tLayeredLearner()
     m_layers.clear();
 }
 
-void tLayeredLearner::addLayer(iLayer* layer)
+void tLayeredLearnerBase::addLayer(iLayer* layer)
 {
     m_layers.push_back(layer);
 }
 
-void tLayeredLearner::addExample(const tIO& input, const tIO& target)
+void tLayeredLearnerBase::addExample(const tIO& input, const tIO& target)
 {
     m_copyToInputMatrix(input);
     m_copyToTargetMatrix(target);
 }
 
-void tLayeredLearner::update()
+void tLayeredLearnerBase::update()
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot update when there are no layers!");
@@ -131,7 +131,7 @@ void tLayeredLearner::update()
     m_targetMatrixUsed = 0;
 }
 
-void tLayeredLearner::evaluate(const tIO& input, tIO& output)
+void tLayeredLearnerBase::evaluate(const tIO& input, tIO& output)
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot evaluate when there are no layers!");
@@ -166,15 +166,15 @@ void tLayeredLearner::evaluate(const tIO& input, tIO& output)
         output[i] = prevOutput[i];
 }
 
-void tLayeredLearner::evaluateBatch(const std::vector<tIO>& inputs,
-                                          std::vector<tIO>& outputs)
+void tLayeredLearnerBase::evaluateBatch(const std::vector<tIO>& inputs,
+                                              std::vector<tIO>& outputs)
 {
     evaluateBatch(inputs.begin(), inputs.end(), outputs.begin());
 }
 
-void tLayeredLearner::evaluateBatch(std::vector<tIO>::const_iterator inputStart,
-                                    std::vector<tIO>::const_iterator inputEnd,
-                                    std::vector<tIO>::iterator outputStart)
+void tLayeredLearnerBase::evaluateBatch(std::vector<tIO>::const_iterator inputStart,
+                                        std::vector<tIO>::const_iterator inputEnd,
+                                        std::vector<tIO>::iterator outputStart)
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot evaluate when there are no layers!");
@@ -221,22 +221,22 @@ void tLayeredLearner::evaluateBatch(std::vector<tIO>::const_iterator inputStart,
     }
 }
 
-fml tLayeredLearner::calculateError(const tIO& output, const tIO& target)
+fml tLayeredLearnerBase::calculateError(const tIO& output, const tIO& target)
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot calculate error when there are no layers!");
     return m_layers.back()->calculateError(output, target);
 }
 
-fml tLayeredLearner::calculateError(const std::vector<tIO>& outputs,
-                                    const std::vector<tIO>& targets)
+fml tLayeredLearnerBase::calculateError(const std::vector<tIO>& outputs,
+                                        const std::vector<tIO>& targets)
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot calculate error when there are no layers!");
     return m_layers.back()->calculateError(outputs, targets);
 }
 
-void tLayeredLearner::reset()
+void tLayeredLearnerBase::reset()
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot reset when there are no layers!");
@@ -244,7 +244,7 @@ void tLayeredLearner::reset()
         m_layers[i]->reset();
 }
 
-void tLayeredLearner::printLearnerInfo(std::ostream& out) const
+void tLayeredLearnerBase::printLearnerInfo(std::ostream& out) const
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot print learner info when there are no layers!");
@@ -270,7 +270,7 @@ void tLayeredLearner::printLearnerInfo(std::ostream& out) const
     out << std::endl;
 }
 
-std::string tLayeredLearner::learnerInfoString() const
+std::string tLayeredLearnerBase::learnerInfoString() const
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot get learner info string when there are no layers!");
@@ -287,20 +287,20 @@ std::string tLayeredLearner::learnerInfoString() const
 static
 iLearner* s_newLearnerFunc(iReadable* in)
 {
-    return new tLayeredLearner(in);
+    return new tLayeredLearnerBase(in);
 }
 
 static u32 learnerId = 2742490;
 static bool didRegister = iLearner::registerLearnerFuncWithHeaderId(s_newLearnerFunc, learnerId);
 
-u32 tLayeredLearner::headerId() const
+u32 tLayeredLearnerBase::headerId() const
 {
     if (!didRegister)
         throw eRuntimeError("Registering my learner id didn't work!");
     return learnerId;
 }
 
-void tLayeredLearner::pack(iWritable* out) const
+void tLayeredLearnerBase::pack(iWritable* out) const
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot pack when there are no layers!");
@@ -313,7 +313,7 @@ void tLayeredLearner::pack(iWritable* out) const
     rho::pack(out, m_numOutputDims);
 }
 
-void tLayeredLearner::unpack(iReadable* in)
+void tLayeredLearnerBase::unpack(iReadable* in)
 {
     u32 numLayers; rho::unpack(in, numLayers);
     if (numLayers == 0)
@@ -343,7 +343,7 @@ void tLayeredLearner::unpack(iReadable* in)
     m_targetMatrixUsed = 0;
 }
 
-void tLayeredLearner::m_growInputMatrix(u32 newSize)
+void tLayeredLearnerBase::m_growInputMatrix(u32 newSize)
 {
     while (newSize >= m_inputMatrixSize)
     {
@@ -356,7 +356,7 @@ void tLayeredLearner::m_growInputMatrix(u32 newSize)
     }
 }
 
-void tLayeredLearner::m_growTargetMatrix(u32 newSize)
+void tLayeredLearnerBase::m_growTargetMatrix(u32 newSize)
 {
     while (newSize >= m_targetMatrixSize)
     {
@@ -369,7 +369,7 @@ void tLayeredLearner::m_growTargetMatrix(u32 newSize)
     }
 }
 
-void tLayeredLearner::m_copyToInputMatrix(const tIO& input)
+void tLayeredLearnerBase::m_copyToInputMatrix(const tIO& input)
 {
     if ((u32)input.size() != m_numInputDims)
         throw eInvalidArgument("Unexpected input dimensionality.");
@@ -381,7 +381,7 @@ void tLayeredLearner::m_copyToInputMatrix(const tIO& input)
     m_inputMatrixUsed = newUsed;
 }
 
-void tLayeredLearner::m_copyToTargetMatrix(const tIO& target)
+void tLayeredLearnerBase::m_copyToTargetMatrix(const tIO& target)
 {
     if ((u32)target.size() != m_numOutputDims)
         throw eInvalidArgument("Unexpected target dimensionality.");
