@@ -178,7 +178,7 @@ void tAnnLayer::takeInput(const fml* input, u32 numInputDims, u32 count)
     Map A(m_A, m_numNeurons, count);
     Map a(m_a, m_numNeurons, count);
 
-    A.noalias() = (FML(1.0) / ((fml) numInputDims)) * (w * inputMap);
+    A.noalias() = (FML(1.0) / ((fml) numInputDims)) * w * inputMap;
     for (u32 c = 0; c < count; c++)
         A.col(c) += b;
 
@@ -267,9 +267,9 @@ void tAnnLayer::takeOutputErrorGradients(
     Map A(m_A, numOutputDims, outputCount);
     Map prev_da(m_prev_da, numInputDims, inputCount);
     MapConst inputMap(input, numInputDims, inputCount);
-    Map w(m_w, outputCount, numInputDims);
-    Map dw_accum(m_dw_accum, outputCount, numInputDims);
-    Map db_accum(m_db_accum, outputCount, 1);
+    Map w(m_w, numOutputDims, numInputDims);
+    Map dw_accum(m_dw_accum, numOutputDims, numInputDims);
+    Map db_accum(m_db_accum, numOutputDims, 1);
 
     switch (m_type)
     {
@@ -301,9 +301,9 @@ void tAnnLayer::takeOutputErrorGradients(
     }
 
     if (calculateInputErrorGradients)
-        prev_da = (w.transpose() * dA) / ((fml) numInputDims);
+        prev_da.noalias() = (FML(1.0) / ((fml) numInputDims)) * w.transpose() * dA;
 
-    dw_accum = (dA * inputMap.transpose()) / ((fml) numInputDims);
+    dw_accum.noalias() = (FML(1.0) / ((fml) numInputDims)) * dA * inputMap.transpose();
     db_accum = dA.rowwise().sum();
 
     fml batchSize = (fml) outputCount;

@@ -13,8 +13,8 @@
  * run your code and hope that no exceptions are thrown or asserts are
  * hit.)
  */
-//#define EIGEN_NO_MALLOC 1
-//#define EIGEN_DONT_PARALLELIZE 1
+#define EIGEN_NO_MALLOC 1
+#define EIGEN_DONT_PARALLELIZE 1
 
 
 /*
