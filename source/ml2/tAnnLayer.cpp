@@ -47,13 +47,13 @@ class tDirHyperbolicFunc
 };
 
 
-class t_RMSPROP_wUpdate
+class t_RMSPROP_update
 {
     public:
 
-        fml operator()(fml dw_accum, fml dw_accum_avg) const
+        fml operator()(fml accum, fml accum_avg) const
         {
-            return (dw_accum_avg > FML(0.0)) ? (dw_accum / std::sqrt(dw_accum_avg)) : FML(0.0);
+            return (accum_avg > FML(0.0)) ? (accum / std::sqrt(accum_avg)) : FML(0.0);
         }
 };
 
@@ -403,18 +403,28 @@ void tAnnLayer::takeOutputErrorGradients(
                 throw eLogicError("When using the rmsprop rule, alpha must be set.");
             if (!m_dw_accum_avg)
             {
-                u32 numWeights = m_numInputDims * m_numNeurons;
+                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
                 m_dw_accum_avg = new fml[numWeights];
                 for (u32 i = 0; i < numWeights; i++)
                     m_dw_accum_avg[i] = FML(1000.0);
             }
-            Map dw_accum_avg(m_dw_accum_avg, m_numNeurons, m_numInputDims);
             fml batchNormMult = FML(1.0) / batchSize;
-            dw_accum *= batchNormMult;
-            dw_accum_avg *= FML(0.9);
-            dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
-            w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_wUpdate());
-            // TODO update b
+            {
+                // Update w:
+                Map dw_accum_avg(m_dw_accum_avg, m_numNeurons, m_numInputDims);
+                dw_accum *= batchNormMult;
+                dw_accum_avg *= FML(0.9);
+                dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
+                w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
+            }
+            {
+                // Update b:
+                Map db_accum_avg(m_dw_accum_avg+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+                db_accum *= batchNormMult;
+                db_accum_avg *= FML(0.9);
+                db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
+                b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
+            }
             break;
         }
 
