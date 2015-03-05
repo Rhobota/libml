@@ -38,6 +38,11 @@ class tLayeredLearnerCPU : public tLayeredLearnerBase
         u32 headerId() const;
 
 
+    protected:
+
+        void m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count);
+
+
     private:
 
 };

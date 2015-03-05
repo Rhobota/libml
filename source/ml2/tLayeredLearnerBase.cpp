@@ -261,13 +261,6 @@ void tLayeredLearnerBase::m_pushInputForward(const fml* input, u32 numInputDims,
     output = prevOutput;
 }
 
-void tLayeredLearnerBase::m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count)
-{
-    MapConst a(output, dims, count);
-    Map y(target, dims, count);
-    y = a - y;
-}
-
 void tLayeredLearnerBase::m_backpropagate(const fml* output_da, u32 numOutputDims, u32 outputCount,
                                           const fml* input, u32 numInputDims, u32 inputCount)
 {

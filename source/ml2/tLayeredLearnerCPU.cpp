@@ -90,5 +90,12 @@ u32 tLayeredLearnerCPU::headerId() const
     return learnerId;
 }
 
+void tLayeredLearnerCPU::m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count)
+{
+    MapConst a(output, dims, count);
+    Map y(target, dims, count);
+    y = a - y;
+}
+
 
 }   // namespace ml2

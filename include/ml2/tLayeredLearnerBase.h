@@ -62,7 +62,8 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
         void m_pushInputForward(const fml* input, u32 numInputDims, u32 inputCount,
                                 const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount);
 
-        void m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count);
+        virtual
+        void m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count) = 0;
 
         void m_backpropagate(const fml* output_da, u32 numOutputDims, u32 outputCount,
                              const fml* input, u32 numInputDims, u32 inputCount);
