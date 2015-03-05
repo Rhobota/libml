@@ -80,6 +80,8 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
         void m_backpropagate(const fml* output_da, u32 numOutputDims, u32 outputCount,
                              const fml* input, u32 numInputDims, u32 inputCount);
 
+        void m_putOutput(tIO& output, const fml* outputPtr, u32 expectedOutputDims, u32& expectedOutputCount);
+
 
     protected:
 
