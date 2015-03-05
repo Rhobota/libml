@@ -109,24 +109,12 @@ void tLayeredLearnerBase::evaluateBatch(std::vector<tIO>::const_iterator inputSt
     for (sitr = inputStart; sitr != inputEnd; sitr++)
         m_copyToInputMatrix(*sitr);
 
-    if (m_inputMatrixUsed == 0)
-        throw eRuntimeError("Cannot update when there have been no example inputs.");
-    if ((m_inputMatrixUsed % m_numInputDims) != 0)
-        throw eRuntimeError("Wack m_inputMatrixUsed");
-
-    fml* inputPtr = m_inputMatrix;
-    u32 numInputDims = m_numInputDims;
-    u32 inputCount = m_inputMatrixUsed / m_numInputDims;
-    if (inputCount != (inputEnd-inputStart))
-        throw eRuntimeError("Unexpected inputCount");
-
     const fml* outputPtr = NULL;
     u32 expectedOutputDims = m_numOutputDims;
-    u32 expectedOutputCount = inputCount;
+    u32 expectedOutputCount = (u32) (inputEnd - inputStart);
 
-    m_pushInputForward(inputPtr, numInputDims, inputCount,
-                       outputPtr, expectedOutputDims, expectedOutputCount);
-
+    m_evaluate(m_inputMatrix, m_inputMatrixUsed, m_numInputDims,
+               outputPtr, expectedOutputDims, expectedOutputCount);
     m_putOutput(outputStart, outputPtr, expectedOutputDims, expectedOutputCount);
 
     m_clearMatrices();
