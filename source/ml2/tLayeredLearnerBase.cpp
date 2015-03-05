@@ -83,24 +83,12 @@ void tLayeredLearnerBase::evaluate(const tIO& input, tIO& output)
     m_clearMatrices();
     m_copyToInputMatrix(input);
 
-    if (m_inputMatrixUsed == 0)
-        throw eRuntimeError("Cannot update when there have been no example inputs.");
-    if ((m_inputMatrixUsed % m_numInputDims) != 0)
-        throw eRuntimeError("Wack m_inputMatrixUsed");
-
-    fml* inputPtr = m_inputMatrix;
-    u32 numInputDims = m_numInputDims;
-    u32 inputCount = m_inputMatrixUsed / m_numInputDims;
-    if (inputCount != 1)
-        throw eRuntimeError("Unexpected inputCount");
-
     const fml* outputPtr = NULL;
     u32 expectedOutputDims = m_numOutputDims;
-    u32 expectedOutputCount = inputCount;
+    u32 expectedOutputCount = 1;
 
-    m_pushInputForward(inputPtr, numInputDims, inputCount,
-                       outputPtr, expectedOutputDims, expectedOutputCount);
-
+    m_evaluate(m_inputMatrix, m_inputMatrixUsed, m_numInputDims,
+               outputPtr, expectedOutputDims, expectedOutputCount);
     m_putOutput(output, outputPtr, expectedOutputDims, expectedOutputCount);
 
     m_clearMatrices();
@@ -428,6 +416,22 @@ void tLayeredLearnerBase::m_update(fml* inputMatrix, u32 inputMatrixUsed, u32 in
 
     m_backpropagate(output_da, expectedOutputDims, expectedOutputCount,
                     input, numInputDims, inputCount);
+}
+
+void tLayeredLearnerBase::m_evaluate(fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
+                                     const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount)
+{
+    if (inputMatrixUsed == 0)
+        throw eRuntimeError("Cannot update when there have been no example inputs.");
+    if ((inputMatrixUsed % inputMatrixNumDims) != 0)
+        throw eRuntimeError("Wack inputMatrixUsed");
+
+    fml* inputPtr = inputMatrix;
+    u32 numInputDims = inputMatrixNumDims;
+    u32 inputCount = inputMatrixUsed / inputMatrixNumDims;
+
+    m_pushInputForward(inputPtr, numInputDims, inputCount,
+                       output, expectedOutputDims, expectedOutputCount);
 }
 
 

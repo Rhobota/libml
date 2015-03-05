@@ -87,6 +87,9 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
         void m_update(fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
                       fml* targetMatrix, u32 targetMatrixUsed, u32 targetMatrixNumDims);
 
+        void m_evaluate(fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
+                        const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount);
+
 
     private:
 
