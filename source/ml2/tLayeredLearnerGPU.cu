@@ -1,7 +1,8 @@
 #include <ml2/tLayeredLearnerGPU.h>
 
 #include <cuda.h>
-#include <cublas_v2.h>
+#include <thrust/transform.h>
+#include <thrust/device_ptr.h>
 
 #include <cassert>
 #include <iostream>
@@ -13,16 +14,6 @@
         if ((err = (expression)) != cudaSuccess) \
         { \
             std::cout << "Cuda error: " << cudaGetErrorString(err) << std::endl; \
-            assert(false); \
-        } \
-    } while (false)
-
-
-#define cublas_assert(expression) \
-    do { \
-        if ((expression) != CUBLAS_STATUS_SUCCESS) \
-        { \
-            std::cout << "cuBLAS error!" << std::endl; \
             assert(false); \
         } \
     } while (false)
@@ -156,12 +147,24 @@ u32 tLayeredLearnerGPU::headerId() const
     return learnerId;
 }
 
+class tCalculateOutput_da
+{
+    public:
+
+        __device__
+        fml operator()(const fml& ai, const fml& yi)
+        {
+            return ai - yi;
+        }
+};
+
 void tLayeredLearnerGPU::m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count)
 {
-    // TODO
-//    MapConst a(output, dims, count);
-//    Map y(target, dims, count);
-//    y = a - y;
+    thrust::device_ptr<fml>       y = thrust::device_pointer_cast(target);
+    thrust::device_ptr<const fml> a = thrust::device_pointer_cast(output);
+
+    // We want: y = a - y
+    thrust::transform(a, a+dims*count, y, y, tCalculateOutput_da());
 }
 
 void tLayeredLearnerGPU::m_copyTo_gpu_buf_1(const fml* local_buf, u32 size)
