@@ -45,6 +45,22 @@ class tLayeredLearnerGPU : public tLayeredLearnerBase
 
     private:
 
+        void m_copyTo_gpu_buf_1(const fml* local_buf, u32 size);
+        void m_copyTo_gpu_buf_2(const fml* local_buf, u32 size);
+
+        void m_copyTo_local_buf_1(const fml* gpu_buf, u32 size);
+
+
+    private:
+
+        fml* m_gpu_buf_1;
+        u32  m_gpu_buf_1_size;
+
+        fml* m_gpu_buf_2;
+        u32  m_gpu_buf_2_size;
+
+        fml* m_local_buf_1;
+        u32  m_local_buf_1_size;
 };
 
 
