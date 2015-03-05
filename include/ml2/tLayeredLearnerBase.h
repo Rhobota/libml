@@ -49,7 +49,7 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
         void unpack(iReadable* in);
 
 
-    private:
+    protected:
 
         void m_growInputMatrix(u32 newSize);
         void m_growTargetMatrix(u32 newSize);
@@ -78,7 +78,7 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
                         const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount);
 
 
-    private:
+    protected:
 
         std::vector<iLayer*> m_layers;
 
