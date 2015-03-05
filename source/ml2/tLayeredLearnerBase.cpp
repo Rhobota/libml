@@ -73,36 +73,8 @@ void tLayeredLearnerBase::addExample(const tIO& input, const tIO& target)
 
 void tLayeredLearnerBase::update()
 {
-    if (m_inputMatrixUsed == 0)
-        throw eRuntimeError("Cannot update when there have been no example inputs.");
-    if ((m_inputMatrixUsed % m_numInputDims) != 0)
-        throw eRuntimeError("Wack m_inputMatrixUsed");
-
-    fml* input = m_inputMatrix;
-    u32 numInputDims = m_numInputDims;
-    u32 inputCount = m_inputMatrixUsed / m_numInputDims;
-
-    const fml* output = NULL;
-    u32 expectedOutputDims = m_numOutputDims;
-    u32 expectedOutputCount = inputCount;
-
-    m_pushInputForward(input, numInputDims, inputCount,
-                       output, expectedOutputDims, expectedOutputCount);
-
-    if (m_targetMatrixUsed == 0)
-        throw eRuntimeError("Cannot update when there have been no example targets.");
-    if ((m_targetMatrixUsed % m_numOutputDims) != 0)
-        throw eRuntimeError("Wack m_targetMatrixUsed");
-    if ((m_targetMatrixUsed / m_numOutputDims) != expectedOutputCount)
-        throw eRuntimeError("Wack m_targetMatrixUsed (2)");
-
-    m_calculate_output_da(output, m_targetMatrix, expectedOutputDims, expectedOutputCount);
-
-    const fml* output_da = m_targetMatrix;
-
-    m_backpropagate(output_da, expectedOutputDims, expectedOutputCount,
-                    input, numInputDims, inputCount);
-
+    m_update(m_inputMatrix, m_inputMatrixUsed, m_numInputDims,
+             m_targetMatrix, m_targetMatrixUsed, m_numOutputDims);
     m_clearMatrices();
 }
 
@@ -422,6 +394,40 @@ void tLayeredLearnerBase::m_putOutput(std::vector<tIO>::iterator outputStart, co
             (*oitr)[i] = *outputPtr++;
         oitr++;
     }
+}
+
+void tLayeredLearnerBase::m_update(fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
+                                   fml* targetMatrix, u32 targetMatrixUsed, u32 targetMatrixNumDims)
+{
+    if (inputMatrixUsed == 0)
+        throw eRuntimeError("Cannot update when there have been no example inputs.");
+    if ((inputMatrixUsed % inputMatrixNumDims) != 0)
+        throw eRuntimeError("Wack inputMatrixUsed");
+
+    fml* input = inputMatrix;
+    u32 numInputDims = inputMatrixNumDims;
+    u32 inputCount = inputMatrixUsed / inputMatrixNumDims;
+
+    const fml* output = NULL;
+    u32 expectedOutputDims = targetMatrixNumDims;
+    u32 expectedOutputCount = inputCount;
+
+    m_pushInputForward(input, numInputDims, inputCount,
+                       output, expectedOutputDims, expectedOutputCount);
+
+    if (targetMatrixUsed == 0)
+        throw eRuntimeError("Cannot update when there have been no example targets.");
+    if ((targetMatrixUsed % targetMatrixNumDims) != 0)
+        throw eRuntimeError("Wack targetMatrixUsed");
+    if ((targetMatrixUsed / targetMatrixNumDims) != expectedOutputCount)
+        throw eRuntimeError("Wack targetMatrixUsed (2)");
+
+    m_calculate_output_da(output, targetMatrix, expectedOutputDims, expectedOutputCount);
+
+    const fml* output_da = targetMatrix;
+
+    m_backpropagate(output_da, expectedOutputDims, expectedOutputCount,
+                    input, numInputDims, inputCount);
 }
 
 
