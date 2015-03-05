@@ -73,62 +73,37 @@ void tLayeredLearnerBase::addExample(const tIO& input, const tIO& target)
 
 void tLayeredLearnerBase::update()
 {
-    if (m_layers.size() == 0)
-        throw eRuntimeError("Cannot update when there are no layers!");
     if (m_inputMatrixUsed == 0)
         throw eRuntimeError("Cannot update when there have been no example inputs.");
-    if (m_targetMatrixUsed == 0)
-        throw eRuntimeError("Cannot update when there have been no example targets.");
     if ((m_inputMatrixUsed % m_numInputDims) != 0)
         throw eRuntimeError("Wack m_inputMatrixUsed");
+
+    fml* input = m_inputMatrix;
+    u32 numInputDims = m_numInputDims;
+    u32 inputCount = m_inputMatrixUsed / m_numInputDims;
+
+    const fml* output = NULL;
+    u32 expectedOutputDims = m_numOutputDims;
+    u32 expectedOutputCount = inputCount;
+
+    m_pushInputForward(input, numInputDims, inputCount,
+                       output, expectedOutputDims, expectedOutputCount);
+
+    if (m_targetMatrixUsed == 0)
+        throw eRuntimeError("Cannot update when there have been no example targets.");
     if ((m_targetMatrixUsed % m_numOutputDims) != 0)
         throw eRuntimeError("Wack m_targetMatrixUsed");
-    u32 correctCount = m_inputMatrixUsed / m_numInputDims;
-    if ((m_targetMatrixUsed / m_numOutputDims) != correctCount)
+    if ((m_targetMatrixUsed / m_numOutputDims) != expectedOutputCount)
         throw eRuntimeError("Wack m_targetMatrixUsed (2)");
 
-    m_layers[0]->takeInput(m_inputMatrix, m_numInputDims,
-                           correctCount);
-
-    u32 prevOutDims, prevCount;
-    const fml* prevOutput = NULL;
-
-    for (size_t i = 1; i < m_layers.size(); i++)
-    {
-        prevOutput = m_layers[i-1]->getOutput(prevOutDims, prevCount);
-        m_layers[i]->takeInput(prevOutput, prevOutDims, prevCount);
-    }
-
-    {
-        prevOutput = m_layers.back()->getOutput(prevOutDims, prevCount);
-        if (prevOutDims != m_numOutputDims)
-            throw eRuntimeError("Unexpected last layer dimensionality!!!");
-        if (prevCount != correctCount)
-            throw eRuntimeError("Unexpected last layer count!!!");
-        MapConst a(prevOutput, prevOutDims, prevCount);
-        Map y(m_targetMatrix, prevOutDims, prevCount);
-        y = a - y;
-    }
+    m_calculate_output_da(output, m_targetMatrix, expectedOutputDims, expectedOutputCount);
 
     const fml* output_da = m_targetMatrix;
-    u32 outDims = prevOutDims;
-    u32 count = prevCount;
 
-    for (size_t i = (m_layers.size()-1); i > 0; i--)
-    {
-        prevOutput = m_layers[i-1]->getOutput(prevOutDims, prevCount);
-        m_layers[i]->takeOutputErrorGradients(output_da, outDims, count,
-                                              prevOutput, prevOutDims, prevCount,
-                                              true);
-        output_da = m_layers[i]->getInputErrorGradients(outDims, count);
-    }
+    m_backpropagate(output_da, expectedOutputDims, expectedOutputCount,
+                    input, numInputDims, inputCount);
 
-    m_layers[0]->takeOutputErrorGradients(output_da, outDims, count,
-                                          m_inputMatrix, m_numInputDims, correctCount,
-                                          false);
-
-    m_inputMatrixUsed = 0;
-    m_targetMatrixUsed = 0;
+    m_clearMatrices();
 }
 
 void tLayeredLearnerBase::evaluate(const tIO& input, tIO& output)
@@ -136,15 +111,14 @@ void tLayeredLearnerBase::evaluate(const tIO& input, tIO& output)
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot evaluate when there are no layers!");
 
-    m_inputMatrixUsed = 0;
-    m_targetMatrixUsed = 0;
+    m_clearMatrices();
     m_copyToInputMatrix(input);
 
     if (m_inputMatrixUsed != m_numInputDims)
         throw eRuntimeError("Wack m_inputMatrixUsed");
 
     m_layers[0]->takeInput(m_inputMatrix, m_numInputDims, 1);
-    m_inputMatrixUsed = 0;
+    m_clearMatrices();
 
     u32 prevOutDims, prevCount;
     const fml* prevOutput = NULL;
@@ -179,8 +153,7 @@ void tLayeredLearnerBase::evaluateBatch(std::vector<tIO>::const_iterator inputSt
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot evaluate when there are no layers!");
 
-    m_inputMatrixUsed = 0;
-    m_targetMatrixUsed = 0;
+    m_clearMatrices();
 
     std::vector<tIO>::const_iterator sitr;
     for (sitr = inputStart; sitr != inputEnd; sitr++)
@@ -193,7 +166,7 @@ void tLayeredLearnerBase::evaluateBatch(std::vector<tIO>::const_iterator inputSt
 
     m_layers[0]->takeInput(m_inputMatrix, m_numInputDims,
                            m_inputMatrixUsed / m_numInputDims);
-    m_inputMatrixUsed = 0;
+    m_clearMatrices();
 
     u32 prevOutDims, prevCount;
     const fml* prevOutput = NULL;
@@ -335,12 +308,12 @@ void tLayeredLearnerBase::unpack(iReadable* in)
     delete [] m_inputMatrix;
     m_inputMatrixSize = 1024;
     m_inputMatrix = new fml[m_inputMatrixSize];
-    m_inputMatrixUsed = 0;
 
     delete [] m_targetMatrix;
     m_targetMatrixSize = 1024;
     m_targetMatrix = new fml[m_targetMatrixSize];
-    m_targetMatrixUsed = 0;
+
+    m_clearMatrices();
 }
 
 void tLayeredLearnerBase::m_growInputMatrix(u32 newSize)
@@ -391,6 +364,65 @@ void tLayeredLearnerBase::m_copyToTargetMatrix(const tIO& target)
     for (size_t i = 0; i < target.size(); i++)
         *targetMatrix++ = target[i];
     m_targetMatrixUsed = newUsed;
+}
+
+void tLayeredLearnerBase::m_clearMatrices()
+{
+    m_inputMatrixUsed = 0;
+    m_targetMatrixUsed = 0;
+}
+
+void tLayeredLearnerBase::m_pushInputForward(const fml* input, u32 numInputDims, u32 inputCount,
+                                             const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount)
+{
+    if (m_layers.size() == 0)
+        throw eRuntimeError("Cannot update when there are no layers!");
+
+    m_layers[0]->takeInput(input, numInputDims,
+                           inputCount);
+
+    u32 prevOutDims, prevCount;
+    const fml* prevOutput = NULL;
+
+    for (size_t i = 1; i < m_layers.size(); i++)
+    {
+        prevOutput = m_layers[i-1]->getOutput(prevOutDims, prevCount);
+        m_layers[i]->takeInput(prevOutput, prevOutDims, prevCount);
+    }
+
+    prevOutput = m_layers.back()->getOutput(prevOutDims, prevCount);
+
+    if (prevOutDims != expectedOutputDims)
+        throw eRuntimeError("Unexpected last layer dimensionality!!!");
+    if (prevCount != expectedOutputCount)
+        throw eRuntimeError("Unexpected last layer count!!!");
+
+    output = prevOutput;
+}
+
+void tLayeredLearnerBase::m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count)
+{
+    MapConst a(output, dims, count);
+    Map y(target, dims, count);
+    y = a - y;
+}
+
+void tLayeredLearnerBase::m_backpropagate(const fml* output_da, u32 numOutputDims, u32 outputCount,
+                                          const fml* input, u32 numInputDims, u32 inputCount)
+{
+    for (size_t i = (m_layers.size()-1); i > 0; i--)
+    {
+        u32 prevOutDims, prevCount;
+        const fml* prevOutput = m_layers[i-1]->getOutput(prevOutDims, prevCount);
+        m_layers[i]->takeOutputErrorGradients(output_da, numOutputDims, outputCount,
+                                              prevOutput, prevOutDims, prevCount,
+                                              true);
+        output_da = m_layers[i]->getInputErrorGradients(numOutputDims, outputCount);
+    }
+
+    m_layers[0]->takeOutputErrorGradients(output_da, numOutputDims, outputCount,
+                                          input, numInputDims, inputCount,
+                                          false);
 }
 
 
