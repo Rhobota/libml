@@ -1,9 +1,7 @@
 #include <ml2/tLayeredLearnerBase.h>
 
-#include <cassert>
 #include <iomanip>
-
-#include "../ml/Eigen.h"
+#include <sstream>
 
 
 namespace ml2

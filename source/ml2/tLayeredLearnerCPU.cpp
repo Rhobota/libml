@@ -1,8 +1,5 @@
 #include <ml2/tLayeredLearnerCPU.h>
 
-#include <cassert>
-#include <iomanip>
-
 #include "../ml/Eigen.h"
 
 
