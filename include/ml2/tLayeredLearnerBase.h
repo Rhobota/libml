@@ -24,21 +24,10 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
 
 
         ///////////////////////////////////////////////////////////////////////
-        // iLearner interface:
+        // iLearner interface:   (partial interface only)
         ///////////////////////////////////////////////////////////////////////
 
         void addExample(const tIO& input, const tIO& target);
-
-        void update();
-
-        void evaluate(const tIO& input, tIO& output);
-
-        void evaluateBatch(const std::vector<tIO>& inputs,
-                                 std::vector<tIO>& outputs);
-
-        void evaluateBatch(std::vector<tIO>::const_iterator inputStart,
-                           std::vector<tIO>::const_iterator inputEnd,
-                           std::vector<tIO>::iterator outputStart);
 
         fml calculateError(const tIO& output, const tIO& target);
 
@@ -50,8 +39,6 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
         void printLearnerInfo(std::ostream& out) const;
 
         std::string learnerInfoString() const;
-
-        u32 headerId() const;
 
 
         ///////////////////////////////////////////////////////////////////////
