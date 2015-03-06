@@ -1,8 +1,8 @@
 #include <ml2/tLayeredLearnerGPU.h>
 
 #include <cuda.h>
-#include <thrust/transform.h>
 #include <thrust/device_ptr.h>
+#include <thrust/transform.h>
 
 #include <cassert>
 #include <iostream>
