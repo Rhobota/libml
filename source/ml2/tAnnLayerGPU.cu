@@ -24,11 +24,11 @@
     } while (false)
 
 
-#define cublas_assert(expression) \
+#define cublas_assert(expression, what) \
     do { \
         if ((expression) != CUBLAS_STATUS_SUCCESS) \
         { \
-            std::cout << "cuBLAS error!" << std::endl; \
+            std::cout << "cuBLAS error! " << what << std::endl; \
             assert(false); \
         } \
     } while (false)
@@ -66,7 +66,7 @@ static
 void s_createCublasContext(void*& ptr)
 {
     cublasHandle_t* cublasHandle = new cublasHandle_t;
-    cublas_assert( cublasCreate(cublasHandle) );
+    cublas_assert( cublasCreate(cublasHandle), "s_createCublasContext" );
     ptr = cublasHandle;
 }
 
@@ -75,7 +75,7 @@ static
 void s_destroyCublasContext(void*& ptr)
 {
     cublasHandle_t* cublasHandle = (cublasHandle_t*)ptr;
-    cublas_assert( cublasDestroy(*cublasHandle) );
+    cublas_assert( cublasDestroy(*cublasHandle), "s_destroyCublasContext" );
     delete cublasHandle;
     ptr = NULL;
 }
@@ -239,7 +239,7 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
                                m_gpu_w, m_numNeurons,
                                input, numInputDims,
                                &n,
-                               m_A, m_numNeurons) );
+                               m_A, m_numNeurons), "cublasSgemm" );
 
     switch (m_type)
     {
@@ -342,7 +342,15 @@ void tAnnLayerGPU::m_syncWeights_deviceToHost()
 
 void tAnnLayerGPU::m_syncWeights_hostToDevice()
 {
-    // TODO
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    if (!m_gpu_w)
+        m_gpu_w = s_cudaMalloc(numWeights);
+    cuda_assert( cudaMemcpy(m_gpu_w, m_w, numWeights*sizeof(fml), cudaMemcpyHostToDevice) );
+
+    u32 numBiases = m_numNeurons;
+    if (!m_gpu_b)
+        m_gpu_b = s_cudaMalloc(numBiases);
+    cuda_assert( cudaMemcpy(m_gpu_b, m_b, numBiases*sizeof(fml), cudaMemcpyHostToDevice) );
 }
 
 
