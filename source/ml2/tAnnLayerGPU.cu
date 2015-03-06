@@ -1,5 +1,29 @@
 #include <ml2/tAnnLayerGPU.h>
 
+#include <cuda.h>
+#include <cublas_v2.h>
+
+
+#define cuda_assert(expression) \
+    do { \
+        cudaError_t err; \
+        if ((err = (expression)) != cudaSuccess) \
+        { \
+            cout << "Cuda error: " << cudaGetErrorString(err) << endl; \
+            assert(false); \
+        } \
+    } while (false)
+
+
+#define cublas_assert(expression) \
+    do { \
+        if ((expression) != CUBLAS_STATUS_SUCCESS) \
+        { \
+            cout << "cuBLAS error!" << endl; \
+            assert(false); \
+        } \
+    } while (false)
+
 
 namespace ml2
 {
@@ -60,13 +84,33 @@ tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
                            u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                            fml randWeightMin, fml randWeightMax)
     : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
-                    randWeightMin, randWeightMax)
+                    randWeightMin, randWeightMax),
+      m_gpu_w(NULL),
+      m_gpu_b(NULL),
+      m_gpu_dw_accum(NULL),
+      m_gpu_db_accum(NULL),
+      m_gpu_A(NULL),
+      m_gpu_a(NULL),
+      m_gpu_dA(NULL),
+      m_gpu_prev_da(NULL),
+      m_gpu_vel(NULL),
+      m_gpu_dw_accum_avg(NULL)
 {
 }
 
 
 tAnnLayerGPU::tAnnLayerGPU(iReadable* in)
-    : tAnnLayerBase(in)
+    : tAnnLayerBase(in),
+      m_gpu_w(NULL),
+      m_gpu_b(NULL),
+      m_gpu_dw_accum(NULL),
+      m_gpu_db_accum(NULL),
+      m_gpu_A(NULL),
+      m_gpu_a(NULL),
+      m_gpu_dA(NULL),
+      m_gpu_prev_da(NULL),
+      m_gpu_vel(NULL),
+      m_gpu_dw_accum_avg(NULL)
 {
 }
 
@@ -74,6 +118,7 @@ tAnnLayerGPU::tAnnLayerGPU(iReadable* in)
 tAnnLayerGPU::~tAnnLayerGPU()
 {
     // The super d'tor are called automatically.
+
 }
 
 
@@ -122,6 +167,18 @@ u32 tAnnLayerGPU::headerId() const
     if (!didRegister)
         throw eRuntimeError("Registering my layer id didn't work!");
     return layerId;
+}
+
+
+void tAnnLayerGPU::m_syncWeights_deviceToHost()
+{
+    // TODO
+}
+
+
+void tAnnLayerGPU::m_syncWeights_hostToDevice()
+{
+    // TODO
 }
 
 

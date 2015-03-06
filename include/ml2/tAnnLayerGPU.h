@@ -51,6 +51,25 @@ class tAnnLayerGPU : public tAnnLayerBase
 
     private:
 
+        void m_syncWeights_deviceToHost();
+        void m_syncWeights_hostToDevice();
+
+
+    private:
+
+        fml* m_gpu_w;
+        fml* m_gpu_b;
+
+        fml* m_gpu_dw_accum;
+        fml* m_gpu_db_accum;
+
+        fml* m_gpu_A;
+        fml* m_gpu_a;
+        fml* m_gpu_dA;
+        fml* m_gpu_prev_da;
+
+        fml* m_gpu_vel;
+        fml* m_gpu_dw_accum_avg;
 };
 
 
