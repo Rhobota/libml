@@ -2,6 +2,12 @@
 
 #include <cuda.h>
 #include <cublas_v2.h>
+#include <thrust/device_ptr.h>
+#include <thrust/reduce.h>
+#include <thrust/tabulate.h>
+#include <thrust/transform.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
 
 #include <cassert>
 #include <iostream>
@@ -32,6 +38,10 @@ namespace ml2
 {
 
 
+#define ENABLE_DEVICE_FUNCTIONS
+#include "common.ipp"
+
+
 static
 void s_cudaFree(fml*& buf)
 {
@@ -43,54 +53,96 @@ void s_cudaFree(fml*& buf)
 }
 
 
-class tExpFunc
+static
+fml* s_cudaMalloc(u32 size)
+{
+    fml* ptr = NULL;
+    cuda_assert( cudaMalloc((void**)(&ptr), size*sizeof(fml)) );
+    return ptr;
+}
+
+
+static
+void s_createCublasContext(void*& ptr)
+{
+    cublasHandle_t* cublasHandle = new cublasHandle_t;
+    cublas_assert( cublasCreate(cublasHandle) );
+    ptr = cublasHandle;
+}
+
+
+static
+void s_destroyCublasContext(void*& ptr)
+{
+    cublasHandle_t* cublasHandle = (cublasHandle_t*)ptr;
+    cublas_assert( cublasDestroy(*cublasHandle) );
+    delete cublasHandle;
+    ptr = NULL;
+}
+
+
+class tFillColumnsWithFunc
 {
     public:
 
-        fml operator()(fml val) const { return std::min(std::exp(val), FML(1e30)); }
-};
+        tFillColumnsWithFunc(fml* vect, u32 vectSize)
+            : m_vect(vect), m_vectSize(vectSize) { }
 
-
-class tLogisticFunc
-{
-    public:
-
-        fml operator()(fml val) const { return logistic_function(val); }
-};
-
-
-class tDirLogisticFunc
-{
-    public:
-
-        fml operator()(fml val) const { return derivative_of_logistic_function(val); }
-};
-
-
-class tHyperbolicFunc
-{
-    public:
-
-        fml operator()(fml val) const { return hyperbolic_function(val); }
-};
-
-
-class tDirHyperbolicFunc
-{
-    public:
-
-        fml operator()(fml val) const { return derivative_of_hyperbolic_function(val); }
-};
-
-
-class t_RMSPROP_update
-{
-    public:
-
-        fml operator()(fml accum, fml accum_avg) const
+        __device__
+        fml operator()(const ssize_t& index)
         {
-            return (accum_avg > FML(0.0)) ? (accum / std::sqrt(accum_avg)) : FML(0.0);
+            return m_vect[(index % m_vectSize)];
         }
+
+    private:
+
+        fml* m_vect;
+        u32  m_vectSize;
+};
+
+
+class tColumnIndexFunc : public thrust::unary_function<u32,u32>
+{
+    public:
+
+        tColumnIndexFunc(u32 numRows)
+            : m_numRows(numRows) { }
+
+        __device__
+        u32 operator()(u32 index)
+        {
+            return (index / m_numRows);
+        }
+
+    private:
+
+        u32 m_numRows;
+};
+
+
+class tDivInputColsByVectorValues
+{
+    public:
+
+        tDivInputColsByVectorValues(fml* input, fml* vect, u32 numInputRows)
+            : m_input(input), m_vect(vect), m_numInputRows(numInputRows) { }
+
+        __device__
+        fml operator()(const ssize_t& index)
+        {
+            fml denom = m_vect[(index / m_numInputRows)];
+
+            if (denom > FML(0.0))
+                return m_input[index] / denom;
+            else
+                return FML(1.0) / ((fml) m_numInputRows);
+        }
+
+    private:
+
+        fml* m_input;
+        fml* m_vect;
+        u32  m_numInputRows;
 };
 
 
@@ -99,33 +151,29 @@ tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
                            fml randWeightMin, fml randWeightMax)
     : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
                     randWeightMin, randWeightMax),
+      m_cublasContext(NULL),
       m_gpu_w(NULL),
       m_gpu_b(NULL),
       m_gpu_dw_accum(NULL),
       m_gpu_db_accum(NULL),
-      m_gpu_A(NULL),
-      m_gpu_a(NULL),
-      m_gpu_dA(NULL),
-      m_gpu_prev_da(NULL),
-      m_gpu_vel(NULL),
-      m_gpu_dw_accum_avg(NULL)
+      m_uniqueKeys(NULL),
+      m_columnSums(NULL)
 {
+    s_createCublasContext(m_cublasContext);
 }
 
 
 tAnnLayerGPU::tAnnLayerGPU(iReadable* in)
     : tAnnLayerBase(in),
+      m_cublasContext(NULL),
       m_gpu_w(NULL),
       m_gpu_b(NULL),
       m_gpu_dw_accum(NULL),
       m_gpu_db_accum(NULL),
-      m_gpu_A(NULL),
-      m_gpu_a(NULL),
-      m_gpu_dA(NULL),
-      m_gpu_prev_da(NULL),
-      m_gpu_vel(NULL),
-      m_gpu_dw_accum_avg(NULL)
+      m_uniqueKeys(NULL),
+      m_columnSums(NULL)
 {
+    s_createCublasContext(m_cublasContext);
 }
 
 
@@ -137,25 +185,117 @@ tAnnLayerGPU::~tAnnLayerGPU()
     s_cudaFree(m_gpu_b);
     s_cudaFree(m_gpu_dw_accum);
     s_cudaFree(m_gpu_db_accum);
-    s_cudaFree(m_gpu_A);
-    s_cudaFree(m_gpu_a);
-    s_cudaFree(m_gpu_dA);
-    s_cudaFree(m_gpu_prev_da);
-    s_cudaFree(m_gpu_vel);
-    s_cudaFree(m_gpu_dw_accum_avg);
+    s_cudaFree(m_uniqueKeys);
+    s_cudaFree(m_columnSums);
+
+    s_destroyCublasContext(m_cublasContext);
 }
 
 
 void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 {
-    // TODO
+    cublasHandle_t* cublasHandle = (cublasHandle_t*)m_cublasContext;
+
+    if (!input)
+        throw eInvalidArgument("The input matrix may not be null.");
+
+    if (numInputDims != m_numInputDims)
+        throw eInvalidArgument("Unexpected numInputDims!");
+
+    if (count == 0)
+        throw eInvalidArgument("The count may not be zero.");
+
+    if (!m_A || !m_a || count > m_maxCount)
+    {
+        m_maxCount = count;
+        s_cudaFree(m_A);
+        s_cudaFree(m_a);
+        s_cudaFree(m_uniqueKeys);
+        s_cudaFree(m_columnSums);
+        m_A = s_cudaMalloc(m_numNeurons * m_maxCount);
+        m_a = s_cudaMalloc(m_numNeurons * m_maxCount);
+        m_uniqueKeys = s_cudaMalloc(m_maxCount);
+        m_columnSums = s_cudaMalloc(m_maxCount);
+        s_cudaFree(m_dA);
+        s_cudaFree(m_prev_da);
+    }
+    m_curCount = count;
+
+    if (!m_gpu_w || !m_gpu_b)
+    {
+        m_syncWeights_hostToDevice();
+    }
+
+    thrust::device_ptr<fml> A(m_A);
+    thrust::device_ptr<fml> a(m_a);
+
+    tFillColumnsWithFunc fillColumnsWith(m_gpu_b, m_numNeurons);
+    thrust::tabulate(A, A+m_numNeurons*count, fillColumnsWith);
+
+    fml n = FML(1.0) / ((fml) numInputDims);
+    cublas_assert( cublasSgemm(*cublasHandle, CUBLAS_OP_N, CUBLAS_OP_N,
+                               m_numNeurons, count, numInputDims,
+                               &n,
+                               m_gpu_w, m_numNeurons,
+                               input, numInputDims,
+                               &n,
+                               m_A, m_numNeurons) );
+
+    switch (m_type)
+    {
+        case kLayerTypeSoftmax:
+        {
+            tExpFunc expFunc;
+            thrust::transform(A, A+m_numNeurons*count, a, expFunc);
+
+            thrust::device_ptr<fml> uniqueKeys(m_uniqueKeys);
+            thrust::device_ptr<fml> columnSums(m_columnSums);
+
+            tColumnIndexFunc colIndexFunc(m_numNeurons);
+            thrust::reduce_by_key(
+                thrust::make_transform_iterator(
+                    thrust::make_counting_iterator((u32)0),
+                    colIndexFunc),
+                thrust::make_transform_iterator(
+                    thrust::make_counting_iterator((u32)0),
+                    colIndexFunc) + m_numNeurons*count,
+                a,
+                uniqueKeys,
+                columnSums);
+
+            tDivInputColsByVectorValues divInputColsByVectorValues(m_a, m_columnSums, m_numNeurons);
+            thrust::tabulate(a, a + m_numNeurons*count, divInputColsByVectorValues);
+
+            break;
+        }
+
+        case kLayerTypeLogistic:
+        {
+            tLogisticFunc func;
+            thrust::transform(A, A+m_numNeurons*count, a, func);
+            break;
+        }
+
+        case kLayerTypeHyperbolic:
+        {
+            tHyperbolicFunc func;
+            thrust::transform(A, A+m_numNeurons*count, a, func);
+            break;
+        }
+
+        default:
+        {
+            throw eRuntimeError("Unknown layer type");
+        }
+    }
 }
 
 
 const fml* tAnnLayerGPU::getOutput(u32& numOutputDims, u32& count) const
 {
-    // TODO
-    return NULL;
+    numOutputDims = m_numNeurons;
+    count = m_curCount;
+    return m_a;
 }
 
 
