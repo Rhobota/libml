@@ -93,57 +93,6 @@ char s_weightUpRuleToChar(tAnnLayerBase::nAnnLayerWeightUpdateRule rule)
 }
 
 
-class tExpFunc
-{
-    public:
-
-        fml operator()(fml val) const { return std::min(std::exp(val), FML(1e30)); }
-};
-
-
-class tLogisticFunc
-{
-    public:
-
-        fml operator()(fml val) const { return logistic_function(val); }
-};
-
-
-class tDirLogisticFunc
-{
-    public:
-
-        fml operator()(fml val) const { return derivative_of_logistic_function(val); }
-};
-
-
-class tHyperbolicFunc
-{
-    public:
-
-        fml operator()(fml val) const { return hyperbolic_function(val); }
-};
-
-
-class tDirHyperbolicFunc
-{
-    public:
-
-        fml operator()(fml val) const { return derivative_of_hyperbolic_function(val); }
-};
-
-
-class t_RMSPROP_update
-{
-    public:
-
-        fml operator()(fml accum, fml accum_avg) const
-        {
-            return (accum_avg > FML(0.0)) ? (accum / std::sqrt(accum_avg)) : FML(0.0);
-        }
-};
-
-
 static
 fml s_randInRange(algo::iLCG& lcg, fml randWeightMin, fml randWeightMax)
 {
