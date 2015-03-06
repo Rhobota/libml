@@ -4,7 +4,28 @@ namespace    // <-- un-named namespaces act like everything inside is statically
 
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
+#endif
+fml s_max(fml a, fml b)
+{
+    if (a > b)
+        return a;
+    return b;
+}
+
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
+#endif
+fml s_min(fml a, fml b)
+{
+    if (a < b)
+        return a;
+    return b;
+}
+
+
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
 #endif
 fml logistic_function(fml z)
 {
@@ -12,18 +33,18 @@ fml logistic_function(fml z)
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml derivative_of_logistic_function(fml z)
 {
     fml y = logistic_function(z);
     fml slope = (y * (FML(1.0) - y));
-    slope = std::max(slope, FML(1e-5));    // <-- Experimental
+    slope = s_max(slope, FML(1e-5));    // <-- Experimental
     return slope;
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml inverse_of_logistic_function(fml y)
 {
@@ -33,7 +54,7 @@ fml inverse_of_logistic_function(fml y)
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml logistic_function_min()
 {
@@ -41,7 +62,7 @@ fml logistic_function_min()
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml logistic_function_max()
 {
@@ -50,7 +71,7 @@ fml logistic_function_max()
 
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml hyperbolic_function(fml z)
 {
@@ -59,7 +80,7 @@ fml hyperbolic_function(fml z)
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml derivative_of_hyperbolic_function(fml z)
 {
@@ -68,7 +89,7 @@ fml derivative_of_hyperbolic_function(fml z)
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml inverse_of_hyperbolic_function(fml y)
 {
@@ -78,7 +99,7 @@ fml inverse_of_hyperbolic_function(fml y)
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml hyperbolic_function_min()
 {
@@ -86,7 +107,7 @@ fml hyperbolic_function_min()
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
 fml hyperbolic_function_max()
 {
@@ -99,9 +120,9 @@ class tExpFunc
     public:
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
-        fml operator()(fml val) const { return std::min(std::exp(val), FML(1e30)); }
+        fml operator()(fml val) const { return s_min(std::exp(val), FML(1e30)); }
 };
 
 
@@ -110,7 +131,7 @@ class tLogisticFunc
     public:
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
         fml operator()(fml val) const { return logistic_function(val); }
 };
@@ -121,7 +142,7 @@ class tDirLogisticFunc
     public:
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
         fml operator()(fml val) const { return derivative_of_logistic_function(val); }
 };
@@ -132,7 +153,7 @@ class tHyperbolicFunc
     public:
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
         fml operator()(fml val) const { return hyperbolic_function(val); }
 };
@@ -143,7 +164,7 @@ class tDirHyperbolicFunc
     public:
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
         fml operator()(fml val) const { return derivative_of_hyperbolic_function(val); }
 };
@@ -154,7 +175,7 @@ class t_RMSPROP_update
     public:
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-__device__
+__host__ __device__
 #endif
         fml operator()(fml accum, fml accum_avg) const
         {
