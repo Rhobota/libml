@@ -65,8 +65,16 @@ class tAnnLayerGPU : public tAnnLayerBase
         fml* m_gpu_dw_accum;
         fml* m_gpu_db_accum;
 
-        fml* m_uniqueKeys;
-        fml* m_columnSums;
+        fml* m_gpu_A;
+        fml* m_gpu_a;
+        fml* m_gpu_dA;
+        fml* m_gpu_prev_da;
+
+        fml* m_gpu_vel;
+        fml* m_gpu_dw_accum_avg;
+
+        fml* m_gpu_uniqueKeys;
+        fml* m_gpu_columnSums;
 };
 
 

@@ -1039,8 +1039,6 @@ tSmartStoppingWrapper::tSmartStoppingWrapper(u32 minEpochs,
       m_obs(wrappedObserver),
       m_performanceAttribute(performanceAttribute)
 {
-    if (m_minEpochs == 0)
-        throw eInvalidArgument("You must train for at least one epoch minimum.");
     if (m_maxEpochs < m_minEpochs)
         throw eInvalidArgument("max epochs must be >= min epochs");
     if (m_significantThreshold < 0.0)

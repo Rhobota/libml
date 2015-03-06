@@ -156,8 +156,14 @@ tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_gpu_b(NULL),
       m_gpu_dw_accum(NULL),
       m_gpu_db_accum(NULL),
-      m_uniqueKeys(NULL),
-      m_columnSums(NULL)
+      m_gpu_A(NULL),
+      m_gpu_a(NULL),
+      m_gpu_dA(NULL),
+      m_gpu_prev_da(NULL),
+      m_gpu_vel(NULL),
+      m_gpu_dw_accum_avg(NULL),
+      m_gpu_uniqueKeys(NULL),
+      m_gpu_columnSums(NULL)
 {
     s_createCublasContext(m_cublasContext);
 }
@@ -170,8 +176,14 @@ tAnnLayerGPU::tAnnLayerGPU(iReadable* in)
       m_gpu_b(NULL),
       m_gpu_dw_accum(NULL),
       m_gpu_db_accum(NULL),
-      m_uniqueKeys(NULL),
-      m_columnSums(NULL)
+      m_gpu_A(NULL),
+      m_gpu_a(NULL),
+      m_gpu_dA(NULL),
+      m_gpu_prev_da(NULL),
+      m_gpu_vel(NULL),
+      m_gpu_dw_accum_avg(NULL),
+      m_gpu_uniqueKeys(NULL),
+      m_gpu_columnSums(NULL)
 {
     s_createCublasContext(m_cublasContext);
 }
@@ -185,8 +197,14 @@ tAnnLayerGPU::~tAnnLayerGPU()
     s_cudaFree(m_gpu_b);
     s_cudaFree(m_gpu_dw_accum);
     s_cudaFree(m_gpu_db_accum);
-    s_cudaFree(m_uniqueKeys);
-    s_cudaFree(m_columnSums);
+    s_cudaFree(m_gpu_A);
+    s_cudaFree(m_gpu_a);
+    s_cudaFree(m_gpu_dA);
+    s_cudaFree(m_gpu_prev_da);
+    s_cudaFree(m_gpu_vel);
+    s_cudaFree(m_gpu_dw_accum_avg);
+    s_cudaFree(m_gpu_uniqueKeys);
+    s_cudaFree(m_gpu_columnSums);
 
     s_destroyCublasContext(m_cublasContext);
 }
@@ -205,19 +223,19 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     if (count == 0)
         throw eInvalidArgument("The count may not be zero.");
 
-    if (!m_A || !m_a || count > m_maxCount)
+    if (!m_gpu_A || !m_gpu_a || count > m_maxCount)
     {
         m_maxCount = count;
-        s_cudaFree(m_A);
-        s_cudaFree(m_a);
-        s_cudaFree(m_uniqueKeys);
-        s_cudaFree(m_columnSums);
-        m_A = s_cudaMalloc(m_numNeurons * m_maxCount);
-        m_a = s_cudaMalloc(m_numNeurons * m_maxCount);
-        m_uniqueKeys = s_cudaMalloc(m_maxCount);
-        m_columnSums = s_cudaMalloc(m_maxCount);
-        s_cudaFree(m_dA);
-        s_cudaFree(m_prev_da);
+        s_cudaFree(m_gpu_A);
+        s_cudaFree(m_gpu_a);
+        s_cudaFree(m_gpu_uniqueKeys);
+        s_cudaFree(m_gpu_columnSums);
+        m_gpu_A = s_cudaMalloc(m_numNeurons * m_maxCount);
+        m_gpu_a = s_cudaMalloc(m_numNeurons * m_maxCount);
+        m_gpu_uniqueKeys = s_cudaMalloc(m_maxCount);
+        m_gpu_columnSums = s_cudaMalloc(m_maxCount);
+        s_cudaFree(m_gpu_dA);
+        s_cudaFree(m_gpu_prev_da);
     }
     m_curCount = count;
 
@@ -226,8 +244,8 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
         m_syncWeights_hostToDevice();
     }
 
-    thrust::device_ptr<fml> A(m_A);
-    thrust::device_ptr<fml> a(m_a);
+    thrust::device_ptr<fml> A(m_gpu_A);
+    thrust::device_ptr<fml> a(m_gpu_a);
 
     tFillColumnsWithFunc fillColumnsWith(m_gpu_b, m_numNeurons);
     thrust::tabulate(A, A+m_numNeurons*count, fillColumnsWith);
@@ -239,7 +257,7 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
                                m_gpu_w, m_numNeurons,
                                input, numInputDims,
                                &n,
-                               m_A, m_numNeurons), "cublasSgemm" );
+                               m_gpu_A, m_numNeurons), "cublasSgemm" );
 
     switch (m_type)
     {
@@ -248,8 +266,8 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
             tExpFunc expFunc;
             thrust::transform(A, A+m_numNeurons*count, a, expFunc);
 
-            thrust::device_ptr<fml> uniqueKeys(m_uniqueKeys);
-            thrust::device_ptr<fml> columnSums(m_columnSums);
+            thrust::device_ptr<fml> uniqueKeys(m_gpu_uniqueKeys);
+            thrust::device_ptr<fml> columnSums(m_gpu_columnSums);
 
             tColumnIndexFunc colIndexFunc(m_numNeurons);
             thrust::reduce_by_key(
@@ -263,7 +281,7 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
                 uniqueKeys,
                 columnSums);
 
-            tDivInputColsByVectorValues divInputColsByVectorValues(m_a, m_columnSums, m_numNeurons);
+            tDivInputColsByVectorValues divInputColsByVectorValues(m_gpu_a, m_gpu_columnSums, m_numNeurons);
             thrust::tabulate(a, a + m_numNeurons*count, divInputColsByVectorValues);
 
             break;
@@ -295,7 +313,7 @@ const fml* tAnnLayerGPU::getOutput(u32& numOutputDims, u32& count) const
 {
     numOutputDims = m_numNeurons;
     count = m_curCount;
-    return m_a;
+    return m_gpu_a;
 }
 
 
