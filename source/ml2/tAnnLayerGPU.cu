@@ -3,13 +3,16 @@
 #include <cuda.h>
 #include <cublas_v2.h>
 
+#include <cassert>
+#include <iostream>
+
 
 #define cuda_assert(expression) \
     do { \
         cudaError_t err; \
         if ((err = (expression)) != cudaSuccess) \
         { \
-            cout << "Cuda error: " << cudaGetErrorString(err) << endl; \
+            std::cout << "Cuda error: " << cudaGetErrorString(err) << std::endl; \
             assert(false); \
         } \
     } while (false)
@@ -19,7 +22,7 @@
     do { \
         if ((expression) != CUBLAS_STATUS_SUCCESS) \
         { \
-            cout << "cuBLAS error!" << endl; \
+            std::cout << "cuBLAS error!" << std::endl; \
             assert(false); \
         } \
     } while (false)
@@ -27,6 +30,17 @@
 
 namespace ml2
 {
+
+
+static
+void s_cudaFree(fml*& buf)
+{
+    if (buf)
+    {
+        cuda_assert( cudaFree(buf) );
+        buf = NULL;
+    }
+}
 
 
 class tExpFunc
@@ -119,6 +133,16 @@ tAnnLayerGPU::~tAnnLayerGPU()
 {
     // The super d'tor are called automatically.
 
+    s_cudaFree(m_gpu_w);
+    s_cudaFree(m_gpu_b);
+    s_cudaFree(m_gpu_dw_accum);
+    s_cudaFree(m_gpu_db_accum);
+    s_cudaFree(m_gpu_A);
+    s_cudaFree(m_gpu_a);
+    s_cudaFree(m_gpu_dA);
+    s_cudaFree(m_gpu_prev_da);
+    s_cudaFree(m_gpu_vel);
+    s_cudaFree(m_gpu_dw_accum_avg);
 }
 
 
