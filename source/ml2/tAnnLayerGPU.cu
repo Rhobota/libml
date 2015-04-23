@@ -322,14 +322,218 @@ void tAnnLayerGPU::takeOutputErrorGradients(
                   const fml* input, u32 numInputDims, u32 inputCount,
                   bool calculateInputErrorGradients)
 {
-    // TODO
+    if (!outputErrorGradients)
+        throw eInvalidArgument("outputErrorGradients may not be null!");
+
+    if (numOutputDims != m_numNeurons)
+        throw eInvalidArgument("Unexpected numOutputDims");
+
+    if (outputCount != m_curCount)
+        throw eInvalidArgument("Unexpected outputCount");
+
+    if (!input)
+        throw eInvalidArgument("input may not be null!");
+
+    if (numInputDims != m_numInputDims)
+        throw eInvalidArgument("Unexpected numInputDims");
+
+    if (inputCount != m_curCount)
+        throw eInvalidArgument("Unexpected inputCount");
+
+    if (m_curCount == 0 || !m_gpu_A)
+        throw eRuntimeError("What gives?");
+
+    if (!m_gpu_dA)
+    {
+        m_gpu_dA = s_cudaMalloc(m_numNeurons * m_maxCount);
+    }
+
+    if (!m_gpu_prev_da)
+    {
+        m_gpu_prev_da = s_cudaMalloc(m_numInputDims * m_maxCount);
+    }
+
+    thrust::device_ptr<fml> da(outputErrorGradients);  // numOutputDims x outputCount
+    thrust::device_ptr<fml> dA(m_gpu_dA);              // numOutputDims x outputCount
+    thrust::device_ptr<fml> A(m_gpu_A);                // numOutputDims x outputCount
+    thrust::device_ptr<fml> prev_da(m_gpu_prev_da);    // numInputDims x inputCount
+    thrust::device_ptr<fml> inputMap(input);           // numInputDims x inputCount
+    thrust::device_ptr<fml> w(m_gpu_w);                // numOutputDims x numInputDims
+    thrust::device_ptr<fml> b(m_gpu_b);                // numOutputDims x 1
+    thrust::device_ptr<fml> dw_accum(m_gpu_dw_accum);  // numOutputDims x numInputDims
+    thrust::device_ptr<fml> db_accum(m_gpu_db_accum);  // numOutputDims x 1
+
+    switch (m_type)
+    {
+        case kLayerTypeSoftmax:
+        {
+            // TODO
+            dA = da;
+            break;
+        }
+
+        case kLayerTypeLogistic:
+        {
+            // TODO
+            tDirLogisticFunc func;
+            dA = (da.array() * A.unaryExpr(func).array()).matrix();
+            break;
+        }
+
+        case kLayerTypeHyperbolic:
+        {
+            // TODO
+            tDirHyperbolicFunc func;
+            dA = (da.array() * A.unaryExpr(func).array()).matrix();
+            break;
+        }
+
+        default:
+        {
+            throw eRuntimeError("Unknown layer type");
+            break;
+        }
+    }
+
+    fml n = FML(1.0) / ((fml) numInputDims);
+    fml zero = FML(0.0);
+
+    if (calculateInputErrorGradients)
+    {
+        cublas_assert( cublasSgemm(*cublasHandle, CUBLAS_OP_T, CUBLAS_OP_N,
+                                   numInputDims, outputCount, numOutputDims,
+                                   &n,
+                                   m_gpu_w, numOutputDims,
+                                   m_gpu_dA, numOutputDims,
+                                   &zero,
+                                   m_gpu_prev_da, numInputDims), "cublasSgemm" );
+    }
+
+    cublas_assert( cublasSgemm(*cublasHandle, CUBLAS_OP_N, CUBLAS_OP_T,
+                               numOutputDims, numInputDims, outputCount,
+                               &n,
+                               m_gpu_dA, numOutputDims,
+                               input, numInputDims,
+                               &zero,
+                               m_gpu_dw_accum, numOutputDims), "cublasSgemm" );
+
+    // LEFT OFF HERE
+
+    db_accum = n * dA.rowwise().sum();
+
+    fml batchSize = (fml) outputCount;
+
+    switch (m_rule)
+    {
+        case kWeightUpRuleNone:
+        {
+            break;
+        }
+
+        case kWeightUpRuleFixedLearningRate:
+        {
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
+            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            w -= mult * dw_accum;
+            b -= mult * db_accum;
+            break;
+        }
+
+        case kWeightUpRuleMomentum:
+        {
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the momentum update rule, alpha must be set.");
+            if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
+                throw eLogicError("When using the momentum update rule, viscosity must be set.");
+            if (!m_gpu_vel)
+            {
+                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+                m_gpu_vel = new fml[numWeights];
+                for (u32 i = 0; i < numWeights; i++)
+                    m_gpu_vel[i] = FML(0.0);
+            }
+            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            {
+                // Update w:
+                Map vel(m_gpu_vel, m_numNeurons, m_numInputDims);
+                vel *= m_viscosity;
+                vel -= mult*dw_accum;
+                w += vel;
+            }
+            {
+                // Update b:
+                Map vel(m_gpu_vel+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+                vel *= m_viscosity;
+                vel -= mult*db_accum;
+                b += vel;
+            }
+            break;
+        }
+
+        case kWeightUpRuleAdaptiveRates:
+        {
+            throw eNotImplemented("This used to be implemented in the old ANN... so look there as a reference if you want to implement it here again.");
+            break;
+        }
+
+        case kWeightUpRuleRPROP:
+        {
+            throw eNotImplemented("This used to be implemented in the old ANN... so look there as a reference if you want to implement it here again.");
+            break;
+        }
+
+        case kWeightUpRuleRMSPROP:
+        {
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the rmsprop rule, alpha must be set.");
+            if (!m_gpu_dw_accum_avg)
+            {
+                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+                m_gpu_dw_accum_avg = new fml[numWeights];
+                for (u32 i = 0; i < numWeights; i++)
+                    m_gpu_dw_accum_avg[i] = FML(1000.0);
+            }
+            fml batchNormMult = FML(1.0) / batchSize;
+            {
+                // Update w:
+                Map dw_accum_avg(m_gpu_dw_accum_avg, m_numNeurons, m_numInputDims);
+                dw_accum *= batchNormMult;
+                dw_accum_avg *= FML(0.9);
+                dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
+                w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
+            }
+            {
+                // Update b:
+                Map db_accum_avg(m_gpu_dw_accum_avg+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+                db_accum *= batchNormMult;
+                db_accum_avg *= FML(0.9);
+                db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
+                b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
+            }
+            break;
+        }
+
+        case kWeightUpRuleARMS:
+        {
+            throw eNotImplemented("Not sure what I want here yet...");
+            break;
+        }
+
+        default:
+        {
+            throw eRuntimeError("Unknown update rule");
+            break;
+        }
+    }
 }
 
 
 const fml* tAnnLayerGPU::getInputErrorGradients(u32& numInputDims, u32& count) const
 {
-    // TODO
-    return NULL;
+    numInputDims = m_numInputDims;
+    count = m_curCount;
+    return m_gpu_prev_da;
 }
 
 
@@ -354,7 +558,14 @@ u32 tAnnLayerGPU::headerId() const
 
 void tAnnLayerGPU::m_syncWeights_deviceToHost()
 {
-    // TODO
+    if (!m_gpu_w || !m_gpu_b)
+        throw eRuntimeError("Cannot sync weight from device to host because there are no device weights!");
+
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    cuda_assert( cudaMemcpy(m_w, m_gpu_w, numWeights*sizeof(fml), cudaMemcpyDeviceToHost) );
+
+    u32 numBiases = m_numNeurons;
+    cuda_assert( cudaMemcpy(m_b, m_gpu_b, numBiases*sizeof(fml), cudaMemcpyDeviceToHost) );
 }
 
 
