@@ -163,7 +163,7 @@ class tMultWithUniOperator
 {
     public:
 
-        __device__
+        __host__ __device__
         fml operator()(const fml& da, const fml& A)
         {
             return da * m_uniOp(A);
@@ -351,6 +351,8 @@ void tAnnLayerGPU::takeOutputErrorGradients(
                   const fml* input, u32 numInputDims, u32 inputCount,
                   bool calculateInputErrorGradients)
 {
+    cublasHandle_t* cublasHandle = (cublasHandle_t*)m_cublasContext;
+
     if (!outputErrorGradients)
         throw eInvalidArgument("outputErrorGradients may not be null!");
 
@@ -382,36 +384,36 @@ void tAnnLayerGPU::takeOutputErrorGradients(
         m_gpu_prev_da = s_cudaMalloc(m_numInputDims * m_maxCount);
     }
 
-    thrust::device_ptr<fml> da(outputErrorGradients);  // numOutputDims x outputCount
-    thrust::device_ptr<fml> dA(m_gpu_dA);              // numOutputDims x outputCount
-    thrust::device_ptr<fml> A(m_gpu_A);                // numOutputDims x outputCount
-    thrust::device_ptr<fml> prev_da(m_gpu_prev_da);    // numInputDims x inputCount
-    thrust::device_ptr<fml> inputMap(input);           // numInputDims x inputCount
-    thrust::device_ptr<fml> w(m_gpu_w);                // numOutputDims x numInputDims
-    thrust::device_ptr<fml> b(m_gpu_b);                // numOutputDims x 1
-    thrust::device_ptr<fml> dw_accum(m_gpu_dw_accum);  // numOutputDims x numInputDims
-    thrust::device_ptr<fml> db_accum(m_gpu_db_accum);  // numOutputDims x 1
+    thrust::device_ptr<const fml>   da       (outputErrorGradients);   // numOutputDims x outputCount
+    thrust::device_ptr<      fml>   dA       (m_gpu_dA);               // numOutputDims x outputCount
+    thrust::device_ptr<      fml>   A        (m_gpu_A);                // numOutputDims x outputCount
+    thrust::device_ptr<      fml>   prev_da  (m_gpu_prev_da);          // numInputDims x inputCount
+    thrust::device_ptr<const fml>   inputMap (input);                  // numInputDims x inputCount
+    thrust::device_ptr<      fml>   w        (m_gpu_w);                // numOutputDims x numInputDims
+    thrust::device_ptr<      fml>   b        (m_gpu_b);                // numOutputDims x 1
+    thrust::device_ptr<      fml>   dw_accum (m_gpu_dw_accum);         // numOutputDims x numInputDims
+    thrust::device_ptr<      fml>   db_accum (m_gpu_db_accum);         // numOutputDims x 1
 
     switch (m_type)
     {
         case kLayerTypeSoftmax:
         {
             tNoOp func;
-            thrust::transform(da.begin(), da.end(), dA.begin(), func);
+            thrust::transform(da, da + numOutputDims*outputCount, dA, func);
             break;
         }
 
         case kLayerTypeLogistic:
         {
             tMultWithUniOperator<tDirLogisticFunc> func;
-            thrust::transform(da.begin(), da.end(), A.begin(), dA.begin(), func);
+            thrust::transform(da, da + numOutputDims*outputCount, A, dA, func);
             break;
         }
 
         case kLayerTypeHyperbolic:
         {
             tMultWithUniOperator<tDirHyperbolicFunc> func;
-            thrust::transform(da.begin(), da.end(), A.begin(), dA.begin(), func);
+            thrust::transform(da, da + numOutputDims*outputCount, A, dA, func);
             break;
         }
 
