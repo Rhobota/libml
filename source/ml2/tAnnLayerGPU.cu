@@ -465,8 +465,6 @@ void tAnnLayerGPU::takeOutputErrorGradients(
                                &zero,
                                m_gpu_db_accum, 1), "cublasSgemv" );
 
-    // LEFT OFF HERE
-
     fml batchSize = (fml) outputCount;
 
     switch (m_rule)
@@ -478,98 +476,94 @@ void tAnnLayerGPU::takeOutputErrorGradients(
 
         case kWeightUpRuleFixedLearningRate:
         {
-            if (m_alpha <= FML(0.0))
-                throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
-            fml mult = (FML(10.0) / batchSize) * m_alpha;
-            w -= mult * dw_accum;
-            b -= mult * db_accum;
+//          if (m_alpha <= FML(0.0))
+//              throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
+//          fml mult = (FML(10.0) / batchSize) * m_alpha;
+//          w -= mult * dw_accum;
+//          b -= mult * db_accum;
             break;
         }
 
         case kWeightUpRuleMomentum:
         {
-            if (m_alpha <= FML(0.0))
-                throw eLogicError("When using the momentum update rule, alpha must be set.");
-            if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
-                throw eLogicError("When using the momentum update rule, viscosity must be set.");
-            if (!m_gpu_vel)
-            {
-                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
-                m_gpu_vel = new fml[numWeights];
-                for (u32 i = 0; i < numWeights; i++)
-                    m_gpu_vel[i] = FML(0.0);
-            }
-            fml mult = (FML(10.0) / batchSize) * m_alpha;
-            {
-                // Update w:
-                Map vel(m_gpu_vel, m_numNeurons, m_numInputDims);
-                vel *= m_viscosity;
-                vel -= mult*dw_accum;
-                w += vel;
-            }
-            {
-                // Update b:
-                Map vel(m_gpu_vel+m_numNeurons*m_numInputDims, m_numNeurons, 1);
-                vel *= m_viscosity;
-                vel -= mult*db_accum;
-                b += vel;
-            }
+//          if (m_alpha <= FML(0.0))
+//              throw eLogicError("When using the momentum update rule, alpha must be set.");
+//          if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
+//              throw eLogicError("When using the momentum update rule, viscosity must be set.");
+//          if (!m_gpu_vel)
+//          {
+//              u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+//              m_gpu_vel = new fml[numWeights];
+//              for (u32 i = 0; i < numWeights; i++)
+//                  m_gpu_vel[i] = FML(0.0);
+//          }
+//          fml mult = (FML(10.0) / batchSize) * m_alpha;
+//          {
+//              // Update w:
+//              Map vel(m_gpu_vel, m_numNeurons, m_numInputDims);
+//              vel *= m_viscosity;
+//              vel -= mult*dw_accum;
+//              w += vel;
+//          }
+//          {
+//              // Update b:
+//              Map vel(m_gpu_vel+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+//              vel *= m_viscosity;
+//              vel -= mult*db_accum;
+//              b += vel;
+//          }
             break;
         }
 
         case kWeightUpRuleAdaptiveRates:
         {
             throw eNotImplemented("This used to be implemented in the old ANN... so look there as a reference if you want to implement it here again.");
-            break;
         }
 
         case kWeightUpRuleRPROP:
         {
             throw eNotImplemented("This used to be implemented in the old ANN... so look there as a reference if you want to implement it here again.");
-            break;
         }
 
         case kWeightUpRuleRMSPROP:
         {
-            if (m_alpha <= FML(0.0))
-                throw eLogicError("When using the rmsprop rule, alpha must be set.");
-            if (!m_gpu_dw_accum_avg)
-            {
-                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
-                m_gpu_dw_accum_avg = new fml[numWeights];
-                for (u32 i = 0; i < numWeights; i++)
-                    m_gpu_dw_accum_avg[i] = FML(1000.0);
-            }
-            fml batchNormMult = FML(1.0) / batchSize;
-            {
-                // Update w:
-                Map dw_accum_avg(m_gpu_dw_accum_avg, m_numNeurons, m_numInputDims);
-                dw_accum *= batchNormMult;
-                dw_accum_avg *= FML(0.9);
-                dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
-                w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
-            }
-            {
-                // Update b:
-                Map db_accum_avg(m_gpu_dw_accum_avg+m_numNeurons*m_numInputDims, m_numNeurons, 1);
-                db_accum *= batchNormMult;
-                db_accum_avg *= FML(0.9);
-                db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
-                b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
-            }
+//          if (m_alpha <= FML(0.0))
+//              throw eLogicError("When using the rmsprop rule, alpha must be set.");
+//          if (!m_gpu_dw_accum_avg)
+//          {
+//              u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+//              m_gpu_dw_accum_avg = new fml[numWeights];
+//              for (u32 i = 0; i < numWeights; i++)
+//                  m_gpu_dw_accum_avg[i] = FML(1000.0);
+//          }
+//          fml batchNormMult = FML(1.0) / batchSize;
+//          {
+//              // Update w:
+//              Map dw_accum_avg(m_gpu_dw_accum_avg, m_numNeurons, m_numInputDims);
+//              dw_accum *= batchNormMult;
+//              dw_accum_avg *= FML(0.9);
+//              dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
+//              w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
+//          }
+//          {
+//              // Update b:
+//              Map db_accum_avg(m_gpu_dw_accum_avg+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+//              db_accum *= batchNormMult;
+//              db_accum_avg *= FML(0.9);
+//              db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
+//              b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
+//          }
             break;
         }
 
         case kWeightUpRuleARMS:
         {
             throw eNotImplemented("Not sure what I want here yet...");
-            break;
         }
 
         default:
         {
             throw eRuntimeError("Unknown update rule");
-            break;
         }
     }
 }
