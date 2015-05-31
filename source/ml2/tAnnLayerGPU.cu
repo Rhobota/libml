@@ -446,9 +446,15 @@ void tAnnLayerGPU::takeOutputErrorGradients(
                                &zero,
                                m_gpu_dw_accum, numOutputDims), "cublasSgemm" );
 
-    // LEFT OFF HERE
+    cublas_assert( cublasSgemv(*cublasHandle, CUBLAS_OP_N,
+                               numOutputDims, outputCount,
+                               &n,
+                               m_gpu_dA, numOutputDims,
+                               m_ones_vector, 1,
+                               &zero,
+                               m_gpu_db_accum, 1), "cublasSgemv" );
 
-    db_accum = n * dA.rowwise().sum();
+    // LEFT OFF HERE
 
     fml batchSize = (fml) outputCount;
 
