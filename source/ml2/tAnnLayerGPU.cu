@@ -146,6 +146,35 @@ class tDivInputColsByVectorValues
 };
 
 
+class tNoOp
+{
+    public:
+
+        __device__
+        fml operator()(const fml& val)
+        {
+            return val;
+        }
+};
+
+
+template<class T>
+class tMultWithUniOperator
+{
+    public:
+
+        __device__
+        fml operator()(const fml& da, const fml& A)
+        {
+            return da * m_uniOp(A);
+        }
+
+    private:
+
+        T m_uniOp;
+};
+
+
 tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
                            u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                            fml randWeightMin, fml randWeightMax)
@@ -367,24 +396,22 @@ void tAnnLayerGPU::takeOutputErrorGradients(
     {
         case kLayerTypeSoftmax:
         {
-            // TODO
-            dA = da;
+            tNoOp func;
+            thrust::transform(da.begin(), da.end(), dA.begin(), func);
             break;
         }
 
         case kLayerTypeLogistic:
         {
-            // TODO
-            tDirLogisticFunc func;
-            dA = (da.array() * A.unaryExpr(func).array()).matrix();
+            tMultWithUniOperator<tDirLogisticFunc> func;
+            thrust::transform(da.begin(), da.end(), A.begin(), dA.begin(), func);
             break;
         }
 
         case kLayerTypeHyperbolic:
         {
-            // TODO
-            tDirHyperbolicFunc func;
-            dA = (da.array() * A.unaryExpr(func).array()).matrix();
+            tMultWithUniOperator<tDirHyperbolicFunc> func;
+            thrust::transform(da.begin(), da.end(), A.begin(), dA.begin(), func);
             break;
         }
 
@@ -556,7 +583,7 @@ u32 tAnnLayerGPU::headerId() const
 }
 
 
-void tAnnLayerGPU::m_syncWeights_deviceToHost()
+void tAnnLayerGPU::m_syncWeights_deviceToHost()  // TODO use this method!
 {
     if (!m_gpu_w || !m_gpu_b)
         throw eRuntimeError("Cannot sync weight from device to host because there are no device weights!");
