@@ -194,6 +194,25 @@ class tSubWithScalarMult
 };
 
 
+class tVelUpdateFunc
+{
+    public:
+
+        tVelUpdateFunc(fml viscosity, fml mult)
+            : m_viscosity(viscosity), m_mult(mult) { }
+
+        __host__ __device__
+        fml operator()(const fml& vel, const fml& dw_accum)
+        {
+            return vel*m_viscosity - m_mult*dw_accum;
+        }
+
+    private:
+
+        fml m_viscosity, m_mult;
+};
+
+
 tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
                            u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                            fml randWeightMin, fml randWeightMax)
@@ -506,32 +525,31 @@ void tAnnLayerGPU::takeOutputErrorGradients(
 
         case kWeightUpRuleMomentum:
         {
-//          if (m_alpha <= FML(0.0))
-//              throw eLogicError("When using the momentum update rule, alpha must be set.");
-//          if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
-//              throw eLogicError("When using the momentum update rule, viscosity must be set.");
-//          if (!m_gpu_vel)
-//          {
-//              u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
-//              m_gpu_vel = new fml[numWeights];
-//              for (u32 i = 0; i < numWeights; i++)
-//                  m_gpu_vel[i] = FML(0.0);
-//          }
-//          fml mult = (FML(10.0) / batchSize) * m_alpha;
-//          {
-//              // Update w:
-//              Map vel(m_gpu_vel, m_numNeurons, m_numInputDims);
-//              vel *= m_viscosity;
-//              vel -= mult*dw_accum;
-//              w += vel;
-//          }
-//          {
-//              // Update b:
-//              Map vel(m_gpu_vel+m_numNeurons*m_numInputDims, m_numNeurons, 1);
-//              vel *= m_viscosity;
-//              vel -= mult*db_accum;
-//              b += vel;
-//          }
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the momentum update rule, alpha must be set.");
+            if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
+                throw eLogicError("When using the momentum update rule, viscosity must be set.");
+            if (!m_gpu_vel)
+            {
+                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+                m_gpu_vel = s_cudaMalloc(numWeights);
+                thrust::device_ptr<fml> vel(m_gpu_vel);
+                thrust::fill(vel, vel + numWeights, FML(0.0));
+            }
+            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            tVelUpdateFunc velUpdateFunc(m_viscosity, mult);
+            {
+                // Update w:
+                thrust::device_ptr<fml> vel(m_gpu_vel);
+                thrust::transform(vel, vel + numOutputDims*numInputDims, dw_accum, vel, velUpdateFunc);
+                thrust::transform(w, w + numOutputDims*numInputDims, vel, w, thrust::plus<fml>());
+            }
+            {
+                // Update b:
+                thrust::device_ptr<fml> vel(m_gpu_vel + numOutputDims*numInputDims);
+                thrust::transform(vel, vel + numOutputDims, db_accum, vel, velUpdateFunc);
+                thrust::transform(b, b + numOutputDims, vel, b, thrust::plus<fml>());
+            }
             break;
         }
 
