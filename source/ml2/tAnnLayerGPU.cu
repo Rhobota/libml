@@ -192,7 +192,8 @@ tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_gpu_vel(NULL),
       m_gpu_dw_accum_avg(NULL),
       m_gpu_uniqueKeys(NULL),
-      m_gpu_columnSums(NULL)
+      m_gpu_columnSums(NULL),
+      m_gpu_ones_vector(NULL)
 {
     s_createCublasContext(m_cublasContext);
 }
@@ -212,7 +213,8 @@ tAnnLayerGPU::tAnnLayerGPU(iReadable* in)
       m_gpu_vel(NULL),
       m_gpu_dw_accum_avg(NULL),
       m_gpu_uniqueKeys(NULL),
-      m_gpu_columnSums(NULL)
+      m_gpu_columnSums(NULL),
+      m_gpu_ones_vector(NULL)
 {
     s_createCublasContext(m_cublasContext);
 }
@@ -234,6 +236,7 @@ tAnnLayerGPU::~tAnnLayerGPU()
     s_cudaFree(m_gpu_dw_accum_avg);
     s_cudaFree(m_gpu_uniqueKeys);
     s_cudaFree(m_gpu_columnSums);
+    s_cudaFree(m_gpu_ones_vector);
 
     s_destroyCublasContext(m_cublasContext);
 }
@@ -265,6 +268,7 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
         m_gpu_columnSums = s_cudaMalloc(m_maxCount);
         s_cudaFree(m_gpu_dA);
         s_cudaFree(m_gpu_prev_da);
+        s_cudaFree(m_gpu_ones_vector);
     }
     m_curCount = count;
 
@@ -384,6 +388,13 @@ void tAnnLayerGPU::takeOutputErrorGradients(
         m_gpu_prev_da = s_cudaMalloc(m_numInputDims * m_maxCount);
     }
 
+    if (!m_gpu_ones_vector)
+    {
+        m_gpu_ones_vector = s_cudaMalloc(m_maxCount);
+        thrust::device_ptr<fml> ones_vector(m_gpu_ones_vector);
+        thrust::fill(ones_vector, ones_vector + m_maxCount, FML(1.0));
+    }
+
     thrust::device_ptr<const fml>   da       (outputErrorGradients);   // numOutputDims x outputCount
     thrust::device_ptr<      fml>   dA       (m_gpu_dA);               // numOutputDims x outputCount
     thrust::device_ptr<      fml>   A        (m_gpu_A);                // numOutputDims x outputCount
@@ -450,7 +461,7 @@ void tAnnLayerGPU::takeOutputErrorGradients(
                                numOutputDims, outputCount,
                                &n,
                                m_gpu_dA, numOutputDims,
-                               m_ones_vector, 1,
+                               m_gpu_ones_vector, 1,
                                &zero,
                                m_gpu_db_accum, 1), "cublasSgemv" );
 

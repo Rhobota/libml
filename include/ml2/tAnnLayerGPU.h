@@ -75,6 +75,7 @@ class tAnnLayerGPU : public tAnnLayerBase
 
         fml* m_gpu_uniqueKeys;
         fml* m_gpu_columnSums;
+        fml* m_gpu_ones_vector;
 };
 
 
