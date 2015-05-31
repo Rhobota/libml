@@ -164,14 +164,33 @@ class tMultWithUniOperator
     public:
 
         __host__ __device__
-        fml operator()(const fml& da, const fml& A)
+        fml operator()(const fml& a, const fml& b)
         {
-            return da * m_uniOp(A);
+            return a * m_uniOp(b);
         }
 
     private:
 
         T m_uniOp;
+};
+
+
+class tSubWithScalarMult
+{
+    public:
+
+        tSubWithScalarMult(fml mult)
+            : m_mult(mult) { }
+
+        __host__ __device__
+        fml operator()(const fml& a, const fml& b)
+        {
+            return a - m_mult*b;
+        }
+
+    private:
+
+        fml m_mult;
 };
 
 
@@ -476,11 +495,12 @@ void tAnnLayerGPU::takeOutputErrorGradients(
 
         case kWeightUpRuleFixedLearningRate:
         {
-//          if (m_alpha <= FML(0.0))
-//              throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
-//          fml mult = (FML(10.0) / batchSize) * m_alpha;
-//          w -= mult * dw_accum;
-//          b -= mult * db_accum;
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
+            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            tSubWithScalarMult func(mult);
+            thrust::transform(w, w + numOutputDims*numInputDims, dw_accum, w, func);
+            thrust::transform(b, b + numOutputDims, db_accum, b, func);
             break;
         }
 
