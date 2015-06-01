@@ -42,6 +42,12 @@ class tAnnLayerBase : public iLayer, public bNonCopyable
         };
 
         /**
+         * Constructs an empty ann. You probably want to call unpack if you use
+         * this c'tor.
+         */
+        tAnnLayerBase();
+
+        /**
          * Constructs this layer to use the specified layer type and
          * weight update rule.
          *
@@ -77,11 +83,6 @@ class tAnnLayerBase : public iLayer, public bNonCopyable
         tAnnLayerBase(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
                       u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                       fml randWeightMin = -1.0, fml randWeightMax = 1.0);
-
-        /**
-         * Constructs a tAnnLayerBase from a stream.
-         */
-        tAnnLayerBase(iReadable* in);
 
         /**
          * D'tor.
@@ -135,6 +136,13 @@ class tAnnLayerBase : public iLayer, public bNonCopyable
 
         void pack(iWritable* out) const;
         void unpack(iReadable* in);
+
+
+    protected:
+
+        void m_initWeights(algo::iLCG& lcg,
+                           fml randWeightMin,
+                           fml randWeightMax);
 
 
     protected:

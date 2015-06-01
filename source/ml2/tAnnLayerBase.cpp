@@ -106,6 +106,23 @@ fml s_randInRange(algo::iLCG& lcg, fml randWeightMin, fml randWeightMax)
 }
 
 
+tAnnLayerBase::tAnnLayerBase()
+    : m_type(kLayerTypeLogistic),
+      m_rule(kWeightUpRuleNone),
+      m_alpha(FML(0.0)),
+      m_viscosity(FML(0.0)),
+      m_numInputDims(0),
+      m_numNeurons(0),
+      m_curCount(0),
+      m_maxCount(0),
+      m_w(NULL),
+      m_b(NULL),
+      m_w_orig(NULL),
+      m_b_orig(NULL)
+{
+}
+
+
 tAnnLayerBase::tAnnLayerBase(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
                              u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                              fml randWeightMin, fml randWeightMax)
@@ -122,40 +139,7 @@ tAnnLayerBase::tAnnLayerBase(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_w_orig(NULL),
       m_b_orig(NULL)
 {
-    if (m_numInputDims == 0)
-        throw eInvalidArgument("The number of input dimensions may not be zero.");
-    if (m_numNeurons == 0)
-        throw eInvalidArgument("The number of neurons may not be zero.");
-
-    u32 numWeights = m_numInputDims * m_numNeurons;
-    m_w = new fml[numWeights];
-    m_w_orig = new fml[numWeights];
-    for (u32 i = 0; i < numWeights; i++)
-        m_w[i] = m_w_orig[i] = s_randInRange(lcg, randWeightMin, randWeightMax);
-
-    u32 numBiases = m_numNeurons;
-    m_b = new fml[numBiases];
-    m_b_orig = new fml[numBiases];
-    for (u32 i = 0; i < numBiases; i++)
-        m_b[i] = m_b_orig[i] = s_randInRange(lcg, randWeightMin, randWeightMax);
-}
-
-
-tAnnLayerBase::tAnnLayerBase(iReadable* in)
-    : m_type(kLayerTypeLogistic),
-      m_rule(kWeightUpRuleNone),
-      m_alpha(FML(0.0)),
-      m_viscosity(FML(0.0)),
-      m_numInputDims(0),
-      m_numNeurons(0),
-      m_curCount(0),
-      m_maxCount(0),
-      m_w(NULL),
-      m_b(NULL),
-      m_w_orig(NULL),
-      m_b_orig(NULL)
-{
-    this->unpack(in);
+    m_initWeights(lcg, randWeightMin, randWeightMax);
 }
 
 
@@ -324,6 +308,33 @@ void tAnnLayerBase::unpack(iReadable* in)
 
     m_curCount = 0;
     m_maxCount = 0;
+}
+
+
+void tAnnLayerBase::m_initWeights(algo::iLCG& lcg,
+                                  fml randWeightMin,
+                                  fml randWeightMax)
+{
+    if (m_numInputDims == 0)
+        throw eInvalidArgument("The number of input dimensions may not be zero.");
+    if (m_numNeurons == 0)
+        throw eInvalidArgument("The number of neurons may not be zero.");
+
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    delete [] m_w;
+    delete [] m_w_orig;
+    m_w = new fml[numWeights];
+    m_w_orig = new fml[numWeights];
+    for (u32 i = 0; i < numWeights; i++)
+        m_w[i] = m_w_orig[i] = s_randInRange(lcg, randWeightMin, randWeightMax);
+
+    u32 numBiases = m_numNeurons;
+    delete [] m_b;
+    delete [] m_b_orig;
+    m_b = new fml[numBiases];
+    m_b_orig = new fml[numBiases];
+    for (u32 i = 0; i < numBiases; i++)
+        m_b[i] = m_b_orig[i] = s_randInRange(lcg, randWeightMin, randWeightMax);
 }
 
 
