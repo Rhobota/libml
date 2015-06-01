@@ -16,14 +16,14 @@ class tAnnLayerGPU : public tAnnLayerBase
         /**
          * See tAnnLayerBase::tAnnLayerBase().
          */
-        tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
-                     u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                     fml randWeightMin = -1.0, fml randWeightMax = 1.0);
+        tAnnLayerGPU();
 
         /**
          * See tAnnLayerBase::tAnnLayerBase().
          */
-        tAnnLayerGPU(iReadable* in);
+        tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+                     u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
+                     fml randWeightMin = -1.0, fml randWeightMax = 1.0);
 
         /**
          * D'tor.

@@ -264,11 +264,8 @@ class t_RMSPROP_update_with_alpha
 };
 
 
-tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
-                           u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                           fml randWeightMin, fml randWeightMax)
-    : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
-                    randWeightMin, randWeightMax),
+tAnnLayerGPU::tAnnLayerGPU()
+    : tAnnLayerBase(),
       m_cublasContext(NULL),
       m_gpu_w(NULL),
       m_gpu_b(NULL),
@@ -288,8 +285,11 @@ tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
 }
 
 
-tAnnLayerGPU::tAnnLayerGPU(iReadable* in)
-    : tAnnLayerBase(in),
+tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+                           u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
+                           fml randWeightMin, fml randWeightMax)
+    : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
+                    randWeightMin, randWeightMax),
       m_cublasContext(NULL),
       m_gpu_w(NULL),
       m_gpu_b(NULL),
@@ -672,7 +672,9 @@ const fml* tAnnLayerGPU::getInputErrorGradients(u32& numInputDims, u32& count) c
 static
 iLayer* s_newLayerFunc(iReadable* in)
 {
-    return new tAnnLayerGPU(in);
+    tAnnLayerGPU* layer = new tAnnLayerGPU();
+    layer->unpack(in);
+    return layer;
 }
 
 
