@@ -213,6 +213,57 @@ class tVelUpdateFunc
 };
 
 
+class tMultBy
+{
+    public:
+
+        tMultBy(fml val)
+            : m_val(val) { }
+
+        __host__ __device__
+        fml operator()(const fml& val)
+        {
+            return m_val * val;
+        }
+
+    private:
+
+        fml m_val;
+};
+
+
+class t_RMSPROP_avg_update
+{
+    public:
+
+        __host__ __device__
+        fml operator()(const fml& dw_accum_avg, const fml& dw_accum)
+        {
+            return dw_accum_avg*FML(0.9) + dw_accum*dw_accum*FML(0.1);
+        }
+};
+
+
+class t_RMSPROP_update_with_alpha
+{
+    public:
+
+        t_RMSPROP_update_with_alpha(fml alpha)
+            : m_alpha(alpha) { }
+
+        __host__ __device__
+        fml operator()(fml accum, fml accum_avg) const
+        {
+            return m_alpha * m_func(accum, accum_avg);
+        }
+
+    private:
+
+        fml m_alpha;
+        t_RMSPROP_update m_func;
+};
+
+
 tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
                            u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                            fml randWeightMin, fml randWeightMax)
@@ -565,32 +616,35 @@ void tAnnLayerGPU::takeOutputErrorGradients(
 
         case kWeightUpRuleRMSPROP:
         {
-//          if (m_alpha <= FML(0.0))
-//              throw eLogicError("When using the rmsprop rule, alpha must be set.");
-//          if (!m_gpu_dw_accum_avg)
-//          {
-//              u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
-//              m_gpu_dw_accum_avg = new fml[numWeights];
-//              for (u32 i = 0; i < numWeights; i++)
-//                  m_gpu_dw_accum_avg[i] = FML(1000.0);
-//          }
-//          fml batchNormMult = FML(1.0) / batchSize;
-//          {
-//              // Update w:
-//              Map dw_accum_avg(m_gpu_dw_accum_avg, m_numNeurons, m_numInputDims);
-//              dw_accum *= batchNormMult;
-//              dw_accum_avg *= FML(0.9);
-//              dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
-//              w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
-//          }
-//          {
-//              // Update b:
-//              Map db_accum_avg(m_gpu_dw_accum_avg+m_numNeurons*m_numInputDims, m_numNeurons, 1);
-//              db_accum *= batchNormMult;
-//              db_accum_avg *= FML(0.9);
-//              db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
-//              b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
-//          }
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the rmsprop rule, alpha must be set.");
+            if (!m_gpu_dw_accum_avg)
+            {
+                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+                m_gpu_dw_accum_avg = s_cudaMalloc(numWeights);
+                thrust::device_ptr<fml> dw_accum_avg(m_gpu_dw_accum_avg);
+                thrust::fill(dw_accum_avg, dw_accum_avg + numWeights, FML(1000.0));
+            }
+            fml batchNormMult = FML(1.0) / batchSize;
+            tMultBy batchNormFunc(batchNormMult);
+            t_RMSPROP_avg_update avgUpdateFunc;
+            t_RMSPROP_update_with_alpha rmsPropUpdateFunc(m_alpha);
+            {
+                // Update w:
+                thrust::device_ptr<fml> dw_accum_avg(m_gpu_dw_accum_avg);
+                thrust::transform(dw_accum, dw_accum + numOutputDims*numInputDims, dw_accum, batchNormFunc);
+                thrust::transform(dw_accum_avg, dw_accum_avg + numOutputDims*numInputDims, dw_accum, dw_accum_avg, avgUpdateFunc);
+                thrust::transform(dw_accum, dw_accum + numOutputDims*numInputDims, dw_accum_avg, dw_accum, rmsPropUpdateFunc);
+                thrust::transform(w, w + numOutputDims*numInputDims, dw_accum, w, thrust::minus<fml>());
+            }
+            {
+                // Update b:
+                thrust::device_ptr<fml> db_accum_avg(m_gpu_dw_accum_avg + numOutputDims*numInputDims);
+                thrust::transform(db_accum, db_accum + numOutputDims, db_accum, batchNormFunc);
+                thrust::transform(db_accum_avg, db_accum_avg + numOutputDims, db_accum, db_accum_avg, avgUpdateFunc);
+                thrust::transform(db_accum, db_accum + numOutputDims, db_accum_avg, db_accum, rmsPropUpdateFunc);
+                thrust::transform(b, b + numOutputDims, db_accum, b, thrust::minus<fml>());
+            }
             break;
         }
 
