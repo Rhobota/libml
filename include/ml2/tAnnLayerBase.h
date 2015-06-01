@@ -148,25 +148,14 @@ class tAnnLayerBase : public iLayer, public bNonCopyable
         u32  m_numInputDims;
         u32  m_numNeurons;
 
+        u32  m_curCount;
+        u32  m_maxCount;
+
         fml* m_w;
         fml* m_b;
 
         fml* m_w_orig;
         fml* m_b_orig;
-
-        fml* m_dw_accum;
-        fml* m_db_accum;
-
-        u32  m_curCount;
-        u32  m_maxCount;
-
-        fml* m_A;
-        fml* m_a;
-        fml* m_dA;
-        fml* m_prev_da;
-
-        fml* m_vel;
-        fml* m_dw_accum_avg;
 };
 
 

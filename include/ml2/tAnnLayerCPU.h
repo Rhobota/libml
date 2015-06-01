@@ -51,6 +51,16 @@ class tAnnLayerCPU : public tAnnLayerBase
 
     private:
 
+        fml* m_dw_accum;
+        fml* m_db_accum;
+
+        fml* m_A;
+        fml* m_a;
+        fml* m_dA;
+        fml* m_prev_da;
+
+        fml* m_vel;
+        fml* m_dw_accum_avg;
 };
 
 

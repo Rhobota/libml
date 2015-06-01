@@ -13,21 +13,55 @@ namespace ml2
 tAnnLayerCPU::tAnnLayerCPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
                            u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                            fml randWeightMin, fml randWeightMax)
-    : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
+    : m_dw_accum(NULL),
+      m_db_accum(NULL),
+      m_A(NULL),
+      m_a(NULL),
+      m_dA(NULL),
+      m_prev_da(NULL),
+      m_vel(NULL),
+      m_dw_accum_avg(NULL),
+      tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
                     randWeightMin, randWeightMax)
 {
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    m_dw_accum = new fml[numWeights];
+    for (u32 i = 0; i < numWeights; i++)
+        m_dw_accum[i] = FML(0.0);
+
+    u32 numBiases = m_numNeurons;
+    m_db_accum = new fml[numBiases];
+    for (u32 i = 0; i < numBiases; i++)
+        m_db_accum[i] = FML(0.0);
 }
 
 
 tAnnLayerCPU::tAnnLayerCPU(iReadable* in)
-    : tAnnLayerBase(in)
+    : m_dw_accum(NULL),
+      m_db_accum(NULL),
+      m_A(NULL),
+      m_a(NULL),
+      m_dA(NULL),
+      m_prev_da(NULL),
+      m_vel(NULL),
+      m_dw_accum_avg(NULL),
+      tAnnLayerBase(in)
 {
 }
 
 
 tAnnLayerCPU::~tAnnLayerCPU()
 {
-    // The super d'tor are called automatically.
+    // The super d'tor is called automatically.
+
+    delete [] m_dw_accum; m_dw_accum = NULL;
+    delete [] m_db_accum; m_db_accum = NULL;
+    delete [] m_A; m_A = NULL;
+    delete [] m_a; m_a = NULL;
+    delete [] m_dA; m_dA = NULL;
+    delete [] m_prev_da; m_prev_da = NULL;
+    delete [] m_vel; m_vel = NULL;
+    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
 }
 
 
@@ -327,6 +361,32 @@ u32 tAnnLayerCPU::headerId() const
     if (!didRegister)
         throw eRuntimeError("Registering my layer id didn't work!");
     return layerId;
+}
+
+
+void tAnnLayerCPU::unpack(iReadable* in)
+{
+    tAnnLayerBase::unpack(in);
+
+    delete [] m_dw_accum; m_dw_accum = NULL;
+    delete [] m_db_accum; m_db_accum = NULL;
+
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    m_dw_accum = new fml[numWeights];
+    for (u32 i = 0; i < numWeights; i++)
+        m_dw_accum[i] = FML(0.0);
+
+    u32 numBiases = m_numNeurons;
+    m_db_accum = new fml[numBiases];
+    for (u32 i = 0; i < numBiases; i++)
+        m_db_accum[i] = FML(0.0);
+
+    delete [] m_A; m_A = NULL;
+    delete [] m_a; m_a = NULL;
+    delete [] m_dA; m_dA = NULL;
+    delete [] m_prev_da; m_prev_da = NULL;
+    delete [] m_vel; m_vel = NULL;
+    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
 }
 
 
