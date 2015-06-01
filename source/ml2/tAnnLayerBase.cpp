@@ -293,6 +293,9 @@ void tAnnLayerBase::unpack(iReadable* in)
     if (m_numNeurons == 0)
         throw eInvalidArgument("The number of neurons may not be zero.");
 
+    m_curCount = 0;
+    m_maxCount = 0;
+
     delete [] m_w; m_w = NULL;
     delete [] m_b; m_b = NULL;
     delete [] m_w_orig; m_w_orig = NULL;
@@ -305,9 +308,6 @@ void tAnnLayerBase::unpack(iReadable* in)
     u32 numBiases = m_numNeurons;
     m_b = new fml[numBiases];
     s_assert_readAll(in, m_b, numBiases);
-
-    m_curCount = 0;
-    m_maxCount = 0;
 }
 
 

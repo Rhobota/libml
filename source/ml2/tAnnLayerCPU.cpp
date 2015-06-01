@@ -38,15 +38,7 @@ tAnnLayerCPU::tAnnLayerCPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_vel(NULL),
       m_dw_accum_avg(NULL)
 {
-    u32 numWeights = m_numInputDims * m_numNeurons;
-    m_dw_accum = new fml[numWeights];
-    for (u32 i = 0; i < numWeights; i++)
-        m_dw_accum[i] = FML(0.0);
-
-    u32 numBiases = m_numNeurons;
-    m_db_accum = new fml[numBiases];
-    for (u32 i = 0; i < numBiases; i++)
-        m_db_accum[i] = FML(0.0);
+    m_initAccum();
 }
 
 
@@ -370,6 +362,19 @@ void tAnnLayerCPU::unpack(iReadable* in)
 {
     tAnnLayerBase::unpack(in);
 
+    m_initAccum();
+
+    delete [] m_A; m_A = NULL;
+    delete [] m_a; m_a = NULL;
+    delete [] m_dA; m_dA = NULL;
+    delete [] m_prev_da; m_prev_da = NULL;
+    delete [] m_vel; m_vel = NULL;
+    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
+}
+
+
+void tAnnLayerCPU::m_initAccum()
+{
     delete [] m_dw_accum; m_dw_accum = NULL;
     delete [] m_db_accum; m_db_accum = NULL;
 
@@ -382,13 +387,6 @@ void tAnnLayerCPU::unpack(iReadable* in)
     m_db_accum = new fml[numBiases];
     for (u32 i = 0; i < numBiases; i++)
         m_db_accum[i] = FML(0.0);
-
-    delete [] m_A; m_A = NULL;
-    delete [] m_a; m_a = NULL;
-    delete [] m_dA; m_dA = NULL;
-    delete [] m_prev_da; m_prev_da = NULL;
-    delete [] m_vel; m_vel = NULL;
-    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
 }
 
 

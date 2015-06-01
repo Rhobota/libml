@@ -58,6 +58,11 @@ class tAnnLayerCPU : public tAnnLayerBase
 
     private:
 
+        void m_initAccum();
+
+
+    private:
+
         fml* m_dw_accum;
         fml* m_db_accum;
 
