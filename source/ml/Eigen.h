@@ -10,8 +10,8 @@
  * allocations that happen are in fact your fault. Related to this, see
  * the next comment.
  */
-#define EIGEN_NO_MALLOC
-#define EIGEN_DONT_PARALLELIZE
+//#define EIGEN_NO_MALLOC
+//#define EIGEN_DONT_PARALLELIZE
 
 
 /*
