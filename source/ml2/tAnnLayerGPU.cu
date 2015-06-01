@@ -393,6 +393,9 @@ void tAnnLayerGPU::takeOutputErrorGradients(
     if (m_curCount == 0 || !m_gpu_A)
         throw eRuntimeError("What gives?");
 
+    if (!m_gpu_w || !m_gpu_b)
+        throw eRuntimeError("How are the gpu weight now initialized yet?");
+
     if (!m_gpu_dA)
         m_gpu_dA = s_cudaMalloc(m_numNeurons * m_maxCount);
 

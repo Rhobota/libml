@@ -240,10 +240,13 @@ void s_createCublasContext(void*& ptr)
 static
 void s_destroyCublasContext(void*& ptr)
 {
-    cublasHandle_t* cublasHandle = (cublasHandle_t*)ptr;
-    cublas_assert( cublasDestroy(*cublasHandle), "s_destroyCublasContext" );
-    delete cublasHandle;
-    ptr = NULL;
+    if (ptr)
+    {
+        cublasHandle_t* cublasHandle = (cublasHandle_t*)ptr;
+        cublas_assert( cublasDestroy(*cublasHandle), "s_destroyCublasContext" );
+        delete cublasHandle;
+        ptr = NULL;
+    }
 }
 
 
