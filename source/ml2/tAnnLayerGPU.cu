@@ -630,7 +630,28 @@ u32 tAnnLayerGPU::headerId() const
 }
 
 
-void tAnnLayerGPU::m_syncWeights_deviceToHost()  // TODO use this method!
+void tAnnLayerGPU::reset()
+{
+    tAnnLayerBase::reset();
+    m_syncWeights_hostToDevice();
+}
+
+
+void tAnnLayerGPU::pack(iWritable* out) const
+{
+    m_syncWeights_deviceToHost();
+    tAnnLayerBase::pack(out);
+}
+
+
+void tAnnLayerGPU::unpack(iReadable* in)
+{
+    tAnnLayerBase::unpack(in);
+    m_syncWeights_hostToDevice();
+}
+
+
+void tAnnLayerGPU::m_syncWeights_deviceToHost()
 {
     if (!m_gpu_w || !m_gpu_b)
         throw eRuntimeError("Cannot sync weight from device to host because there are no device weights!");

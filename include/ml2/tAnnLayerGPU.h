@@ -49,6 +49,21 @@ class tAnnLayerGPU : public tAnnLayerBase
         u32 headerId() const;
 
 
+        ///////////////////////////////////////////////////////////////////////
+        // The iLayer interface:   (partial re-implementation)
+        ///////////////////////////////////////////////////////////////////////
+
+        void reset();
+
+
+        ///////////////////////////////////////////////////////////////////////
+        // The iPackable interface:   (fully re-implemented)
+        ///////////////////////////////////////////////////////////////////////
+
+        void pack(iWritable* out) const;
+        void unpack(iReadable* in);
+
+
     private:
 
         void m_syncWeights_deviceToHost();
