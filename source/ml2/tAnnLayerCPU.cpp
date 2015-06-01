@@ -10,19 +10,33 @@ namespace ml2
 #include "common.ipp"
 
 
-tAnnLayerCPU::tAnnLayerCPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
-                           u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                           fml randWeightMin, fml randWeightMax)
-    : m_dw_accum(NULL),
+tAnnLayerCPU::tAnnLayerCPU()
+    : tAnnLayerBase(),
+      m_dw_accum(NULL),
       m_db_accum(NULL),
       m_A(NULL),
       m_a(NULL),
       m_dA(NULL),
       m_prev_da(NULL),
       m_vel(NULL),
-      m_dw_accum_avg(NULL),
-      tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
-                    randWeightMin, randWeightMax)
+      m_dw_accum_avg(NULL)
+{
+}
+
+
+tAnnLayerCPU::tAnnLayerCPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+                           u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
+                           fml randWeightMin, fml randWeightMax)
+    : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
+                    randWeightMin, randWeightMax),
+      m_dw_accum(NULL),
+      m_db_accum(NULL),
+      m_A(NULL),
+      m_a(NULL),
+      m_dA(NULL),
+      m_prev_da(NULL),
+      m_vel(NULL),
+      m_dw_accum_avg(NULL)
 {
     u32 numWeights = m_numInputDims * m_numNeurons;
     m_dw_accum = new fml[numWeights];
@@ -33,20 +47,6 @@ tAnnLayerCPU::tAnnLayerCPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
     m_db_accum = new fml[numBiases];
     for (u32 i = 0; i < numBiases; i++)
         m_db_accum[i] = FML(0.0);
-}
-
-
-tAnnLayerCPU::tAnnLayerCPU(iReadable* in)
-    : m_dw_accum(NULL),
-      m_db_accum(NULL),
-      m_A(NULL),
-      m_a(NULL),
-      m_dA(NULL),
-      m_prev_da(NULL),
-      m_vel(NULL),
-      m_dw_accum_avg(NULL),
-      tAnnLayerBase(in)
-{
 }
 
 
