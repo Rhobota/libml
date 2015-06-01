@@ -66,7 +66,6 @@ class tAnnLayerCPU : public tAnnLayerBase
     private:
 
         void m_initAccum();
-
         void m_finalize();
 
 

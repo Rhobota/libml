@@ -255,21 +255,7 @@ tAnnLayerGPU::~tAnnLayerGPU()
 {
     // The super d'tor are called automatically.
 
-    s_cudaFree(m_gpu_w);
-    s_cudaFree(m_gpu_b);
-    s_cudaFree(m_gpu_dw_accum);
-    s_cudaFree(m_gpu_db_accum);
-    s_cudaFree(m_gpu_A);
-    s_cudaFree(m_gpu_a);
-    s_cudaFree(m_gpu_dA);
-    s_cudaFree(m_gpu_prev_da);
-    s_cudaFree(m_gpu_vel);
-    s_cudaFree(m_gpu_dw_accum_avg);
-    s_cudaFree(m_gpu_uniqueKeys);
-    s_cudaFree(m_gpu_columnSums);
-    s_cudaFree(m_gpu_ones_vector);
-
-    s_destroyCublasContext(m_cublasContext);
+    m_finalize();
 }
 
 
@@ -634,7 +620,9 @@ u32 tAnnLayerGPU::headerId() const
 
 void tAnnLayerGPU::reset()
 {
+    m_finalize();
     tAnnLayerBase::reset();
+    s_createCublasContext(m_cublasContext);
     m_syncWeights_hostToDevice();
     m_initAccum();
 }
@@ -669,6 +657,26 @@ void tAnnLayerGPU::m_initAccum()
     m_gpu_db_accum = s_cudaMalloc(numBiases);
     thrust::device_ptr<fml> db_accum(m_gpu_db_accum);
     thrust::fill(db_accum, db_accum + numBiases, FML(0.0));
+}
+
+
+void tAnnLayerGPU::m_finalize()
+{
+    s_cudaFree(m_gpu_w);
+    s_cudaFree(m_gpu_b);
+    s_cudaFree(m_gpu_dw_accum);
+    s_cudaFree(m_gpu_db_accum);
+    s_cudaFree(m_gpu_A);
+    s_cudaFree(m_gpu_a);
+    s_cudaFree(m_gpu_dA);
+    s_cudaFree(m_gpu_prev_da);
+    s_cudaFree(m_gpu_vel);
+    s_cudaFree(m_gpu_dw_accum_avg);
+    s_cudaFree(m_gpu_uniqueKeys);
+    s_cudaFree(m_gpu_columnSums);
+    s_cudaFree(m_gpu_ones_vector);
+
+    s_destroyCublasContext(m_cublasContext);
 }
 
 
