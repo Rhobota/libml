@@ -66,7 +66,9 @@ class tAnnLayerGPU : public tAnnLayerBase
 
     private:
 
-        void m_syncWeights_deviceToHost();
+        void m_initAccum();
+
+        void m_syncWeights_deviceToHost() const;
         void m_syncWeights_hostToDevice();
 
 

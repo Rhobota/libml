@@ -246,6 +246,8 @@ tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
       m_gpu_ones_vector(NULL)
 {
     s_createCublasContext(m_cublasContext);
+    m_syncWeights_hostToDevice();
+    m_initAccum();
 }
 
 
@@ -303,7 +305,7 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 
     if (!m_gpu_w || !m_gpu_b)
     {
-        m_syncWeights_hostToDevice();
+        throw eRuntimeError("How are the gpu weight now initialized yet?");
     }
 
     thrust::device_ptr<fml> A(m_gpu_A);
@@ -634,6 +636,7 @@ void tAnnLayerGPU::reset()
 {
     tAnnLayerBase::reset();
     m_syncWeights_hostToDevice();
+    m_initAccum();
 }
 
 
@@ -648,10 +651,28 @@ void tAnnLayerGPU::unpack(iReadable* in)
 {
     tAnnLayerBase::unpack(in);
     m_syncWeights_hostToDevice();
+    m_initAccum();
 }
 
 
-void tAnnLayerGPU::m_syncWeights_deviceToHost()
+void tAnnLayerGPU::m_initAccum()
+{
+    s_cudaFree(m_gpu_dw_accum);
+    s_cudaFree(m_gpu_db_accum);
+
+    u32 numWeights = m_numInputDims * m_numNeurons;
+    m_gpu_dw_accum = s_cudaMalloc(numWeights);
+    thrust::device_ptr<fml> dw_accum(m_gpu_dw_accum);
+    thrust::fill(dw_accum, dw_accum + numWeights, FML(0.0));
+
+    u32 numBiases = m_numNeurons;
+    m_gpu_db_accum = s_cudaMalloc(numBiases);
+    thrust::device_ptr<fml> db_accum(m_gpu_db_accum);
+    thrust::fill(db_accum, db_accum + numBiases, FML(0.0));
+}
+
+
+void tAnnLayerGPU::m_syncWeights_deviceToHost() const
 {
     if (!m_gpu_w || !m_gpu_b)
         throw eRuntimeError("Cannot sync weight from device to host because there are no device weights!");
@@ -667,13 +688,13 @@ void tAnnLayerGPU::m_syncWeights_deviceToHost()
 void tAnnLayerGPU::m_syncWeights_hostToDevice()
 {
     u32 numWeights = m_numInputDims * m_numNeurons;
-    if (!m_gpu_w)
-        m_gpu_w = s_cudaMalloc(numWeights);
+    s_cudaFree(m_gpu_w);
+    m_gpu_w = s_cudaMalloc(numWeights);
     cuda_assert( cudaMemcpy(m_gpu_w, m_w, numWeights*sizeof(fml), cudaMemcpyHostToDevice) );
 
     u32 numBiases = m_numNeurons;
-    if (!m_gpu_b)
-        m_gpu_b = s_cudaMalloc(numBiases);
+    s_cudaFree(m_gpu_b);
+    m_gpu_b = s_cudaMalloc(numBiases);
     cuda_assert( cudaMemcpy(m_gpu_b, m_b, numBiases*sizeof(fml), cudaMemcpyHostToDevice) );
 }
 
