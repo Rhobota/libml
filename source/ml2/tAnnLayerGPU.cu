@@ -272,6 +272,9 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     if (count == 0)
         throw eInvalidArgument("The count may not be zero.");
 
+    if (!m_gpu_w || !m_gpu_b)
+        throw eRuntimeError("How are the gpu weight now initialized yet?");
+
     if (!m_gpu_A || !m_gpu_a || count > m_maxCount)
     {
         m_maxCount = count;
@@ -288,11 +291,6 @@ void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
         s_cudaFree(m_gpu_ones_vector);
     }
     m_curCount = count;
-
-    if (!m_gpu_w || !m_gpu_b)
-    {
-        throw eRuntimeError("How are the gpu weight now initialized yet?");
-    }
 
     thrust::device_ptr<fml> A(m_gpu_A);
     thrust::device_ptr<fml> a(m_gpu_a);
@@ -396,14 +394,10 @@ void tAnnLayerGPU::takeOutputErrorGradients(
         throw eRuntimeError("What gives?");
 
     if (!m_gpu_dA)
-    {
         m_gpu_dA = s_cudaMalloc(m_numNeurons * m_maxCount);
-    }
 
     if (!m_gpu_prev_da)
-    {
         m_gpu_prev_da = s_cudaMalloc(m_numInputDims * m_maxCount);
-    }
 
     if (!m_gpu_ones_vector)
     {
@@ -415,8 +409,8 @@ void tAnnLayerGPU::takeOutputErrorGradients(
     thrust::device_ptr<const fml>   da       (outputErrorGradients);   // numOutputDims x outputCount
     thrust::device_ptr<      fml>   dA       (m_gpu_dA);               // numOutputDims x outputCount
     thrust::device_ptr<      fml>   A        (m_gpu_A);                // numOutputDims x outputCount
-    thrust::device_ptr<      fml>   prev_da  (m_gpu_prev_da);          // numInputDims x inputCount
-    thrust::device_ptr<const fml>   inputMap (input);                  // numInputDims x inputCount
+    //thrust::device_ptr<      fml>   prev_da  (m_gpu_prev_da);          // numInputDims x inputCount
+    //thrust::device_ptr<const fml>   inputMap (input);                  // numInputDims x inputCount
     thrust::device_ptr<      fml>   w        (m_gpu_w);                // numOutputDims x numInputDims
     thrust::device_ptr<      fml>   b        (m_gpu_b);                // numOutputDims x 1
     thrust::device_ptr<      fml>   dw_accum (m_gpu_dw_accum);         // numOutputDims x numInputDims
@@ -448,7 +442,6 @@ void tAnnLayerGPU::takeOutputErrorGradients(
         default:
         {
             throw eRuntimeError("Unknown layer type");
-            break;
         }
     }
 
