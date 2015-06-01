@@ -60,7 +60,7 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
         void m_clearMatrices();
 
         void m_pushInputForward(const fml* input, u32 numInputDims, u32 inputCount,
-                                const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount);
+                                const fml*& output, u32 expectedOutputDims, u32 expectedOutputCount);
 
         virtual
         void m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count) = 0;
@@ -68,15 +68,15 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
         void m_backpropagate(const fml* output_da, u32 numOutputDims, u32 outputCount,
                              const fml* input, u32 numInputDims, u32 inputCount);
 
-        void m_putOutput(tIO& output, const fml* outputPtr, u32 numOutputDims, u32& outputCount);
+        void m_putOutput(tIO& output, const fml* outputPtr, u32 numOutputDims, u32 outputCount);
 
-        void m_putOutput(std::vector<tIO>::iterator outputStart, const fml* outputPtr, u32 numOutputDims, u32& outputCount);
+        void m_putOutput(std::vector<tIO>::iterator outputStart, const fml* outputPtr, u32 numOutputDims, u32 outputCount);
 
-        void m_update(fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
-                      fml* targetMatrix, u32 targetMatrixUsed, u32 targetMatrixNumDims);
+        void m_update(const fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
+                            fml* targetMatrix, u32 targetMatrixUsed, u32 targetMatrixNumDims);
 
-        void m_evaluate(fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
-                        const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount);
+        void m_evaluate(const fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
+                        const fml*& output, u32 expectedOutputDims, u32 expectedOutputCount);
 
 
     protected:

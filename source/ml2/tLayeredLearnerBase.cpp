@@ -90,6 +90,7 @@ void tLayeredLearnerBase::reset()
         throw eRuntimeError("Cannot reset when there are no layers!");
     for (size_t i = 0; i < m_layers.size(); i++)
         m_layers[i]->reset();
+    m_clearMatrices();
 }
 
 void tLayeredLearnerBase::printLearnerInfo(std::ostream& out) const
@@ -177,11 +178,10 @@ void tLayeredLearnerBase::unpack(iReadable* in)
 
 void tLayeredLearnerBase::m_growInputMatrix(u32 newSize)
 {
-    while (newSize >= m_inputMatrixSize)
+    while (newSize > m_inputMatrixSize)
     {
         fml* inputMatrix = new fml[2*m_inputMatrixSize];
-        for (u32 i = 0; i < m_inputMatrixSize; i++)
-            inputMatrix[i] = m_inputMatrix[i];
+        memcpy(inputMatrix, m_inputMatrix, m_inputMatrixSize*sizeof(fml));
         delete [] m_inputMatrix;
         m_inputMatrix = inputMatrix;
         m_inputMatrixSize *= 2;
@@ -190,11 +190,10 @@ void tLayeredLearnerBase::m_growInputMatrix(u32 newSize)
 
 void tLayeredLearnerBase::m_growTargetMatrix(u32 newSize)
 {
-    while (newSize >= m_targetMatrixSize)
+    while (newSize > m_targetMatrixSize)
     {
         fml* targetMatrix = new fml[2*m_targetMatrixSize];
-        for (u32 i = 0; i < m_targetMatrixSize; i++)
-            targetMatrix[i] = m_targetMatrix[i];
+        memcpy(targetMatrix, m_targetMatrix, m_targetMatrixSize*sizeof(fml));
         delete [] m_targetMatrix;
         m_targetMatrix = targetMatrix;
         m_targetMatrixSize *= 2;
@@ -208,8 +207,7 @@ void tLayeredLearnerBase::m_copyToInputMatrix(const tIO& input)
     u32 newUsed = m_inputMatrixUsed + (u32)input.size();
     m_growInputMatrix(newUsed);
     fml* inputMatrix = m_inputMatrix + m_inputMatrixUsed;
-    for (size_t i = 0; i < input.size(); i++)
-        *inputMatrix++ = input[i];
+    memcpy(inputMatrix, &(input[0]), input.size()*sizeof(fml));
     m_inputMatrixUsed = newUsed;
 }
 
@@ -220,8 +218,7 @@ void tLayeredLearnerBase::m_copyToTargetMatrix(const tIO& target)
     u32 newUsed = m_targetMatrixUsed + (u32)target.size();
     m_growTargetMatrix(newUsed);
     fml* targetMatrix = m_targetMatrix + m_targetMatrixUsed;
-    for (size_t i = 0; i < target.size(); i++)
-        *targetMatrix++ = target[i];
+    memcpy(targetMatrix, &(target[0]), target.size()*sizeof(fml));
     m_targetMatrixUsed = newUsed;
 }
 
@@ -232,10 +229,10 @@ void tLayeredLearnerBase::m_clearMatrices()
 }
 
 void tLayeredLearnerBase::m_pushInputForward(const fml* input, u32 numInputDims, u32 inputCount,
-                                             const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount)
+                                             const fml*& output, u32 expectedOutputDims, u32 expectedOutputCount)
 {
     if (m_layers.size() == 0)
-        throw eRuntimeError("Cannot update when there are no layers!");
+        throw eRuntimeError("Cannot push input when there are no layers!");
 
     m_layers[0]->takeInput(input, numInputDims,
                            inputCount);
@@ -262,6 +259,9 @@ void tLayeredLearnerBase::m_pushInputForward(const fml* input, u32 numInputDims,
 void tLayeredLearnerBase::m_backpropagate(const fml* output_da, u32 numOutputDims, u32 outputCount,
                                           const fml* input, u32 numInputDims, u32 inputCount)
 {
+    if (m_layers.size() == 0)
+        throw eRuntimeError("Cannot backpropagate when there are no layers!");
+
     for (size_t i = (m_layers.size()-1); i > 0; i--)
     {
         u32 prevOutDims, prevCount;
@@ -277,36 +277,35 @@ void tLayeredLearnerBase::m_backpropagate(const fml* output_da, u32 numOutputDim
                                           false);
 }
 
-void tLayeredLearnerBase::m_putOutput(tIO& output, const fml* outputPtr, u32 numOutputDims, u32& outputCount)
+void tLayeredLearnerBase::m_putOutput(tIO& output, const fml* outputPtr, u32 numOutputDims, u32 outputCount)
 {
     if (outputCount != 1)
         throw eRuntimeError("Unexpected output count");
     output.resize(numOutputDims);
-    for (u32 i = 0; i < numOutputDims; i++)
-        output[i] = outputPtr[i];
+    memcpy(&(output[0]), outputPtr, numOutputDims*sizeof(fml));
 }
 
-void tLayeredLearnerBase::m_putOutput(std::vector<tIO>::iterator outputStart, const fml* outputPtr, u32 numOutputDims, u32& outputCount)
+void tLayeredLearnerBase::m_putOutput(std::vector<tIO>::iterator outputStart, const fml* outputPtr, u32 numOutputDims, u32 outputCount)
 {
     std::vector<tIO>::iterator oitr = outputStart;
     for (u32 j = 0; j < outputCount; j++)
     {
         oitr->resize(numOutputDims);
-        for (u32 i = 0; i < numOutputDims; i++)
-            (*oitr)[i] = *outputPtr++;
+        memcpy(&((*oitr)[0]), outputPtr, numOutputDims*sizeof(fml));
+        outputPtr += numOutputDims;
         oitr++;
     }
 }
 
-void tLayeredLearnerBase::m_update(fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
-                                   fml* targetMatrix, u32 targetMatrixUsed, u32 targetMatrixNumDims)
+void tLayeredLearnerBase::m_update(const fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
+                                         fml* targetMatrix, u32 targetMatrixUsed, u32 targetMatrixNumDims)
 {
     if (inputMatrixUsed == 0)
         throw eRuntimeError("Cannot update when there have been no example inputs.");
     if ((inputMatrixUsed % inputMatrixNumDims) != 0)
         throw eRuntimeError("Wack inputMatrixUsed");
 
-    fml* input = inputMatrix;
+    const fml* input = inputMatrix;
     u32 numInputDims = inputMatrixNumDims;
     u32 inputCount = inputMatrixUsed / inputMatrixNumDims;
 
@@ -332,15 +331,15 @@ void tLayeredLearnerBase::m_update(fml* inputMatrix, u32 inputMatrixUsed, u32 in
                     input, numInputDims, inputCount);
 }
 
-void tLayeredLearnerBase::m_evaluate(fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
-                                     const fml*& output, u32 expectedOutputDims, u32& expectedOutputCount)
+void tLayeredLearnerBase::m_evaluate(const fml* inputMatrix, u32 inputMatrixUsed, u32 inputMatrixNumDims,
+                                     const fml*& output, u32 expectedOutputDims, u32 expectedOutputCount)
 {
     if (inputMatrixUsed == 0)
         throw eRuntimeError("Cannot update when there have been no example inputs.");
     if ((inputMatrixUsed % inputMatrixNumDims) != 0)
         throw eRuntimeError("Wack inputMatrixUsed");
 
-    fml* inputPtr = inputMatrix;
+    const fml* inputPtr = inputMatrix;
     u32 numInputDims = inputMatrixNumDims;
     u32 inputCount = inputMatrixUsed / inputMatrixNumDims;
 
