@@ -46,14 +46,7 @@ tAnnLayerCPU::~tAnnLayerCPU()
 {
     // The super d'tor is called automatically.
 
-    delete [] m_dw_accum; m_dw_accum = NULL;
-    delete [] m_db_accum; m_db_accum = NULL;
-    delete [] m_A; m_A = NULL;
-    delete [] m_a; m_a = NULL;
-    delete [] m_dA; m_dA = NULL;
-    delete [] m_prev_da; m_prev_da = NULL;
-    delete [] m_vel; m_vel = NULL;
-    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
+    m_finalize();
 }
 
 
@@ -358,6 +351,14 @@ u32 tAnnLayerCPU::headerId() const
 }
 
 
+void tAnnLayerCPU::reset()
+{
+    m_finalize();
+    tAnnLayerBase::reset();
+    m_initAccum();
+}
+
+
 void tAnnLayerCPU::unpack(iReadable* in)
 {
     tAnnLayerBase::unpack(in);
@@ -387,6 +388,19 @@ void tAnnLayerCPU::m_initAccum()
     m_db_accum = new fml[numBiases];
     for (u32 i = 0; i < numBiases; i++)
         m_db_accum[i] = FML(0.0);
+}
+
+
+void tAnnLayerCPU::m_finalize()
+{
+    delete [] m_dw_accum; m_dw_accum = NULL;
+    delete [] m_db_accum; m_db_accum = NULL;
+    delete [] m_A; m_A = NULL;
+    delete [] m_a; m_a = NULL;
+    delete [] m_dA; m_dA = NULL;
+    delete [] m_prev_da; m_prev_da = NULL;
+    delete [] m_vel; m_vel = NULL;
+    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
 }
 
 
