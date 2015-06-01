@@ -1,9 +1,14 @@
 
 /*
  * Uncomment the following two lines to ensure that no heap allocations
- * are happening without you knowing about it. (And then compile and
+ * are happening without you knowing about it. And then compile and
  * run your code and hope that no exceptions are thrown or asserts are
- * hit.)
+ * hit. Note that heap allocations may still happen if more memory is
+ * required than what Eigen wants to put on the stack, even if you are
+ * doing everything correctly on your end. To test this, be sure to use
+ * small matrices with Eigen so that you can be sure that any heap
+ * allocations that happen are in fact your fault. Related to this, see
+ * the next comment.
  */
 #define EIGEN_NO_MALLOC
 #define EIGEN_DONT_PARALLELIZE
