@@ -184,4 +184,70 @@ __host__ __device__
 };
 
 
+#ifdef ENABLE_DEVICE_FUNCTIONS
+
+
+#define cuda_assert(expression) \
+    do { \
+        cudaError_t err; \
+        if ((err = (expression)) != cudaSuccess) \
+        { \
+            std::cout << "Cuda error: " << cudaGetErrorString(err) << std::endl; \
+            assert(false); \
+        } \
+    } while (false)
+
+
+#define cublas_assert(expression, what) \
+    do { \
+        if ((expression) != CUBLAS_STATUS_SUCCESS) \
+        { \
+            std::cout << "cuBLAS error! " << what << std::endl; \
+            assert(false); \
+        } \
+    } while (false)
+
+
+static
+void s_cudaFree(fml*& buf)
+{
+    if (buf)
+    {
+        cuda_assert( cudaFree(buf) );
+        buf = NULL;
+    }
+}
+
+
+static
+fml* s_cudaMalloc(u32 size)
+{
+    fml* ptr = NULL;
+    cuda_assert( cudaMalloc((void**)(&ptr), size*sizeof(fml)) );
+    return ptr;
+}
+
+
+static
+void s_createCublasContext(void*& ptr)
+{
+    cublasHandle_t* cublasHandle = new cublasHandle_t;
+    cublas_assert( cublasCreate(cublasHandle), "s_createCublasContext" );
+    ptr = cublasHandle;
+}
+
+
+static
+void s_destroyCublasContext(void*& ptr)
+{
+    cublasHandle_t* cublasHandle = (cublasHandle_t*)ptr;
+    cublas_assert( cublasDestroy(*cublasHandle), "s_destroyCublasContext" );
+    delete cublasHandle;
+    ptr = NULL;
+}
+
+
+#endif   // #ifdef ENABLE_DEVICE_FUNCTIONS
+
+
 }  // <-- end of un-named namespace
