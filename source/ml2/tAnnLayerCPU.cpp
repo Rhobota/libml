@@ -348,7 +348,9 @@ const fml* tAnnLayerCPU::getInputErrorGradients(u32& numInputDims, u32& count) c
 static
 iLayer* s_newLayerFunc(iReadable* in)
 {
-    return new tAnnLayerCPU(in);
+    tAnnLayerCPU* layer = new tAnnLayerCPU();
+    layer->unpack(in);
+    return layer;
 }
 
 

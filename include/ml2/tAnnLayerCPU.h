@@ -49,6 +49,13 @@ class tAnnLayerCPU : public tAnnLayerBase
         u32 headerId() const;
 
 
+        ///////////////////////////////////////////////////////////////////////
+        // The iPackable interface:   (partial re-implementation)
+        ///////////////////////////////////////////////////////////////////////
+
+        void unpack(iReadable* in);
+
+
     private:
 
         fml* m_dw_accum;
