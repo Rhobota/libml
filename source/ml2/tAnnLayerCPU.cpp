@@ -362,15 +362,8 @@ void tAnnLayerCPU::reset()
 void tAnnLayerCPU::unpack(iReadable* in)
 {
     tAnnLayerBase::unpack(in);
-
+    m_finalize();
     m_initAccum();
-
-    delete [] m_A; m_A = NULL;
-    delete [] m_a; m_a = NULL;
-    delete [] m_dA; m_dA = NULL;
-    delete [] m_prev_da; m_prev_da = NULL;
-    delete [] m_vel; m_vel = NULL;
-    delete [] m_dw_accum_avg; m_dw_accum_avg = NULL;
 }
 
 

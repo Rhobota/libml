@@ -638,6 +638,8 @@ void tAnnLayerGPU::pack(iWritable* out) const
 void tAnnLayerGPU::unpack(iReadable* in)
 {
     tAnnLayerBase::unpack(in);
+    m_finalize();
+    s_createCublasContext(m_cublasContext);
     m_syncWeights_hostToDevice();
     m_initAccum();
 }
