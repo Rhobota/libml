@@ -1,13 +1,7 @@
 #include <ml2/tAnnLayerGPU.h>
 
-#include <cuda.h>
-#include <cublas_v2.h>
-#include <thrust/device_ptr.h>
-#include <thrust/reduce.h>
-#include <thrust/tabulate.h>
-#include <thrust/transform.h>
-#include <thrust/iterator/counting_iterator.h>
-#include <thrust/iterator/transform_iterator.h>
+#define ENABLE_DEVICE_FUNCTIONS
+#include "common.ipp"
 
 #include <cassert>
 #include <iostream>
@@ -15,10 +9,6 @@
 
 namespace ml2
 {
-
-
-#define ENABLE_DEVICE_FUNCTIONS
-#include "common.ipp"
 
 
 class tFillColumnsWithFunc
@@ -684,10 +674,10 @@ void tAnnLayerGPU::m_syncWeights_deviceToHost() const
         throw eRuntimeError("Cannot sync weight from device to host because there are no device weights!");
 
     u32 numWeights = m_numInputDims * m_numNeurons;
-    cuda_assert( cudaMemcpy(m_w, m_gpu_w, numWeights*sizeof(fml), cudaMemcpyDeviceToHost) );
+    s_cudaCopyDeviceToHost(m_w, m_gpu_w, numWeights);
 
     u32 numBiases = m_numNeurons;
-    cuda_assert( cudaMemcpy(m_b, m_gpu_b, numBiases*sizeof(fml), cudaMemcpyDeviceToHost) );
+    s_cudaCopyDeviceToHost(m_b, m_gpu_b, numBiases);
 }
 
 
@@ -696,12 +686,12 @@ void tAnnLayerGPU::m_syncWeights_hostToDevice()
     u32 numWeights = m_numInputDims * m_numNeurons;
     s_cudaFree(m_gpu_w);
     m_gpu_w = s_cudaMalloc(numWeights);
-    cuda_assert( cudaMemcpy(m_gpu_w, m_w, numWeights*sizeof(fml), cudaMemcpyHostToDevice) );
+    s_cudaCopyHostToDevice(m_gpu_w, m_w, numWeights);
 
     u32 numBiases = m_numNeurons;
     s_cudaFree(m_gpu_b);
     m_gpu_b = s_cudaMalloc(numBiases);
-    cuda_assert( cudaMemcpy(m_gpu_b, m_b, numBiases*sizeof(fml), cudaMemcpyHostToDevice) );
+    s_cudaCopyHostToDevice(m_gpu_b, m_b, numBiases);
 }
 
 

@@ -1,8 +1,7 @@
 #include <ml2/tLayeredLearnerGPU.h>
 
-#include <cuda.h>
-#include <thrust/device_ptr.h>
-#include <thrust/transform.h>
+#define ENABLE_DEVICE_FUNCTIONS
+#include "common.ipp"
 
 #include <cassert>
 #include <iostream>
@@ -10,10 +9,6 @@
 
 namespace ml2
 {
-
-
-#define ENABLE_DEVICE_FUNCTIONS
-#include "common.ipp"
 
 
 tLayeredLearnerGPU::tLayeredLearnerGPU(u32 numInputDims, u32 numOutputDims)
@@ -42,19 +37,11 @@ tLayeredLearnerGPU::~tLayeredLearnerGPU()
 {
     // The super d'tors are called automatically.
 
-    if (m_gpu_buf_1)
-    {
-        cuda_assert( cudaFree(m_gpu_buf_1) );
-        m_gpu_buf_1 = NULL;
-        m_gpu_buf_1_size = 0;
-    }
+    s_cudaFree(m_gpu_buf_1);
+    m_gpu_buf_1_size = 0;
 
-    if (m_gpu_buf_2)
-    {
-        cuda_assert( cudaFree(m_gpu_buf_2) );
-        m_gpu_buf_2 = NULL;
-        m_gpu_buf_2_size = 0;
-    }
+    s_cudaFree(m_gpu_buf_2);
+    m_gpu_buf_2_size = 0;
 
     delete [] m_local_buf_1;
     m_local_buf_1 = NULL;
@@ -167,14 +154,13 @@ void tLayeredLearnerGPU::m_copyTo_gpu_buf_1(const fml* local_buf, u32 size)
     {
         if (m_gpu_buf_1)
         {
-            cuda_assert( cudaFree(m_gpu_buf_1) );
-            m_gpu_buf_1 = NULL;
+            s_cudaFree(m_gpu_buf_1);
             m_gpu_buf_1_size = 0;
         }
-        cuda_assert( cudaMalloc((void**)(&m_gpu_buf_1), size*sizeof(fml)) );
+        m_gpu_buf_1 = s_cudaMalloc(size);
         m_gpu_buf_1_size = size;
     }
-    cuda_assert( cudaMemcpy(m_gpu_buf_1, local_buf, size*sizeof(fml), cudaMemcpyHostToDevice) );
+    s_cudaCopyHostToDevice(m_gpu_buf_1, local_buf, size);
 }
 
 void tLayeredLearnerGPU::m_copyTo_gpu_buf_2(const fml* local_buf, u32 size)
@@ -183,14 +169,13 @@ void tLayeredLearnerGPU::m_copyTo_gpu_buf_2(const fml* local_buf, u32 size)
     {
         if (m_gpu_buf_2)
         {
-            cuda_assert( cudaFree(m_gpu_buf_2) );
-            m_gpu_buf_2 = NULL;
+            s_cudaFree(m_gpu_buf_2);
             m_gpu_buf_2_size = 0;
         }
-        cuda_assert( cudaMalloc((void**)(&m_gpu_buf_2), size*sizeof(fml)) );
+        m_gpu_buf_2 = s_cudaMalloc(size);
         m_gpu_buf_2_size = size;
     }
-    cuda_assert( cudaMemcpy(m_gpu_buf_2, local_buf, size*sizeof(fml), cudaMemcpyHostToDevice) );
+    s_cudaCopyHostToDevice(m_gpu_buf_2, local_buf, size);
 }
 
 void tLayeredLearnerGPU::m_copyTo_local_buf_1(const fml* gpu_buf, u32 size)
@@ -201,7 +186,7 @@ void tLayeredLearnerGPU::m_copyTo_local_buf_1(const fml* gpu_buf, u32 size)
         m_local_buf_1 = new fml[size];
         m_local_buf_1_size = size;
     }
-    cuda_assert( cudaMemcpy(m_local_buf_1, gpu_buf, size*sizeof(fml), cudaMemcpyDeviceToHost) );
+    s_cudaCopyDeviceToHost(m_local_buf_1, gpu_buf, size);
 }
 
 
