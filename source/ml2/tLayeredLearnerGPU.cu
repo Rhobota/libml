@@ -8,19 +8,12 @@
 #include <iostream>
 
 
-#define cuda_assert(expression) \
-    do { \
-        cudaError_t err; \
-        if ((err = (expression)) != cudaSuccess) \
-        { \
-            std::cout << "Cuda error: " << cudaGetErrorString(err) << std::endl; \
-            assert(false); \
-        } \
-    } while (false)
-
-
 namespace ml2
 {
+
+
+#define ENABLE_DEVICE_FUNCTIONS
+#include "common.ipp"
 
 
 tLayeredLearnerGPU::tLayeredLearnerGPU(u32 numInputDims, u32 numOutputDims)
@@ -103,6 +96,7 @@ void tLayeredLearnerGPU::evaluate(const tIO& input, tIO& output)
 void tLayeredLearnerGPU::evaluateBatch(const std::vector<tIO>& inputs,
                                              std::vector<tIO>& outputs)
 {
+    outputs.resize(inputs.size());
     evaluateBatch(inputs.begin(), inputs.end(), outputs.begin());
 }
 
