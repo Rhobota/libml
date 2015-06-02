@@ -1,13 +1,12 @@
 #include <ml2/tAnnLayerCPU.h>
 
+#include "common.ipp"
+
 #include "../ml/Eigen.h"
 
 
 namespace ml2
 {
-
-
-#include "common.ipp"
 
 
 tAnnLayerCPU::tAnnLayerCPU()

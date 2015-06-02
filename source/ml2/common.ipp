@@ -1,4 +1,22 @@
 
+#ifdef ENABLE_DEVICE_FUNCTIONS
+
+#include <cuda.h>
+#include <cublas_v2.h>
+#include <thrust/device_ptr.h>
+#include <thrust/reduce.h>
+#include <thrust/tabulate.h>
+#include <thrust/transform.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
+
+#include <cassert>
+
+#endif
+
+
+namespace ml2
+{
 namespace    // <-- un-named namespaces act like everything inside is statically scoped
 {
 
@@ -209,6 +227,15 @@ __host__ __device__
 
 
 static
+fml* s_cudaMalloc(u32 size)
+{
+    fml* ptr = NULL;
+    cuda_assert( cudaMalloc((void**)(&ptr), size*sizeof(fml)) );
+    return ptr;
+}
+
+
+static
 void s_cudaFree(fml*& buf)
 {
     if (buf)
@@ -220,11 +247,16 @@ void s_cudaFree(fml*& buf)
 
 
 static
-fml* s_cudaMalloc(u32 size)
+void s_cudaCopyHostToDevice(fml* dest, const fml* source, u32 size)
 {
-    fml* ptr = NULL;
-    cuda_assert( cudaMalloc((void**)(&ptr), size*sizeof(fml)) );
-    return ptr;
+    cuda_assert( cudaMemcpy(dest, source, size*sizeof(fml), cudaMemcpyHostToDevice) );
+}
+
+
+static
+void s_cudaCopyDeviceToHost(fml* dest, const fml* source, u32 size)
+{
+    cuda_assert( cudaMemcpy(dest, source, size*sizeof(fml), cudaMemcpyDeviceToHost) );
 }
 
 
@@ -254,3 +286,4 @@ void s_destroyCublasContext(void*& ptr)
 
 
 }  // <-- end of un-named namespace
+}  // <-- end of namespace ml2
