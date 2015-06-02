@@ -48,6 +48,7 @@ void tLayeredLearnerCPU::evaluate(const tIO& input, tIO& output)
 void tLayeredLearnerCPU::evaluateBatch(const std::vector<tIO>& inputs,
                                              std::vector<tIO>& outputs)
 {
+    outputs.resize(inputs.size());
     evaluateBatch(inputs.begin(), inputs.end(), outputs.begin());
 }
 
