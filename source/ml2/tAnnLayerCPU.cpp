@@ -1,6 +1,6 @@
 #include <ml2/tAnnLayerCPU.h>
 
-#include "common.ipp"
+#include "common_nn.ipp"
 
 #include "../ml/Eigen.h"
 

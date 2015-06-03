@@ -1,7 +1,7 @@
 #include <ml2/tLayeredLearnerGPU.h>
 
 #define ENABLE_DEVICE_FUNCTIONS
-#include "common.ipp"
+#include "common_nn.ipp"
 
 #include <cassert>
 #include <iostream>
