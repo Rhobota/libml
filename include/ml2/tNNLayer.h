@@ -7,6 +7,8 @@
 #include <rho/bNonCopyable.h>
 #include <rho/algo/tLCG.h>
 
+#include <string>
+
 
 namespace ml2
 {
@@ -30,6 +32,11 @@ class tNNLayer : public iLayer, public bNonCopyable
             kLayerTypeMax           = 3  // marks the max of this enum (do not use)
         };
 
+        static std::string layerTypeToString(nLayerType type);
+
+        static char        layerTypeToChar(nLayerType type);
+
+
         /**
          * Possible methods for using the output error gradients to update
          * the weights in a neural network layer.
@@ -44,6 +51,14 @@ class tNNLayer : public iLayer, public bNonCopyable
             kWeightUpRuleARMS              = 6,  // the adaptive rmsprop method
             kWeightUpRuleMax               = 7   // marks the max of this enum (do not use)
         };
+
+        static std::string weightUpRuleToString(nLayerWeightUpdateRule rule);
+
+        static char        weightUpRuleToChar(nLayerWeightUpdateRule rule);
+
+
+    private:
+
 };
 
 

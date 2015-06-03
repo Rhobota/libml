@@ -10,90 +10,6 @@ namespace ml2
 
 
 static
-std::string s_layerTypeToString(tAnnLayerBase::nLayerType type)
-{
-    switch (type)
-    {
-        case tAnnLayerBase::kLayerTypeLogistic:
-            return "logistic";
-        case tAnnLayerBase::kLayerTypeHyperbolic:
-            return "hyperbolic";
-        case tAnnLayerBase::kLayerTypeSoftmax:
-            return "softmax";
-        default:
-            assert(false);
-    }
-}
-
-
-static
-char s_layerTypeToChar(tAnnLayerBase::nLayerType type)
-{
-    switch (type)
-    {
-        case tAnnLayerBase::kLayerTypeLogistic:
-            return 'l';
-        case tAnnLayerBase::kLayerTypeHyperbolic:
-            return 'h';
-        case tAnnLayerBase::kLayerTypeSoftmax:
-            return 's';
-        default:
-            assert(false);
-    }
-}
-
-
-static
-std::string s_weightUpRuleToString(tAnnLayerBase::nLayerWeightUpdateRule rule)
-{
-    switch (rule)
-    {
-        case tAnnLayerBase::kWeightUpRuleNone:
-            return "none";
-        case tAnnLayerBase::kWeightUpRuleFixedLearningRate:
-            return "fixed rate";
-        case tAnnLayerBase::kWeightUpRuleMomentum:
-            return "momentum";
-        case tAnnLayerBase::kWeightUpRuleAdaptiveRates:
-            return "adaptive rates";
-        case tAnnLayerBase::kWeightUpRuleRPROP:
-            return "rprop";
-        case tAnnLayerBase::kWeightUpRuleRMSPROP:
-            return "rmsprop";
-        case tAnnLayerBase::kWeightUpRuleARMS:
-            return "arms";
-        default:
-            assert(false);
-    }
-}
-
-
-static
-char s_weightUpRuleToChar(tAnnLayerBase::nLayerWeightUpdateRule rule)
-{
-    switch (rule)
-    {
-        case tAnnLayerBase::kWeightUpRuleNone:
-            return 'n';
-        case tAnnLayerBase::kWeightUpRuleFixedLearningRate:
-            return 'f';
-        case tAnnLayerBase::kWeightUpRuleMomentum:
-            return 'm';
-        case tAnnLayerBase::kWeightUpRuleAdaptiveRates:
-            return 'a';
-        case tAnnLayerBase::kWeightUpRuleRPROP:
-            return 'r';
-        case tAnnLayerBase::kWeightUpRuleRMSPROP:
-            return 'R';
-        case tAnnLayerBase::kWeightUpRuleARMS:
-            return 'A';
-        default:
-            assert(false);
-    }
-}
-
-
-static
 fml s_randInRange(algo::iLCG& lcg, fml randWeightMin, fml randWeightMax)
 {
     u64 ra;
@@ -207,8 +123,8 @@ void tAnnLayerBase::printLayerInfo(std::ostream& out) const
     int w = 25;
 
     out << std::setw(w) << "ANN Layer:";
-    out << std::setw(w) << s_layerTypeToString(m_type);
-    out << std::setw(w) << s_weightUpRuleToString(m_rule);
+    out << std::setw(w) << layerTypeToString(m_type);
+    out << std::setw(w) << weightUpRuleToString(m_rule);
 
     {
         std::ostringstream o;
@@ -229,10 +145,10 @@ std::string tAnnLayerBase::layerInfoString() const
     std::ostringstream o;
 
     o << m_numNeurons;
-    o << s_layerTypeToChar(m_type);
+    o << layerTypeToChar(m_type);
     o << '-';
 
-    o << s_weightUpRuleToChar(m_rule);
+    o << weightUpRuleToChar(m_rule);
     o << '-';
 
     o << "a" << m_alpha;
