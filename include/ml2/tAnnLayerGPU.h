@@ -21,7 +21,7 @@ class tAnnLayerGPU : public tAnnLayerBase
         /**
          * See tAnnLayerBase::tAnnLayerBase().
          */
-        tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+        tAnnLayerGPU(nLayerType type, nLayerWeightUpdateRule rule,
                      u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                      fml randWeightMin = -1.0, fml randWeightMax = 1.0);
 

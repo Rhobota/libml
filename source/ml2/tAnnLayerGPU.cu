@@ -215,7 +215,7 @@ tAnnLayerGPU::tAnnLayerGPU()
 }
 
 
-tAnnLayerGPU::tAnnLayerGPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+tAnnLayerGPU::tAnnLayerGPU(nLayerType type, nLayerWeightUpdateRule rule,
                            u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                            fml randWeightMin, fml randWeightMax)
     : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,

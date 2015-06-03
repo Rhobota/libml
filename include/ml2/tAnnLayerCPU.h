@@ -21,7 +21,7 @@ class tAnnLayerCPU : public tAnnLayerBase
         /**
          * See tAnnLayerBase::tAnnLayerBase().
          */
-        tAnnLayerCPU(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+        tAnnLayerCPU(nLayerType type, nLayerWeightUpdateRule rule,
                      u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                      fml randWeightMin = -1.0, fml randWeightMax = 1.0);
 

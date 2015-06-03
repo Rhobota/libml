@@ -2,44 +2,16 @@
 #define __ml2_tAnnLayerBase_h__
 
 
-#include <ml2/iLayer.h>
-
-#include <rho/bNonCopyable.h>
-#include <rho/algo/tLCG.h>
+#include <ml2/tNNLayer.h>
 
 
 namespace ml2
 {
 
 
-class tAnnLayerBase : public iLayer, public bNonCopyable
+class tAnnLayerBase : public tNNLayer
 {
     public:
-
-        /**
-         * Possible squashing functions used on the neurons in this layer.
-         */
-        enum nAnnLayerType {
-            kLayerTypeLogistic      = 0, // the logistic function
-            kLayerTypeHyperbolic    = 1, // the hyperbolic tangent function
-            kLayerTypeSoftmax       = 2, // a softmax group
-            kLayerTypeMax           = 3  // marks the max of this enum (do not use)
-        };
-
-        /**
-         * Possible methods for using the output error gradients to update
-         * the weights in this layer.
-         */
-        enum nAnnLayerWeightUpdateRule {
-            kWeightUpRuleNone              = 0,  // no changes will be made to the weights
-            kWeightUpRuleFixedLearningRate = 1,  // the standard fixed learning rate method
-            kWeightUpRuleMomentum          = 2,  // the momentum learning rate method
-            kWeightUpRuleAdaptiveRates     = 3,  // the adaptive learning rates method (for full- or large-batch)
-            kWeightUpRuleRPROP             = 4,  // the rprop full-batch method
-            kWeightUpRuleRMSPROP           = 5,  // the rmsprop mini-batch method (a mini-batch version of rprop)
-            kWeightUpRuleARMS              = 6,  // the adaptive rmsprop method
-            kWeightUpRuleMax               = 7   // marks the max of this enum (do not use)
-        };
 
         /**
          * Constructs an empty ann. You probably want to call unpack if you use
@@ -80,7 +52,7 @@ class tAnnLayerBase : public iLayer, public bNonCopyable
          *         -- requires setAlpha()
          *         -- very similar to RMSPROP, but has an adaptive alpha
          */
-        tAnnLayerBase(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+        tAnnLayerBase(nLayerType type, nLayerWeightUpdateRule rule,
                       u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                       fml randWeightMin = -1.0, fml randWeightMax = 1.0);
 
@@ -147,8 +119,8 @@ class tAnnLayerBase : public iLayer, public bNonCopyable
 
     protected:
 
-        nAnnLayerType             m_type;
-        nAnnLayerWeightUpdateRule m_rule;
+        nLayerType             m_type;
+        nLayerWeightUpdateRule m_rule;
 
         fml m_alpha;
         fml m_viscosity;

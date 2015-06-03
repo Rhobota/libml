@@ -10,7 +10,7 @@ namespace ml2
 
 
 static
-std::string s_layerTypeToString(tAnnLayerBase::nAnnLayerType type)
+std::string s_layerTypeToString(tAnnLayerBase::nLayerType type)
 {
     switch (type)
     {
@@ -27,7 +27,7 @@ std::string s_layerTypeToString(tAnnLayerBase::nAnnLayerType type)
 
 
 static
-char s_layerTypeToChar(tAnnLayerBase::nAnnLayerType type)
+char s_layerTypeToChar(tAnnLayerBase::nLayerType type)
 {
     switch (type)
     {
@@ -44,7 +44,7 @@ char s_layerTypeToChar(tAnnLayerBase::nAnnLayerType type)
 
 
 static
-std::string s_weightUpRuleToString(tAnnLayerBase::nAnnLayerWeightUpdateRule rule)
+std::string s_weightUpRuleToString(tAnnLayerBase::nLayerWeightUpdateRule rule)
 {
     switch (rule)
     {
@@ -69,7 +69,7 @@ std::string s_weightUpRuleToString(tAnnLayerBase::nAnnLayerWeightUpdateRule rule
 
 
 static
-char s_weightUpRuleToChar(tAnnLayerBase::nAnnLayerWeightUpdateRule rule)
+char s_weightUpRuleToChar(tAnnLayerBase::nLayerWeightUpdateRule rule)
 {
     switch (rule)
     {
@@ -123,7 +123,7 @@ tAnnLayerBase::tAnnLayerBase()
 }
 
 
-tAnnLayerBase::tAnnLayerBase(nAnnLayerType type, nAnnLayerWeightUpdateRule rule,
+tAnnLayerBase::tAnnLayerBase(nLayerType type, nLayerWeightUpdateRule rule,
                              u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
                              fml randWeightMin, fml randWeightMax)
     : m_type(type),
@@ -280,8 +280,8 @@ void tAnnLayerBase::unpack(iReadable* in)
     i32 type, rule;
     rho::unpack(in, type);
     rho::unpack(in, rule);
-    m_type = (nAnnLayerType)type;
-    m_rule = (nAnnLayerWeightUpdateRule)rule;
+    m_type = (nLayerType)type;
+    m_rule = (nLayerWeightUpdateRule)rule;
 
     rho::unpack(in, m_alpha);
     rho::unpack(in, m_viscosity);
