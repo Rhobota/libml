@@ -226,7 +226,6 @@ __host__ __device__
     } while (false)
 
 
-static
 fml* s_cudaMalloc(u32 size)
 {
     fml* ptr = NULL;
@@ -235,7 +234,6 @@ fml* s_cudaMalloc(u32 size)
 }
 
 
-static
 void s_cudaFree(fml*& buf)
 {
     if (buf)
@@ -246,21 +244,18 @@ void s_cudaFree(fml*& buf)
 }
 
 
-static
 void s_cudaCopyHostToDevice(fml* dest, const fml* source, u32 size)
 {
     cuda_assert( cudaMemcpy(dest, source, size*sizeof(fml), cudaMemcpyHostToDevice) );
 }
 
 
-static
 void s_cudaCopyDeviceToHost(fml* dest, const fml* source, u32 size)
 {
     cuda_assert( cudaMemcpy(dest, source, size*sizeof(fml), cudaMemcpyDeviceToHost) );
 }
 
 
-static
 void s_createCublasContext(void*& ptr)
 {
     cublasHandle_t* cublasHandle = new cublasHandle_t;
@@ -269,7 +264,6 @@ void s_createCublasContext(void*& ptr)
 }
 
 
-static
 void s_destroyCublasContext(void*& ptr)
 {
     if (ptr)
@@ -280,6 +274,189 @@ void s_destroyCublasContext(void*& ptr)
         ptr = NULL;
     }
 }
+
+
+class tFillColumnsWithFunc
+{
+    public:
+
+        tFillColumnsWithFunc(fml* vect, u32 vectSize)
+            : m_vect(vect), m_vectSize(vectSize) { }
+
+        __host__ __device__
+        fml operator()(const ssize_t& index)
+        {
+            return m_vect[(index % m_vectSize)];
+        }
+
+    private:
+
+        fml* m_vect;
+        u32  m_vectSize;
+};
+
+
+class tColumnIndexFunc : public thrust::unary_function<u32,u32>
+{
+    public:
+
+        tColumnIndexFunc(u32 numRows)
+            : m_numRows(numRows) { }
+
+        __host__ __device__
+        u32 operator()(u32 index)
+        {
+            return (index / m_numRows);
+        }
+
+    private:
+
+        u32 m_numRows;
+};
+
+
+class tDivInputColsByVectorValues
+{
+    public:
+
+        tDivInputColsByVectorValues(fml* input, fml* vect, u32 numInputRows)
+            : m_input(input), m_vect(vect), m_numInputRows(numInputRows) { }
+
+        __host__ __device__
+        fml operator()(const ssize_t& index)
+        {
+            fml denom = m_vect[(index / m_numInputRows)];
+
+            if (denom > FML(0.0))
+                return m_input[index] / denom;
+            else
+                return FML(1.0) / ((fml) m_numInputRows);
+        }
+
+    private:
+
+        fml* m_input;
+        fml* m_vect;
+        u32  m_numInputRows;
+};
+
+
+class tNoOp
+{
+    public:
+
+        __host__ __device__
+        fml operator()(const fml& val)
+        {
+            return val;
+        }
+};
+
+
+template<class T>
+class tMultWithUniOperator
+{
+    public:
+
+        __host__ __device__
+        fml operator()(const fml& a, const fml& b)
+        {
+            return a * m_uniOp(b);
+        }
+
+    private:
+
+        T m_uniOp;
+};
+
+
+class tSubWithScalarMult
+{
+    public:
+
+        tSubWithScalarMult(fml mult)
+            : m_mult(mult) { }
+
+        __host__ __device__
+        fml operator()(const fml& a, const fml& b)
+        {
+            return a - m_mult*b;
+        }
+
+    private:
+
+        fml m_mult;
+};
+
+
+class tVelUpdateFunc
+{
+    public:
+
+        tVelUpdateFunc(fml viscosity, fml mult)
+            : m_viscosity(viscosity), m_mult(mult) { }
+
+        __host__ __device__
+        fml operator()(const fml& vel, const fml& dw_accum)
+        {
+            return vel*m_viscosity - m_mult*dw_accum;
+        }
+
+    private:
+
+        fml m_viscosity, m_mult;
+};
+
+
+class tMultBy
+{
+    public:
+
+        tMultBy(fml val)
+            : m_val(val) { }
+
+        __host__ __device__
+        fml operator()(const fml& val)
+        {
+            return m_val * val;
+        }
+
+    private:
+
+        fml m_val;
+};
+
+
+class t_RMSPROP_avg_update
+{
+    public:
+
+        __host__ __device__
+        fml operator()(const fml& dw_accum_avg, const fml& dw_accum)
+        {
+            return dw_accum_avg*FML(0.9) + dw_accum*dw_accum*FML(0.1);
+        }
+};
+
+
+class t_RMSPROP_update_with_alpha
+{
+    public:
+
+        t_RMSPROP_update_with_alpha(fml alpha)
+            : m_alpha(alpha) { }
+
+        __host__ __device__
+        fml operator()(fml accum, fml accum_avg) const
+        {
+            return m_alpha * m_func(accum, accum_avg);
+        }
+
+    private:
+
+        fml m_alpha;
+        t_RMSPROP_update m_func;
+};
 
 
 #endif   // #ifdef ENABLE_DEVICE_FUNCTIONS
