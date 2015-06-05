@@ -112,6 +112,8 @@ class tAnnLayerBase : public tNNLayer
 
     protected:
 
+        void m_validate();
+
         void m_initWeights(algo::iLCG& lcg,
                            fml randWeightMin,
                            fml randWeightMax);

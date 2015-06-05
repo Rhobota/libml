@@ -203,11 +203,9 @@ void tAnnLayerBase::unpack(iReadable* in)
     rho::unpack(in, m_viscosity);
 
     rho::unpack(in, m_numInputDims);
-    if (m_numInputDims == 0)
-        throw eInvalidArgument("The number of input dimensions may not be zero.");
     rho::unpack(in, m_numNeurons);
-    if (m_numNeurons == 0)
-        throw eInvalidArgument("The number of neurons may not be zero.");
+
+    m_validate();
 
     m_curCount = 0;
     m_maxCount = 0;
@@ -227,14 +225,20 @@ void tAnnLayerBase::unpack(iReadable* in)
 }
 
 
-void tAnnLayerBase::m_initWeights(algo::iLCG& lcg,
-                                  fml randWeightMin,
-                                  fml randWeightMax)
+void tAnnLayerBase::m_validate()
 {
     if (m_numInputDims == 0)
         throw eInvalidArgument("The number of input dimensions may not be zero.");
     if (m_numNeurons == 0)
         throw eInvalidArgument("The number of neurons may not be zero.");
+}
+
+
+void tAnnLayerBase::m_initWeights(algo::iLCG& lcg,
+                                  fml randWeightMin,
+                                  fml randWeightMax)
+{
+    m_validate();
 
     u32 numWeights = m_numInputDims * m_numNeurons;
     delete [] m_w;

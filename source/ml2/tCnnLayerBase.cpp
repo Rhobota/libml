@@ -240,14 +240,7 @@ void tCnnLayerBase::unpack(iReadable* in)
     rho::unpack(in, m_kernelStepX);
     rho::unpack(in, m_numKernels);
 
-    if (m_inputRows == 0 || m_inputCols == 0 || m_inputComponents == 0)
-        throw eInvalidArgument("The number of input rows, cols, and components may not be zero.");
-    if ((m_kernelRows % 2) == 0 || (m_kernelCols % 2) == 0)
-        throw eInvalidArgument("The kernel rows and cols must both be odd.");
-    if (m_kernelStepY == 0 || m_kernelStepX == 0)
-        throw eInvalidArgument("The kernel step must not be zero.");
-    if (m_numKernels == 0)
-        throw eInvalidArgument("You cannot have zero kernels.");
+    m_validate();
 
     m_curCount = 0;
     m_maxCount = 0;
@@ -267,9 +260,7 @@ void tCnnLayerBase::unpack(iReadable* in)
 }
 
 
-void tCnnLayerBase::m_initWeights(algo::iLCG& lcg,
-                                  fml randWeightMin,
-                                  fml randWeightMax)
+void tCnnLayerBase::m_validate()
 {
     if (m_inputRows == 0 || m_inputCols == 0 || m_inputComponents == 0)
         throw eInvalidArgument("The number of input rows, cols, and components may not be zero.");
@@ -279,6 +270,14 @@ void tCnnLayerBase::m_initWeights(algo::iLCG& lcg,
         throw eInvalidArgument("The kernel step must not be zero.");
     if (m_numKernels == 0)
         throw eInvalidArgument("You cannot have zero kernels.");
+}
+
+
+void tCnnLayerBase::m_initWeights(algo::iLCG& lcg,
+                                  fml randWeightMin,
+                                  fml randWeightMax)
+{
+    m_validate();
 
     u32 numWeights = m_kernelRows * m_kernelCols * m_inputComponents * m_numKernels;
     delete [] m_w;
