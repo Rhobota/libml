@@ -55,6 +55,7 @@ tAnnLayerBase::tAnnLayerBase(nLayerType type, nLayerWeightUpdateRule rule,
       m_w_orig(NULL),
       m_b_orig(NULL)
 {
+    m_validate();
     m_initWeights(lcg, randWeightMin, randWeightMax);
 }
 
@@ -238,8 +239,6 @@ void tAnnLayerBase::m_initWeights(algo::iLCG& lcg,
                                   fml randWeightMin,
                                   fml randWeightMax)
 {
-    m_validate();
-
     u32 numWeights = m_numInputDims * m_numNeurons;
     delete [] m_w;
     delete [] m_w_orig;

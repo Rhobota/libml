@@ -88,6 +88,8 @@ class tCnnLayerBase : public tNNLayer
 
         void m_validate();
 
+        void m_calculateOutputSize();
+
         void m_initWeights(algo::iLCG& lcg,
                            fml randWeightMin,
                            fml randWeightMax);
@@ -110,6 +112,9 @@ class tCnnLayerBase : public tNNLayer
         u32  m_kernelStepY;
         u32  m_kernelStepX;
         u32  m_numKernels;
+
+        u32  m_outputRows;
+        u32  m_outputCols;
 
         u32  m_curCount;
         u32  m_maxCount;

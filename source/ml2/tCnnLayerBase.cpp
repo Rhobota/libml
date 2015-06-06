@@ -35,6 +35,8 @@ tCnnLayerBase::tCnnLayerBase()
       m_kernelStepY(0),
       m_kernelStepX(0),
       m_numKernels(0),
+      m_outputRows(0),
+      m_outputCols(0),
       m_curCount(0),
       m_maxCount(0),
       m_w(NULL),
@@ -63,6 +65,8 @@ tCnnLayerBase::tCnnLayerBase(nLayerType type, nLayerWeightUpdateRule rule,
       m_kernelStepY(kernelStepY),
       m_kernelStepX(kernelStepX),
       m_numKernels(numKernels),
+      m_outputRows(0),
+      m_outputCols(0),
       m_curCount(0),
       m_maxCount(0),
       m_w(NULL),
@@ -70,6 +74,8 @@ tCnnLayerBase::tCnnLayerBase(nLayerType type, nLayerWeightUpdateRule rule,
       m_w_orig(NULL),
       m_b_orig(NULL)
 {
+    m_validate();
+    m_calculateOutputSize();
     m_initWeights(lcg, randWeightMin, randWeightMax);
 }
 
@@ -152,7 +158,7 @@ void tCnnLayerBase::printLayerInfo(std::ostream& out) const
     std::ostringstream o;
     o << m_kernelRows << "x" << m_kernelCols
       << " (" << m_kernelStepY << "x" << m_kernelStepX << ")"
-      << " => " << m_inputRows << "x" << m_inputCols << "x" << m_numKernels;  // TODO what if step is not 1?
+      << " => " << m_outputRows << "x" << m_outputCols << "x" << m_numKernels;
 
     out << std::setw(w) << o.str();
 
@@ -241,6 +247,7 @@ void tCnnLayerBase::unpack(iReadable* in)
     rho::unpack(in, m_numKernels);
 
     m_validate();
+    m_calculateOutputSize();
 
     m_curCount = 0;
     m_maxCount = 0;
@@ -273,12 +280,17 @@ void tCnnLayerBase::m_validate()
 }
 
 
+void m_calculateOutputSize()
+{
+    m_outputRows = 0; // TODO
+    m_outputCols = 0; // TODO
+}
+
+
 void tCnnLayerBase::m_initWeights(algo::iLCG& lcg,
                                   fml randWeightMin,
                                   fml randWeightMax)
 {
-    m_validate();
-
     u32 numWeights = m_kernelRows * m_kernelCols * m_inputComponents * m_numKernels;
     delete [] m_w;
     delete [] m_w_orig;
