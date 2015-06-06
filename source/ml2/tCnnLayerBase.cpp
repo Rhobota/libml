@@ -282,8 +282,8 @@ void tCnnLayerBase::m_validate()
 
 void m_calculateOutputSize()
 {
-    m_outputRows = 0; // TODO
-    m_outputCols = 0; // TODO
+    m_outputRows = (m_inputRows - 1) / m_kernelStepY + 1;
+    m_outputCols = (m_inputCols - 1) / m_kernelStepX + 1;
 }
 
 
