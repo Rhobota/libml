@@ -21,7 +21,7 @@ class tCnnLayerBase : public tNNLayer
 
         /**
          * Constructs this layer to use the specified layer type, weight
-         * update rule, input image size, and convolution kernel size.
+         * update rule, input size, and convolution kernel size.
          *
          * See tAnnLayerBase::tAnnLayerBase() for a description of 'type'
          * and 'rule'.

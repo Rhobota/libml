@@ -10,9 +10,10 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 
-#include <cassert>
-
 #endif
+
+
+#include <cassert>
 
 
 namespace ml2
@@ -203,7 +204,6 @@ __host__ __device__
 
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
-
 
 #define cuda_assert(expression) \
     do { \
@@ -458,8 +458,74 @@ class t_RMSPROP_update_with_alpha
         t_RMSPROP_update m_func;
 };
 
-
 #endif   // #ifdef ENABLE_DEVICE_FUNCTIONS
+
+
+#ifdef ENABLE_CONVOLVE_CPU
+
+void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
+              const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
+                                    u32 kernelStepY, u32 kernelStepX,
+                                    u32 numKernels,
+              const fml* kernelBiases, fml scaleFactor,
+              fml* outputPtr)
+{
+    // TODO: ensure no mem aloc
+    // TODO: ensure no out of bound (aka, inspect + turn on asserts)
+    // TODO: templatize -- including templatizing the block() calls
+    // TODO: re-structure to remove as many ifs from the inner loops as possible
+
+    assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
+    assert(kernelPtr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
+    assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
+    assert(outputPtr);
+
+    u32 kernelRadiusY = kernelRows / 2;
+    u32 kernelRadiusX = kernelCols / 2;
+
+    MapConst input(inputPtr, inputRows, inputCols * inputComponents);
+
+    for (u32 r = 0; r < inputRows; r += kernelStepY)
+    {
+        u32 y, ky;
+        if (r < kernelRadiusY)
+            y = 0, ky = kernelRadiusY - r;
+        else
+            y = r - kernelRadiusY, ky = 0;
+
+        u32 h = r + kernelRadiusY;
+        if (h > inputRows)
+            h = inputRows;
+        h -= y;
+
+        for (u32 c = 0; c < inputCols; c += kernelStepX)
+        {
+            u32 x, kx;
+            if (c < kernelRadiusX)
+                x = 0, kx = kernelRadiusX - c;
+            else
+                x = c - kernelRadiusX, kx = 0;
+
+            u32 w = c + kernelRadiusX;
+            if (w > inputCols)
+                w = inputCols;
+            w -= x;
+
+            for (u32 i = 0; i < numKernels; i++)
+            {
+                MapConst kernel(kernelPtr + i * kernelRows * kernelCols * inputComponents,
+                                kernelRows,
+                                kernelCols * inputComponents);
+                fml val = input.block(y, x*inputComponents, h, w*inputComponents)
+                               .cwiseProduct(kernel.block(kx, ky, h, w*inputComponents))
+                               .sum();
+                *outputPtr++ = (val + kernelBiases[i]) * scaleFactor;
+            }
+        }
+    }
+}
+
+#endif  // ENABLE_CONVOLVE_CPU
 
 
 }  // <-- end of un-named namespace
