@@ -124,6 +124,59 @@ void test1(const tTest& t)
 }
 
 
+void test2(const tTest& t)
+{
+    fml input[] = {  FML(0.26893),   FML(0.94183),  };
+    u32 inputRows = 1;
+    u32 inputCols = 2;
+
+    fml correctOutput_k33[] = {  FML(1.05152),   FML(0.54586),  };
+
+    fml correctOutput_k55[] = {  FML(1.6442),   FML(1.3772),  };
+
+    fml correctOutput_k57[] = {  FML(1.7966),   FML(1.9232),  };
+
+    TEST_ALL_KERNELS
+}
+
+
+void test3(const tTest& t)
+{
+    fml input[] = {  FML(0.65274),  FML(0.71119), };
+    u32 inputRows = 2;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] = {  FML(0.36242),  FML(0.66320),  };
+
+    fml correctOutput_k55[] = { FML(1.4785),  FML(1.5190),  };
+
+    fml correctOutput_k57[] = { FML(1.5243),  FML(1.6860),  };
+
+    TEST_ALL_KERNELS
+}
+
+
+void test4(const tTest& t)
+{
+    fml input[] = {     FML(0.11911),   FML(0.26430),
+           FML(0.23334),   FML(0.98844),
+    };
+    u32 inputRows = 2;
+    u32 inputCols = 2;
+
+    fml correctOutput_k33[] = {     FML(1.26090),   FML(0.43509),
+           FML(1.30183),   FML(0.76763),   };
+
+    fml correctOutput_k55[] = {      FML(1.2477),   FML(1.4584),
+           FML(1.8442),   FML(1.5894),   };
+
+    fml correctOutput_k57[] = {     FML(1.2634),   FML(1.5292),
+           FML(1.8728),   FML(2.0820),   };
+
+    TEST_ALL_KERNELS
+}
+
+
 int main()
 {
     tCrashReporter::init();
@@ -131,6 +184,9 @@ int main()
     srand(time(0));
 
     tTest("convolve 2d test 1", test1);
+    tTest("convolve 2d test 2", test2);
+    tTest("convolve 2d test 3", test3);
+    tTest("convolve 2d test 4", test4);
 
     return 0;
 }
