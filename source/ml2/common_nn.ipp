@@ -482,7 +482,7 @@ void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputC
     u32 kernelRadiusY = kernelRows / 2;
     u32 kernelRadiusX = kernelCols / 2;
 
-    MapConst input(inputPtr, inputRows, inputCols * inputComponents);
+    MapRowMajorConst input(inputPtr, inputRows, inputCols * inputComponents);
 
     for (u32 r = 0; r < inputRows; r += kernelStepY)
     {
@@ -512,9 +512,9 @@ void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputC
 
             for (u32 i = 0; i < numKernels; i++)
             {
-                MapConst kernel(kernelPtr + i * kernelRows * kernelCols * inputComponents,
-                                kernelRows,
-                                kernelCols * inputComponents);
+                MapRowMajorConst kernel(kernelPtr + i * kernelRows * kernelCols * inputComponents,
+                                        kernelRows,
+                                        kernelCols * inputComponents);
                 fml val = input.block(y, x*inputComponents, h, w*inputComponents)
                                .cwiseProduct(kernel.block(ky, kx*inputComponents, h, w*inputComponents))
                                .sum();

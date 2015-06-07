@@ -41,8 +41,12 @@
 #include <ml2/common.h>
 namespace ml2
 {
-    typedef Eigen::Matrix< ml2::fml, Eigen::Dynamic, Eigen::Dynamic > Mat;
+    typedef Eigen::Matrix< ml2::fml, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor > Mat;
     typedef Eigen::Map< Mat > Map;
     typedef Eigen::Map< const Mat > MapConst;
+
+    typedef Eigen::Matrix< ml2::fml, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > MatRowMajor;
+    typedef Eigen::Map< MatRowMajor > MapRowMajor;
+    typedef Eigen::Map< const MatRowMajor > MapRowMajorConst;
 }
 

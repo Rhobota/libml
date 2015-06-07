@@ -13,6 +13,52 @@ using ml2::fml;
 using ml2::s_conv2d;
 
 
+static
+void s_checkOutput(const tTest& t, fml* output, fml* correctOutput, size_t size)
+{
+    for (size_t i = 0; i < size; i++)
+    {
+        if (fabs(output[i] - correctOutput[i]) >= 0.0001)
+        {
+            std::cerr << "Fail at element " << i << ": output = " << output[i] << "  correctOutput = " << correctOutput[i] << std::endl;
+            t.fail();
+        }
+    }
+}
+
+
+void test0(const tTest& t)
+{
+    fml input[] = {  FML(1.0),  FML(2.0),
+                     FML(3.0),  FML(4.0),  };
+    u32 inputRows = 2;
+    u32 inputCols = 2;
+    u32 inputComponents = 1;
+
+    fml kernel[] = {  FML(1.0),  FML(2.0),  FML(3.0),
+                      FML(4.0),  FML(5.0),  FML(6.0),
+                      FML(7.0),  FML(8.0),  FML(9.0),  };
+    u32 kernelRows = 3;
+    u32 kernelCols = 3;
+
+    fml bias = -FML(1.0);
+
+    fml correctOutput[] = {  FML(76.0),  FML(66.0),
+                             FML(46.0),  FML(36.0),  };
+    fml output[] = {  FML(0.0),  FML(0.0),
+                      FML(0.0),  FML(0.0),  };
+
+    s_conv2d(input, inputRows, inputCols, inputComponents,
+             kernel, kernelRows, kernelCols,
+                     1, 1,
+                     1,
+             &bias, FML(1.0),
+             output);
+
+    s_checkOutput(t, output, correctOutput, inputRows*inputCols);
+}
+
+
 /*
  * Note: The "correctOutput" vectors in this file were calculated using Octave's
  * conv2() function.
@@ -92,20 +138,6 @@ fml kBias57_1     = FML(0.94145);
     } \
  \
     delete [] output; \
-
-
-static
-void s_checkOutput(const tTest& t, fml* output, fml* correctOutput, size_t size)
-{
-    for (size_t i = 0; i < size; i++)
-    {
-        if (fabs(output[i] - correctOutput[i]) >= 0.0001)
-        {
-            std::cerr << "Fail at element " << i << ": output = " << output[i] << "  correctOutput = " << correctOutput[i] << std::endl;
-            t.fail();
-        }
-    }
-}
 
 
 void test1(const tTest& t)
@@ -2652,6 +2684,8 @@ int main()
     tCrashReporter::init();
 
     srand(time(0));
+
+    tTest("convolve 2d test 0", test0);
 
     tTest("convolve 2d test 1", test1);
     tTest("convolve 2d test 2", test2);
