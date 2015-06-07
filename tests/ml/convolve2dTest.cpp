@@ -31,39 +31,39 @@ using ml2::s_conv2d;
  */
 
 
-fml kKernel33[] = {  FML(0.9522223),   FML(0.6157124),   FML(0.1143837),   // <--- This is a column! (Don't be fooled by the fact that it looks like a row here; all these matrices are interpreted as column-major.)
-                     FML(0.4610145),   FML(0.0780320),   FML(0.0066089),
-                     FML(0.6854424),   FML(0.7684590),   FML(0.7727028)  };
-fml kBias33     = FML(0.30678);
+fml kKernel33_1[] = {  FML(0.9522223),   FML(0.6157124),   FML(0.1143837),   // <--- This is a column! (Don't be fooled by the fact that it looks like a row here; all these matrices are interpreted as column-major.)
+                       FML(0.4610145),   FML(0.0780320),   FML(0.0066089),
+                       FML(0.6854424),   FML(0.7684590),   FML(0.7727028)  };
+fml kBias33_1     = FML(0.30678);
 
-fml kKernel55[] = {  FML(0.407211),   FML(0.332282),   FML(0.042351),   FML(0.853344),   FML(0.857271),
-                     FML(0.163832),   FML(0.443431),   FML(0.178985),   FML(0.452883),   FML(0.529514),
-                     FML(0.612710),   FML(0.543656),   FML(0.715227),   FML(0.500823),   FML(0.602494),
-                     FML(0.976182),   FML(0.424915),   FML(0.845589),   FML(0.179422),   FML(0.769882),
-                     FML(0.060206),   FML(0.626647),   FML(0.932404),   FML(0.154073),   FML(0.879106)  };
-fml kBias55     = FML(0.65545);
+fml kKernel55_1[] = {  FML(0.407211),   FML(0.332282),   FML(0.042351),   FML(0.853344),   FML(0.857271),
+                       FML(0.163832),   FML(0.443431),   FML(0.178985),   FML(0.452883),   FML(0.529514),
+                       FML(0.612710),   FML(0.543656),   FML(0.715227),   FML(0.500823),   FML(0.602494),
+                       FML(0.976182),   FML(0.424915),   FML(0.845589),   FML(0.179422),   FML(0.769882),
+                       FML(0.060206),   FML(0.626647),   FML(0.932404),   FML(0.154073),   FML(0.879106)  };
+fml kBias55_1     = FML(0.65545);
 
-fml kKernel57[] = {  FML(0.323413),   FML(0.255111),   FML(0.389326),   FML(0.279595),   FML(0.829499),   // <-- Again, note that this is a column!
-                     FML(0.382419),   FML(0.392395),   FML(0.033404),   FML(0.151718),   FML(0.775017),
-                     FML(0.295482),   FML(0.478754),   FML(0.953186),   FML(0.692873),   FML(0.525434),
-                     FML(0.593704),   FML(0.301498),   FML(0.770169),   FML(0.112731),   FML(0.478316),
-                     FML(0.172259),   FML(0.050867),   FML(0.688015),   FML(0.040391),   FML(0.080661),
-                     FML(0.430828),   FML(0.730764),   FML(0.707751),   FML(0.032500),   FML(0.232391),
-                     FML(0.332616),   FML(0.140028),   FML(0.653501),   FML(0.245474),   FML(0.752484)  };
-fml kBias57     = FML(0.94145);
+fml kKernel57_1[] = {  FML(0.323413),   FML(0.255111),   FML(0.389326),   FML(0.279595),   FML(0.829499),   // <-- Again, note that this is a column!
+                       FML(0.382419),   FML(0.392395),   FML(0.033404),   FML(0.151718),   FML(0.775017),
+                       FML(0.295482),   FML(0.478754),   FML(0.953186),   FML(0.692873),   FML(0.525434),
+                       FML(0.593704),   FML(0.301498),   FML(0.770169),   FML(0.112731),   FML(0.478316),
+                       FML(0.172259),   FML(0.050867),   FML(0.688015),   FML(0.040391),   FML(0.080661),
+                       FML(0.430828),   FML(0.730764),   FML(0.707751),   FML(0.032500),   FML(0.232391),
+                       FML(0.332616),   FML(0.140028),   FML(0.653501),   FML(0.245474),   FML(0.752484)  };
+fml kBias57_1     = FML(0.94145);
 
 
-#define TEST_ALL_KERNELS \
+#define TEST_ALL_1_COMPONENT_1_COUNT_KERNELS \
     fml* output = new fml[inputRows*inputCols]; \
     for (u32 i = 0; i < inputRows*inputCols; i++) \
         output[i] = FML(0.0); \
  \
     { \
         s_conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33, 3, 3, \
-                            1, 1, \
-                            1, \
-                 &kBias33, FML(1.0), \
+                 kKernel33_1, 3, 3, \
+                              1, 1, \
+                              1, \
+                 &kBias33_1, FML(1.0), \
                  output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows*inputCols); \
@@ -71,10 +71,10 @@ fml kBias57     = FML(0.94145);
  \
     { \
         s_conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55, 5, 5, \
-                            1, 1, \
-                            1, \
-                 &kBias55, FML(1.0), \
+                 kKernel55_1, 5, 5, \
+                              1, 1, \
+                              1, \
+                 &kBias55_1, FML(1.0), \
                  output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows*inputCols); \
@@ -82,10 +82,10 @@ fml kBias57     = FML(0.94145);
  \
     { \
         s_conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57, 5, 7, \
-                            1, 1, \
-                            1, \
-                 &kBias57, FML(1.0), \
+                 kKernel57_1, 5, 7, \
+                              1, 1, \
+                              1, \
+                 &kBias57_1, FML(1.0), \
                  output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows*inputCols); \
@@ -120,7 +120,7 @@ void test1(const tTest& t)
 
     fml correctOutput_k57[] = {  FML(1.1995)  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -136,7 +136,7 @@ void test2(const tTest& t)
 
     fml correctOutput_k57[] = {  FML(1.7966),   FML(1.9232),  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -152,7 +152,7 @@ void test3(const tTest& t)
 
     fml correctOutput_k57[] = { FML(1.5243),  FML(1.6860),  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -173,7 +173,7 @@ void test4(const tTest& t)
     fml correctOutput_k57[] = {     FML(1.2634),   FML(1.5292),
            FML(1.8728),   FML(2.0820),   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -198,7 +198,7 @@ void test5(const tTest& t)
        FML(1.8679),
     };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -217,7 +217,7 @@ void test6(const tTest& t)
 
     fml correctOutput_k57[] = {  FML(1.1370),   FML(1.1530),   FML(1.1915),  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -244,7 +244,7 @@ void test7(const tTest& t)
        FML(2.2047),   FML(2.2836),
     };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -269,7 +269,7 @@ void test8(const tTest& t)
        FML(2.7797),   FML(2.6234),   FML(2.0605),
     };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -297,7 +297,7 @@ void test9(const tTest& t)
        FML(4.0601),   FML(4.1408),   FML(3.8696),
     };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -322,7 +322,7 @@ void test10(const tTest& t)
        FML(1.1055),
        FML(1.1891),};
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -344,7 +344,7 @@ void test11(const tTest& t)
     fml correctOutput_k57[] = {     FML(2.8083),   FML(2.9396),   FML(3.0375),   FML(2.3909),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -374,7 +374,7 @@ void test12(const tTest& t)
    FML(2.5646),   FML(2.8229),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -400,7 +400,7 @@ void test13(const tTest& t)
    FML(4.0018),   FML(4.0490),   FML(3.8551),   FML(3.8442),
  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -431,7 +431,7 @@ void test14(const tTest& t)
    FML(2.5950),   FML(2.8828),   FML(2.9268),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -460,7 +460,7 @@ void test15(const tTest& t)
    FML(4.3158),   FML(4.0925),   FML(3.7779),   FML(3.7844),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -492,7 +492,7 @@ void test16(const tTest& t)
    FML(3.3654),   FML(4.1093),   FML(3.1774),   FML(3.5117),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -523,7 +523,7 @@ void test17(const tTest& t)
    FML(1.4901),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -547,7 +547,7 @@ void test18(const tTest& t)
     fml correctOutput_k57[] = {     FML(2.2484),   FML(2.9755),   FML(3.0451),   FML(2.8317),   FML(2.5298),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -580,7 +580,7 @@ void test19(const tTest& t)
    FML(2.3431),   FML(2.5360),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -607,7 +607,7 @@ void test20(const tTest& t)
    FML(3.1608),   FML(3.4481),   FML(3.4066),   FML(2.5685),   FML(2.5358),
  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -641,7 +641,7 @@ void test21(const tTest& t)
    FML(3.2310),   FML(3.0945),   FML(3.1754),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -671,7 +671,7 @@ void test22(const tTest& t)
    FML(3.4156),   FML(3.5487),   FML(3.1467),   FML(3.2697),   FML(2.4476),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -706,7 +706,7 @@ void test23(const tTest& t)
    FML(3.5454),   FML(4.0690),   FML(3.7001),   FML(3.2751),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -739,7 +739,7 @@ void test24(const tTest& t)
    FML(4.1848),   FML(5.1990),   FML(5.0413),   FML(4.5186),   FML(3.8670),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -775,7 +775,7 @@ void test25(const tTest& t)
    FML(4.2878),   FML(4.5086),   FML(4.9645),   FML(4.1240),   FML(3.6830),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -809,7 +809,7 @@ void test26(const tTest& t)
    FML(2.2167),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -831,7 +831,7 @@ void test27(const tTest& t)
 
     fml correctOutput_k57[] = {  FML(2.3730),   FML(2.9579),   FML(3.2841),   FML(2.9195),   FML(3.1553),   FML(2.2479),  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -867,7 +867,7 @@ void test28(const tTest& t)
    FML(2.6032),   FML(2.8420),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -895,7 +895,7 @@ void test29(const tTest& t)
    FML(2.8023),   FML(3.7787),   FML(3.3641),   FML(3.8611),   FML(3.0809),   FML(2.3374),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -932,7 +932,7 @@ void test30(const tTest& t)
    FML(2.9252),   FML(2.2886),   FML(2.9948),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -963,7 +963,7 @@ void test31(const tTest& t)
    FML(3.9055),   FML(4.0312),   FML(4.6602),   FML(5.1196),   FML(4.3113),   FML(3.9655),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1001,7 +1001,7 @@ void test32(const tTest& t)
    FML(3.6775),   FML(3.5153),   FML(3.3979),   FML(3.7078),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1035,7 +1035,7 @@ void test33(const tTest& t)
    FML(4.2947),   FML(5.0906),   FML(6.0628),   FML(5.1540),   FML(4.9153),   FML(3.6919),
  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1074,7 +1074,7 @@ void test34(const tTest& t)
    FML(3.0627),   FML(4.0956),   FML(3.3257),   FML(3.7015),   FML(2.8260),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1111,7 +1111,7 @@ void test35(const tTest& t)
    FML(3.1721),   FML(3.6891),   FML(4.2107),   FML(4.1803),   FML(3.6188),   FML(2.5504),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1151,7 +1151,7 @@ void test36(const tTest& t)
    FML(4.4430),   FML(5.3696),   FML(5.6788),   FML(5.3822),   FML(4.3898),   FML(4.1023),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1188,7 +1188,7 @@ void test37(const tTest& t)
    FML(1.7905),
  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1211,7 +1211,7 @@ void test38(const tTest& t)
 
     fml correctOutput_k57[] = {  FML(2.5045),   FML(3.1680),   FML(2.4717),   FML(3.0860),   FML(2.8584),   FML(2.1473),   FML(1.8764),  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1250,7 +1250,7 @@ void test39(const tTest& t)
    FML(2.0123),   FML(2.3979),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1279,7 +1279,7 @@ void test40(const tTest& t)
    FML(2.6753),   FML(3.6382),   FML(3.9032),   FML(4.1068),   FML(4.0925),   FML(3.3199),   FML(2.8939),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1319,7 +1319,7 @@ void test41(const tTest& t)
    FML(2.8908),   FML(2.9866),   FML(3.1453),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1351,7 +1351,7 @@ void test42(const tTest& t)
    FML(4.5560),   FML(5.4966),   FML(5.8033),   FML(5.8551),   FML(5.1452),   FML(3.8067),   FML(3.5006),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1392,7 +1392,7 @@ void test43(const tTest& t)
    FML(3.6700),   FML(3.6709),   FML(4.0393),   FML(3.3951),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1427,7 +1427,7 @@ void test44(const tTest& t)
    FML(3.6648),   FML(4.9176),   FML(5.3501),   FML(5.5740),   FML(5.3794),   FML(3.9935),   FML(3.5429),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1469,7 +1469,7 @@ void test45(const tTest& t)
    FML(3.7241),   FML(4.1838),   FML(3.2210),   FML(3.9949),   FML(2.9565),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1507,7 +1507,7 @@ void test46(const tTest& t)
    FML(4.3298),   FML(5.6955),   FML(5.9560),   FML(6.5166),   FML(6.1203),   FML(4.6751),   FML(3.9364),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1550,7 +1550,7 @@ void test47(const tTest& t)
    FML(3.6996),   FML(5.2556),   FML(5.2938),   FML(4.4422),   FML(4.2104),   FML(3.5236),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1591,7 +1591,7 @@ void test48(const tTest& t)
    FML(3.5815),   FML(4.0013),   FML(5.0956),   FML(4.7381),   FML(5.1174),   FML(3.6227),   FML(3.7786),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1635,7 +1635,7 @@ void test49(const tTest& t)
    FML(3.1798),   FML(3.6937),   FML(5.4258),   FML(5.3445),   FML(5.0998),   FML(4.4748),   FML(4.1012),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1675,7 +1675,7 @@ void test50(const tTest& t)
    FML(1.5217),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1699,7 +1699,7 @@ void test51(const tTest& t)
 
     fml correctOutput_k57[] = {  FML(1.4234),   FML(1.5770),   FML(1.4830),   FML(2.0033),   FML(2.5367),   FML(2.2374),   FML(2.2704),   FML(2.2598),  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1741,7 +1741,7 @@ void test52(const tTest& t)
    FML(2.6435),   FML(3.1862),
  };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1771,7 +1771,7 @@ void test53(const tTest& t)
    FML(2.2954),   FML(3.4265),   FML(3.0919),   FML(4.1276),   FML(3.7485),   FML(4.1274),   FML(2.8377),   FML(2.8797),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1814,7 +1814,7 @@ void test54(const tTest& t)
    FML(4.4191),   FML(3.8667),   FML(3.8367),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1848,7 +1848,7 @@ void test55(const tTest& t)
    FML(4.4857),   FML(5.2167),   FML(4.9051),   FML(6.0170),   FML(5.0334),   FML(4.5792),   FML(3.5453),   FML(3.5179),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1892,7 +1892,7 @@ void test56(const tTest& t)
    FML(3.0142),   FML(3.7232),   FML(3.1016),   FML(3.4844),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1928,7 +1928,7 @@ void test57(const tTest& t)
    FML(3.4842),   FML(4.0028),   FML(5.2784),   FML(5.5818),   FML(5.6193),   FML(5.6712),   FML(3.9683),   FML(4.2925),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -1973,7 +1973,7 @@ void test58(const tTest& t)
    FML(3.9223),   FML(4.4777),   FML(4.9273),   FML(4.3120),   FML(3.7263),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -2012,7 +2012,7 @@ void test59(const tTest& t)
    FML(4.1794),   FML(5.5713),   FML(6.0214),   FML(6.3859),   FML(6.9576),   FML(5.6092),   FML(5.0728),   FML(4.1581),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -2058,7 +2058,7 @@ void test60(const tTest& t)
    FML(3.6698),   FML(4.0658),   FML(4.5940),   FML(4.4156),   FML(3.4251),   FML(3.3776),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -2100,7 +2100,7 @@ void test61(const tTest& t)
    FML(3.5265),   FML(4.7095),   FML(4.4577),   FML(5.4511),   FML(5.0377),   FML(4.9815),   FML(3.9361),   FML(3.6438),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -2147,7 +2147,7 @@ void test62(const tTest& t)
    FML(4.0570),   FML(4.8792),   FML(5.9792),   FML(6.3430),   FML(6.2958),   FML(5.0818),   FML(4.1080),
    };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -2192,7 +2192,7 @@ void test63(const tTest& t)
    FML(3.3044),   FML(4.0302),   FML(4.4147),   FML(4.3774),   FML(4.6871),   FML(4.2020),   FML(3.3723),   FML(3.2558),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
@@ -2240,7 +2240,7 @@ void test64(const tTest& t)
    FML(3.7480),   FML(4.6955),   FML(4.2434),   FML(5.1855),   FML(5.3728),   FML(4.6933),   FML(3.7966),   FML(3.2706),
   };
 
-    TEST_ALL_KERNELS
+    TEST_ALL_1_COMPONENT_1_COUNT_KERNELS
 }
 
 
