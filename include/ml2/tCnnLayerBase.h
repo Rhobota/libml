@@ -26,12 +26,22 @@ class tCnnLayerBase : public tNNLayer
          * See tAnnLayerBase::tAnnLayerBase() for a description of 'type'
          * and 'rule'.
          *
-         * A subsequent call to this object's takeInput() method should have
-         * 'numInputDims' set to 'inputRows*inputCols*inputComponents'.
+         * A subsequent call to this object's takeInput() method should
+         * contain one or more images, where each image:
+         *   - is stored in row-major format,
+         *   - is 'inputRows'x'inputCols' in size, and
+         *   - has 'inputComponents' channels.
+         * Therefore, a subsequent call to this object's takeInput() method
+         * should have 'numInputDims' set to 'inputRows*inputCols*inputComponents',
+         * and should have 'count' set to the number of sequential images within
+         * the input vector.
          *
          * The output of this layer will have dimensionality of
          * 'inputRows*inputCols*numKernels' if 'kernelStepY' and
-         * 'kernelStepX' are both 1.
+         * 'kernelStepX' are both 1. The output can be interpreted
+         * as a sequence of images, thus can be used as input to the next
+         * CNN layer if desired. (You can think of it like each kernel
+         * generates a single channel in the output image.)
          *
          * Both 'kernelRows' and 'kernelCols' must be an odd number.
          * Consider 3, 5, or 7 for each. The larger the kernel size,
