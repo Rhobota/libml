@@ -470,8 +470,6 @@ void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputC
               const fml* kernelBiases, fml scaleFactor,
               fml* outputPtr)
 {
-    // TODO: ensure no mem aloc
-    // TODO: ensure no out of bound (aka, inspect + turn on asserts)
     // TODO: templatize -- including templatizing the block() calls
     // TODO: re-structure to remove as many ifs from the inner loops as possible
 
