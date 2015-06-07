@@ -65,6 +65,41 @@ void s_checkOutput(const tTest& t, fml* output, fml* correctOutput, size_t size)
 }
 
 
+#define TEST_ALL_KERNELS \
+    { \
+        s_conv2d(input, inputRows, inputCols, inputComponents, \
+                 kKernel3, 3, 3, \
+                           1, 1, \
+                           1, \
+                 &kBias3, FML(1.0), \
+                 output_k3); \
+ \
+        s_checkOutput(t, output_k3, correctOutput_k3, sizeof(output_k3)/sizeof(fml)); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, inputComponents, \
+                 kKernel5, 5, 5, \
+                           1, 1, \
+                           1, \
+                 &kBias5, FML(1.0), \
+                 output_k5); \
+ \
+        s_checkOutput(t, output_k5, correctOutput_k5, sizeof(output_k5)/sizeof(fml)); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, inputComponents, \
+                 kKernel75, 7, 5, \
+                            1, 1, \
+                            1, \
+                 &kBias75, FML(1.0), \
+                 output_k75); \
+ \
+        s_checkOutput(t, output_k75, correctOutput_k75, sizeof(output_k75)/sizeof(fml)); \
+    } \
+
+
 void test1(const tTest& t)
 {
     fml input[] = {  FML(0.33510)  };
@@ -81,38 +116,7 @@ void test1(const tTest& t)
     fml output_k75[]        = {  FML(0.0)  };
     fml correctOutput_k75[] = {  FML(1.1995)  };
 
-    {
-        s_conv2d(input, inputRows, inputCols, inputComponents,
-                 kKernel3, 3, 3,
-                           1, 1,
-                           1,
-                 &kBias3, FML(1.0),
-                 output_k3);
-
-        s_checkOutput(t, output_k3, correctOutput_k3, sizeof(output_k3)/sizeof(fml));
-    }
-
-    {
-        s_conv2d(input, inputRows, inputCols, inputComponents,
-                 kKernel5, 5, 5,
-                           1, 1,
-                           1,
-                 &kBias5, FML(1.0),
-                 output_k5);
-
-        s_checkOutput(t, output_k5, correctOutput_k5, sizeof(output_k5)/sizeof(fml));
-    }
-
-    {
-        s_conv2d(input, inputRows, inputCols, inputComponents,
-                 kKernel75, 7, 5,
-                            1, 1,
-                            1,
-                 &kBias75, FML(1.0),
-                 output_k75);
-
-        s_checkOutput(t, output_k75, correctOutput_k75, sizeof(output_k75)/sizeof(fml));
-    }
+    TEST_ALL_KERNELS
 }
 
 
