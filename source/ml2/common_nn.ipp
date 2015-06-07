@@ -478,6 +478,7 @@ void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputC
     assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(kernelPtr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
     assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
+    assert(kernelBiases);
     assert(outputPtr);
 
     u32 kernelRadiusY = kernelRows / 2;
@@ -493,7 +494,7 @@ void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputC
         else
             y = r - kernelRadiusY, ky = 0;
 
-        u32 h = r + kernelRadiusY;
+        u32 h = r + kernelRadiusY + 1;  // not really "+ 1", but "+ (kernelRows%2)", except we know that is always 1, so we're taking a shortcut here
         if (h > inputRows)
             h = inputRows;
         h -= y;
@@ -506,7 +507,7 @@ void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputC
             else
                 x = c - kernelRadiusX, kx = 0;
 
-            u32 w = c + kernelRadiusX;
+            u32 w = c + kernelRadiusX + 1;  // not really "+ 1", but "+ (kernelCols%2)", except we know that is always 1, so we're taking a shortcut here
             if (w > inputCols)
                 w = inputCols;
             w -= x;
@@ -517,7 +518,7 @@ void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputC
                                 kernelRows,
                                 kernelCols * inputComponents);
                 fml val = input.block(y, x*inputComponents, h, w*inputComponents)
-                               .cwiseProduct(kernel.block(kx, ky, h, w*inputComponents))
+                               .cwiseProduct(kernel.block(ky, kx*inputComponents, h, w*inputComponents))
                                .sum();
                 *outputPtr++ = (val + kernelBiases[i]) * scaleFactor;
             }
