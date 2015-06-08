@@ -2561,6 +2561,108 @@ void test64(const tTest& t)
 }
 
 
+fml kKernel33_2[] = {
+    FML(0.28086),   FML(0.39329),   FML(0.14117),
+    FML(0.31479),   FML(0.49841),   FML(0.31661),
+    FML(0.97568),   FML(0.62691),   FML(0.12740),
+    FML(0.98908),   FML(0.40378),   FML(0.45498),
+    FML(0.14673),   FML(0.91406),   FML(0.60231),
+    FML(0.56700),   FML(0.66996),   FML(0.55526),
+};
+fml kBias33_2[]   = {
+    FML(0.869575),   FML(0.086500),
+};
+
+fml kKernel55_2[] = {
+    FML(0.907000),   FML(0.054459),   FML(0.235051),   FML(0.768103),   FML(0.551615),
+    FML(0.275941),   FML(0.271272),   FML(0.933579),   FML(0.377911),   FML(0.200617),
+    FML(0.734078),   FML(0.720822),   FML(0.732311),   FML(0.524343),   FML(0.496579),
+    FML(0.325613),   FML(0.072304),   FML(0.667797),   FML(0.746921),   FML(0.886914),
+    FML(0.411621),   FML(0.046760),   FML(0.563113),   FML(0.202633),   FML(0.070462),
+    FML(0.102013),   FML(0.608712),   FML(0.474003),   FML(0.407083),   FML(0.158062),
+    FML(0.481358),   FML(0.150423),   FML(0.318247),   FML(0.998995),   FML(0.416624),
+    FML(0.117101),   FML(0.081782),   FML(0.316664),   FML(0.849075),   FML(0.738875),
+    FML(0.302141),   FML(0.659962),   FML(0.713374),   FML(0.233061),   FML(0.370858),
+    FML(0.517848),   FML(0.550278),   FML(0.841520),   FML(0.406841),   FML(0.301979),
+};
+fml kBias55_2[]   = {
+    FML(0.74618),   FML(0.50787),
+};
+
+fml kKernel57_2[] = {
+    FML(0.5421388),   FML(0.7651711),   FML(0.4560648),   FML(0.6310110),   FML(0.5158787),   FML(0.7113897),  FML(0.9948258),
+    FML(0.4561297),   FML(0.4293956),   FML(0.4767157),   FML(0.0808466),   FML(0.1151705),   FML(0.1505206),  FML(0.2449001),
+    FML(0.8509617),   FML(0.1828592),   FML(0.6155789),   FML(0.4816474),   FML(0.2063322),   FML(0.8090261),  FML(0.6107243),
+    FML(0.1328188),   FML(0.8402662),   FML(0.7689384),   FML(0.5975446),   FML(0.4680271),   FML(0.4832406),  FML(0.9964094),
+    FML(0.8551356),   FML(0.1171444),   FML(0.9135925),   FML(0.0010581),   FML(0.9552209),   FML(0.9227060),  FML(0.1588100),
+    FML(0.4305374),   FML(0.8160474),   FML(0.5984576),   FML(0.2051604),   FML(0.7323206),   FML(0.5141637),  FML(0.5491517),
+    FML(0.8655712),   FML(0.9229134),   FML(0.9137695),   FML(0.8404263),   FML(0.5182482),   FML(0.5821799),  FML(0.1535598),
+    FML(0.6630843),   FML(0.3027921),   FML(0.7070472),   FML(0.0565810),   FML(0.5603621),   FML(0.9729775),  FML(0.5201322),
+    FML(0.4284560),   FML(0.7536597),   FML(0.2380418),   FML(0.8368284),   FML(0.3380159),   FML(0.1105703),  FML(0.3089580),
+    FML(0.2454619),   FML(0.2258277),   FML(0.9099615),   FML(0.0160570),   FML(0.6176303),   FML(0.7451312),  FML(0.5223446),
+};
+fml kBias57_2[]   = {
+    FML(0.77918),   FML(0.62658),
+};
+
+
+#define TEST_ALL_1_COMPONENT_2_COUNT_KERNELS \
+    fml* output = new fml[2*inputRows*inputCols]; \
+    for (u32 i = 0; i < 2*inputRows*inputCols; i++) \
+        output[i] = FML(0.0); \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel33_2, 3, 3, \
+                              1, 1, \
+                              2, \
+                 kBias33_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, 2*inputRows*inputCols); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel55_2, 5, 5, \
+                              1, 1, \
+                              2, \
+                 kBias55_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, 2*inputRows*inputCols); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel57_2, 5, 7, \
+                              1, 1, \
+                              2, \
+                 kBias57_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, 2*inputRows*inputCols); \
+    } \
+ \
+    delete [] output; \
+
+
+void test65(const tTest& t)
+{
+    fml input[] = {  FML(0.81477),  };
+    u32 inputRows = 1;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] = {  FML(1.27566),   FML(0.83125),  };
+
+    fml correctOutput_k55[] = {  FML(1.34285),   FML(0.76588),  };
+
+    fml correctOutput_k57[] = {  FML(1.17161),   FML(0.67268),  };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
 int main()
 {
     tCrashReporter::init();
@@ -2633,6 +2735,8 @@ int main()
     tTest("convolve 2d test 62", test62);
     tTest("convolve 2d test 63", test63);
     tTest("convolve 2d test 64", test64);
+
+    tTest("convolve 2d test 65", test65);
 
     return 0;
 }
