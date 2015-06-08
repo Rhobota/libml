@@ -114,6 +114,7 @@ fml kBias57_1     = FML(0.81093);
     for (u32 i = 0; i < inputRows*inputCols; i++) \
         output[i] = FML(0.0); \
  \
+    /* Step (1, 1) */ \
     { \
         s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_1, 3, 3, \
@@ -145,6 +146,108 @@ fml kBias57_1     = FML(0.81093);
                  output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols); \
+    } \
+ \
+    /* Step (2, 1) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel33_1, 3, 3, \
+                              2, 1, \
+                              1, \
+                 &kBias33_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 1); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel55_1, 5, 5, \
+                              2, 1, \
+                              1, \
+                 &kBias55_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 1); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel57_1, 5, 7, \
+                              2, 1, \
+                              1, \
+                 &kBias57_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 1); \
+    } \
+ \
+    /* Step (1, 2) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel33_1, 3, 3, \
+                              1, 2, \
+                              1, \
+                 &kBias33_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 1, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel55_1, 5, 5, \
+                              1, 2, \
+                              1, \
+                 &kBias55_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 1, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel57_1, 5, 7, \
+                              1, 2, \
+                              1, \
+                 &kBias57_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 1, 2); \
+    } \
+ \
+    /* Step (2, 2) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel33_1, 3, 3, \
+                              2, 2, \
+                              1, \
+                 &kBias33_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel55_1, 5, 5, \
+                              2, 2, \
+                              1, \
+                 &kBias55_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel57_1, 5, 7, \
+                              2, 2, \
+                              1, \
+                 &kBias57_1, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 2); \
     } \
  \
     delete [] output; \
@@ -2616,6 +2719,7 @@ fml kBias57_2[]   = {
     for (u32 i = 0; i < 2*inputRows*inputCols; i++) \
         output[i] = FML(0.0); \
  \
+    /* Step (1, 1) */ \
     { \
         s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_2, 3, 3, \
@@ -3199,6 +3303,7 @@ fml kBias57_3     = FML(0.88555);
     for (u32 i = 0; i < inputRows*inputCols; i++) \
         output[i] = FML(0.0); \
  \
+    /* Step (1, 1) */ \
     { \
         s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel33_3, 3, 3, \
@@ -3230,6 +3335,108 @@ fml kBias57_3     = FML(0.88555);
                  output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols); \
+    } \
+ \
+    /* Step (1, 2) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel33_3, 3, 3, \
+                              1, 2, \
+                              1, \
+                 &kBias33_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 1, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel55_3, 5, 5, \
+                              1, 2, \
+                              1, \
+                 &kBias55_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 1, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel57_3, 5, 7, \
+                              1, 2, \
+                              1, \
+                 &kBias57_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 1, 2); \
+    } \
+ \
+    /* Step (2, 1) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel33_3, 3, 3, \
+                              2, 1, \
+                              1, \
+                 &kBias33_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 1); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel55_3, 5, 5, \
+                              2, 1, \
+                              1, \
+                 &kBias55_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 1); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel57_3, 5, 7, \
+                              2, 1, \
+                              1, \
+                 &kBias57_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 1); \
+    } \
+ \
+    /* Step (2, 2) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel33_3, 3, 3, \
+                              2, 2, \
+                              1, \
+                 &kBias33_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel55_3, 5, 5, \
+                              2, 2, \
+                              1, \
+                 &kBias55_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel57_3, 5, 7, \
+                              2, 2, \
+                              1, \
+                 &kBias57_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 2); \
     } \
  \
     delete [] output; \
