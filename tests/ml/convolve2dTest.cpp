@@ -33,14 +33,19 @@ using ml2::s_conv2d;
 
 
 static
-void s_checkOutput(const tTest& t, fml* output, fml* correctOutput, size_t size)
+void s_checkOutput(const tTest& t, fml* output, fml* correctOutput, u32 outputRows, u32 outputCols, u32 stepY=1, u32 stepX=1)
 {
-    for (size_t i = 0; i < size; i++)
+    for (u32 r = 0; r < outputRows; r += stepY)
     {
-        if (fabs(output[i] - correctOutput[i]) >= 0.0001)
+        for (u32 c = 0; c < outputCols; c += stepX)
         {
-            std::cerr << "Fail at element " << i << ": output = " << output[i] << "  correctOutput = " << correctOutput[i] << std::endl;
-            t.fail();
+            fml out = *output++;
+            fml correct = correctOutput[r*outputCols + c];
+            if (fabs(out - correct) >= 0.0001)
+            {
+                std::cerr << "Fail at element " << (r*outputCols + c) << ": output = " << out << "  correctOutput = " << correct << std::endl;
+                t.fail();
+            }
         }
     }
 }
@@ -74,7 +79,7 @@ void test0(const tTest& t)
              &bias, FML(0.5),
              output);
 
-    s_checkOutput(t, output, correctOutput, inputRows*inputCols);
+    s_checkOutput(t, output, correctOutput, inputRows, inputCols);
 }
 
 
@@ -117,7 +122,7 @@ fml kBias57_1     = FML(0.81093);
                  &kBias33_1, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k33, inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols); \
     } \
  \
     { \
@@ -128,7 +133,7 @@ fml kBias57_1     = FML(0.81093);
                  &kBias55_1, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k55, inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols); \
     } \
  \
     { \
@@ -139,7 +144,7 @@ fml kBias57_1     = FML(0.81093);
                  &kBias57_1, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k57, inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols); \
     } \
  \
     delete [] output; \
@@ -2619,7 +2624,7 @@ fml kBias57_2[]   = {
                  kBias33_2, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k33, 2*inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, 2*inputCols); \
     } \
  \
     { \
@@ -2630,7 +2635,7 @@ fml kBias57_2[]   = {
                  kBias55_2, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k55, 2*inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, 2*inputCols); \
     } \
  \
     { \
@@ -2641,7 +2646,7 @@ fml kBias57_2[]   = {
                  kBias57_2, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k57, 2*inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, 2*inputCols); \
     } \
  \
     delete [] output; \
@@ -3202,7 +3207,7 @@ fml kBias57_3     = FML(0.88555);
                  &kBias33_3, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k33, inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols); \
     } \
  \
     { \
@@ -3213,7 +3218,7 @@ fml kBias57_3     = FML(0.88555);
                  &kBias55_3, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k55, inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols); \
     } \
  \
     { \
@@ -3224,7 +3229,7 @@ fml kBias57_3     = FML(0.88555);
                  &kBias57_3, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k57, inputRows*inputCols); \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols); \
     } \
  \
     delete [] output; \
