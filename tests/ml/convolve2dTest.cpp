@@ -33,18 +33,21 @@ using ml2::s_conv2d;
 
 
 static
-void s_checkOutput(const tTest& t, fml* output, fml* correctOutput, u32 outputRows, u32 outputCols, u32 stepY=1, u32 stepX=1)
+void s_checkOutput(const tTest& t, fml* output, fml* correctOutput, u32 outputRows, u32 outputCols, u32 stepY=1, u32 stepX=1, u32 numOutputComponents=1)
 {
     for (u32 r = 0; r < outputRows; r += stepY)
     {
         for (u32 c = 0; c < outputCols; c += stepX)
         {
-            fml out = *output++;
-            fml correct = correctOutput[r*outputCols + c];
-            if (fabs(out - correct) >= 0.0001)
+            for (u32 k = 0; k < numOutputComponents; k++)
             {
-                std::cerr << "Fail at element " << (r*outputCols + c) << ": output = " << out << "  correctOutput = " << correct << std::endl;
-                t.fail();
+                fml out = *output++;
+                fml correct = correctOutput[(r*outputCols + c) * numOutputComponents + k];
+                if (fabs(out - correct) >= 0.0001)
+                {
+                    std::cerr << "Fail at element " << (r*outputCols + c) << ": output = " << out << "  correctOutput = " << correct << std::endl;
+                    t.fail();
+                }
             }
         }
     }
@@ -2728,7 +2731,7 @@ fml kBias57_2[]   = {
                  kBias33_2, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k33, inputRows, 2*inputCols); \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 1, 1, 2); \
     } \
  \
     { \
@@ -2739,7 +2742,7 @@ fml kBias57_2[]   = {
                  kBias55_2, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k55, inputRows, 2*inputCols); \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 1, 1, 2); \
     } \
  \
     { \
@@ -2750,7 +2753,109 @@ fml kBias57_2[]   = {
                  kBias57_2, FML(1.0), \
                  output); \
  \
-        s_checkOutput(t, output, correctOutput_k57, inputRows, 2*inputCols); \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 1, 1, 2); \
+    } \
+ \
+    /* Step (1, 2) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel33_2, 3, 3, \
+                              1, 2, \
+                              2, \
+                 kBias33_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 1, 2, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel55_2, 5, 5, \
+                              1, 2, \
+                              2, \
+                 kBias55_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 1, 2, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel57_2, 5, 7, \
+                              1, 2, \
+                              2, \
+                 kBias57_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 1, 2, 2); \
+    } \
+ \
+    /* Step (2, 1) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel33_2, 3, 3, \
+                              2, 1, \
+                              2, \
+                 kBias33_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 1, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel55_2, 5, 5, \
+                              2, 1, \
+                              2, \
+                 kBias55_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 1, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel57_2, 5, 7, \
+                              2, 1, \
+                              2, \
+                 kBias57_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 1, 2); \
+    } \
+ \
+    /* Step (2, 2) */ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel33_2, 3, 3, \
+                              2, 2, \
+                              2, \
+                 kBias33_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 2, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel55_2, 5, 5, \
+                              2, 2, \
+                              2, \
+                 kBias55_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 2, 2); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 1, \
+                 kKernel57_2, 5, 7, \
+                              2, 2, \
+                              2, \
+                 kBias57_2, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 2, 2); \
     } \
  \
     delete [] output; \
