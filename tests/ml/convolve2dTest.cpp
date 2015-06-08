@@ -2663,6 +2663,506 @@ void test65(const tTest& t)
 }
 
 
+void test66(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.013133),
+   FML(0.955461),
+    };
+    u32 inputRows = 2;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] =
+    {  FML(1.47511),   FML(0.73862),
+   FML(1.35095),   FML(0.96515),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.39385),   FML(1.19363),
+   FML(1.45814),   FML(0.81461),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.35643),   FML(1.42688),
+   FML(1.24043),   FML(0.69168),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test67(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.82757),
+   FML(0.81545),
+   FML(0.19833),
+    };
+    u32 inputRows = 3;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] =
+    {  FML(1.79326),   FML(1.38926),
+   FML(1.72581),   FML(1.29889),
+   FML(1.28914),   FML(0.59705),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(2.0085),   FML(1.5185),
+   FML(2.2484),   FML(1.1709),
+   FML(1.8472),   FML(1.2225),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.6652),   FML(1.3590),
+   FML(1.3574),   FML(1.5342),
+   FML(1.4628),   FML(1.4929),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test68(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.614772),
+   FML(0.070874),
+   FML(0.695933),
+   FML(0.773934),
+    };
+    u32 inputRows = 4;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] =
+    {  FML(1.22042),   FML(0.69592),
+   FML(1.58297),   FML(0.86576),
+   FML(1.72950),   FML(1.26974),
+   FML(1.52902),   FML(1.07492),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.6356),   FML(1.3387),
+   FML(2.2726),   FML(1.8737),
+   FML(1.9833),   FML(1.5943),
+   FML(1.9793),   FML(1.0080),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.11837),   FML(0.73185),
+   FML(1.27969),   FML(1.74206),
+   FML(1.97049),   FML(1.49930),
+   FML(1.25293),   FML(1.26979),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test69(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.32358),
+   FML(0.48935),
+   FML(0.49278),
+   FML(0.41679),
+   FML(0.33730),
+    };
+    u32 inputRows = 5;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] =
+    {  FML(1.33763),   FML(0.71012),
+   FML(1.54966),   FML(0.99459),
+   FML(1.56893),   FML(1.01374),
+   FML(1.48257),   FML(0.89242),
+   FML(1.20161),   FML(0.56310),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.58742),   FML(1.37411),
+   FML(1.97040),   FML(1.46808),
+   FML(2.10822),   FML(1.55420),
+   FML(1.85172),   FML(1.26925),
+   FML(1.49812),   FML(0.98090),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.2280),   FML(1.0623),
+   FML(1.3359),   FML(1.3453),
+   FML(1.5097),   FML(1.4863),
+   FML(1.5301),   FML(1.4470),
+   FML(1.2863),   FML(1.0970),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test70(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.802264),
+   FML(0.493702),
+   FML(0.305327),
+   FML(0.285125),
+   FML(0.223882),
+   FML(0.097451),
+    };
+    u32 inputRows = 6;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] =
+    {  FML(1.57894),   FML(1.15057),
+   FML(1.62258),   FML(1.06626),
+   FML(1.39467),   FML(0.75595),
+   FML(1.27212),   FML(0.62040),
+   FML(1.15439),   FML(0.47156),
+   FML(1.00620),   FML(0.26597),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.83532),   FML(1.37105),
+   FML(2.22116),   FML(1.37728),
+   FML(1.93574),   FML(1.53375),
+   FML(1.56046),   FML(1.17106),
+   FML(1.31317),   FML(0.88375),
+   FML(1.09358),   FML(0.74513),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.46092),   FML(1.09002),
+   FML(1.26458),   FML(1.58884),
+   FML(1.64300),   FML(1.46556),
+   FML(1.38661),   FML(1.18952),
+   FML(1.16096),   FML(1.02306),
+   FML(1.02413),   FML(0.87874),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test71(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.954710),
+   FML(0.705332),
+   FML(0.107897),
+   FML(0.393215),
+   FML(0.523242),
+   FML(0.057792),
+   FML(0.328289),
+    };
+    u32 inputRows = 7;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] =
+    {  FML(1.78759),   FML(1.43170),
+   FML(1.66424),   FML(1.18899),
+   FML(1.44727),   FML(0.73336),
+   FML(1.43602),   FML(0.84003),
+   FML(1.32124),   FML(0.76226),
+   FML(1.30998),   FML(0.57054),
+   FML(1.05593),   FML(0.40991),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.97710),   FML(1.40415),
+   FML(2.44748),   FML(1.44292),
+   FML(2.26532),   FML(1.93987),
+   FML(1.68262),   FML(1.42295),
+   FML(1.74527),   FML(1.16733),
+   FML(1.58865),   FML(1.11327),
+   FML(1.16353),   FML(0.87824),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.66059),   FML(1.27257),
+   FML(1.26097),   FML(1.56545),
+   FML(1.72612),   FML(1.75879),
+   FML(1.73509),   FML(1.32300),
+   FML(1.16595),   FML(1.06242),
+   FML(1.29361),   FML(1.42499),
+   FML(1.27214),   FML(0.80107),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test72(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.763171),
+   FML(0.188399),
+   FML(0.107985),
+   FML(0.774685),
+   FML(0.803080),
+   FML(0.633849),
+   FML(0.834126),
+   FML(0.087026),
+    };
+    u32 inputRows = 8;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] =
+    {  FML(1.36806),   FML(0.91030),
+   FML(1.33132),   FML(0.63920),
+   FML(1.48315),   FML(0.78028),
+   FML(1.80162),   FML(1.37624),
+   FML(1.97189),   FML(1.55801),
+   FML(2.02426),   FML(1.54897),
+   FML(1.58916),   FML(1.16318),
+   FML(1.24101),   FML(0.50285),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.49168),   FML(0.97481),
+   FML(2.10498),   FML(1.53935),
+   FML(2.15009),   FML(2.19222),
+   FML(2.35181),   FML(1.98314),
+   FML(2.97589),   FML(2.21401),
+   FML(2.74822),   FML(1.99964),
+   FML(2.19565),   FML(1.41647),
+   FML(1.73762),   FML(1.10133),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.25945),   FML(0.82915),
+   FML(0.99697),   FML(1.38143),
+   FML(1.79175),   FML(1.60877),
+   FML(1.76046),   FML(1.48203),
+   FML(1.67639),   FML(1.88905),
+   FML(2.13675),   FML(2.19572),
+   FML(1.79093),   FML(1.44406),
+   FML(1.28850),   FML(1.46256),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test73(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.87718),   FML(0.12306),
+    };
+    u32 inputRows = 1;
+    u32 inputCols = 2;
+
+    fml correctOutput_k33[] =
+    {  FML(1.34573),   FML(0.96241),   FML(1.20704),   FML(0.32769),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.45308),   FML(0.89013),   FML(1.46859),   FML(0.61858),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.22706),   FML(0.74517),   FML(1.37842),   FML(1.25375),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test74(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.79357),   FML(0.19883),   FML(0.55991),
+    };
+    u32 inputRows = 1;
+    u32 inputCols = 3;
+
+    fml correctOutput_k33[] =
+    {  FML(1.32805),   FML(0.93163),   FML(1.39576),   FML(0.72193),   FML(1.21123),   FML(0.62746),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.70962),   FML(1.34170),   FML(1.75740),   FML(1.11114),   FML(1.88208),   FML(0.79436),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(1.6554),   FML(1.3277),   FML(1.4790),   FML(1.5127),   FML(1.3164),   FML(1.0391),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test75(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.44639),   FML(0.60285),   FML(0.81655),   FML(0.99021),
+    };
+    u32 inputRows = 1;
+    u32 inputCols = 4;
+
+    fml correctOutput_k33[] =
+    {  FML(1.28293),   FML(0.85763),   FML(1.56909),   FML(1.19485),   FML(1.77983),   FML(1.51775),   FML(1.62015),   FML(1.11142),
+    };
+
+    fml correctOutput_k55[] =
+    {  FML(1.79466),   FML(1.76442),   FML(2.42930),   FML(2.16023),   FML(2.62559),   FML(1.70878),   FML(2.50245),   FML(0.95881),
+    };
+
+    fml correctOutput_k57[] =
+    {  FML(2.3839),   FML(2.2992),   FML(2.3139),   FML(2.3973),   FML(1.8295),   FML(1.7891),   FML(2.2489),   FML(1.7385),
+    };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test76(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.42982),   FML(0.55418),   FML(0.82427),   FML(0.87749),   FML(0.19492),
+    };
+    u32 inputRows = 1;
+    u32 inputCols = 5;
+
+    fml correctOutput_k33[] =
+     {  FML(1.25926),   FML(0.81317),   FML(1.54206),   FML(1.15258),   FML(1.73267),   FML(1.44976),   FML(1.62811),   FML(1.12692),  FML(1.24295),   FML(0.39342),
+    };
+
+    fml correctOutput_k55[] =
+     {  FML(1.76084),   FML(1.72354),   FML(2.32978),   FML(2.06673),   FML(2.62169),   FML(1.75362),   FML(2.49194),   FML(1.08354),  FML(2.12652),   FML(0.73788),
+    };
+
+    fml correctOutput_k57[] =
+     {  FML(2.3033),   FML(2.2198),   FML(2.3097),   FML(2.3789),   FML(1.9347),   FML(1.8766),   FML(2.2165),   FML(1.8211),  FML(2.0355),   FML(1.8751),
+     };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test77(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.759691),   FML(0.401859),   FML(0.272445),   FML(0.807054),   FML(0.612789),   FML(0.031398),
+    };
+    u32 inputRows = 1;
+    u32 inputCols = 6;
+
+    fml correctOutput_k33[] =
+     {  FML(1.37545),   FML(1.02294),   FML(1.39527),   FML(0.72938),   FML(1.38739),   FML(0.88059),   FML(1.55160),   FML(1.23326),  FML(1.43899),   FML(0.78395),   FML(1.07812),   FML(0.20511),
+    };
+
+    fml correctOutput_k55[] =
+     {  FML(1.64852),   FML(1.29095),   FML(2.13169),   FML(1.52489),   FML(2.52051),   FML(1.85399),   FML(2.16548),   FML(1.37628),  FML(1.99314),   FML(0.82648),   FML(1.80333),   FML(0.66243),
+    };
+
+    fml correctOutput_k57[] =
+     {  FML(1.9413),   FML(1.5796),   FML(2.5238),   FML(2.4431),   FML(1.9782),   FML(2.2210),   FML(2.2074),   FML(1.8642),  FML(1.9694),   FML(1.5984),   FML(1.5509),   FML(1.4866),
+     };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test78(const tTest& t)
+{
+    fml input[] =
+    {  FML(0.99473),   FML(0.50862),   FML(0.27996),   FML(0.73488),   FML(0.90786),   FML(0.29745),   FML(0.16796),
+    };
+    u32 inputRows = 1;
+    u32 inputCols = 7;
+
+    fml correctOutput_k33[] =
+     {  FML(1.52639),   FML(1.30208),   FML(1.52484),   FML(0.86598),   FML(1.40189),   FML(0.85966),   FML(1.61142),   FML(1.34612),  FML(1.64757),   FML(1.20332),   FML(1.35679),   FML(0.59275),   FML(1.04692),   FML(0.28366),
+    };
+
+    fml correctOutput_k55[] =
+     {  FML(1.88035),   FML(1.46158),   FML(2.34740),   FML(1.53098),   FML(2.88419),   FML(2.04937),   FML(2.48325),   FML(1.81365),  FML(2.38562),   FML(1.26490),   FML(2.24594),   FML(0.90497),   FML(1.75003),   FML(0.69169),
+    };
+
+    fml correctOutput_k57[] =
+     {  FML(2.0385),   FML(1.6225),   FML(2.8432),   FML(2.7028),   FML(2.4768),   FML(2.7531),   FML(2.7755),   FML(2.5652),  FML(2.3501),   FML(1.9497),   FML(1.8886),   FML(1.7876),   FML(1.8345),   FML(1.6086),
+     };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test79(const tTest& t)
+{
+    fml input[] =
+     {  FML(0.055739),   FML(0.626009),   FML(0.869583),   FML(0.697015),   FML(0.920122),   FML(0.583032),   FML(0.078973),  FML(0.896550),
+    };
+    u32 inputRows = 1;
+    u32 inputCols = 8;
+
+    fml correctOutput_k33[] =
+     {  FML(1.09556),   FML(0.51450),   FML(1.47445),   FML(1.19065),   FML(1.72073),   FML(1.39302),   FML(1.78203),   FML(1.40540),  FML(1.73218),   FML(1.38098),   FML(1.47481),   FML(0.80200),   FML(1.37632),   FML(0.78424),   FML(1.34128),   FML(0.91758),
+    };
+
+    fml correctOutput_k55[] =
+     {  FML(1.54706),   FML(1.69956),   FML(2.04688),   FML(1.96401),   FML(2.69754),   FML(2.11263),   FML(3.11495),   FML(2.08505),  FML(2.90569),   FML(1.51146),   FML(2.83467),   FML(1.57886),   FML(2.36982),   FML(1.44954),   FML(1.88765),   FML(0.86651),
+    };
+
+    fml correctOutput_k57[] =
+     {  FML(2.0644),   FML(2.1891),   FML(2.4203),   FML(2.3455),   FML(2.8379),   FML(2.7244),   FML(2.5219),   FML(2.6313),  FML(3.0749),   FML(2.7197),   FML(3.2355),   FML(3.0144),   FML(2.1225),   FML(2.2865),   FML(2.1492),   FML(1.5198),
+     };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
+void test80(const tTest& t)
+{
+    fml input[] =
+     {  FML(0.235445),   FML(0.588533),   FML(0.422798),   FML(0.596196),   FML(0.673341),   FML(0.117915),   FML(0.639336),  FML(0.283129),
+    FML(0.519378),   FML(0.273980),   FML(0.748642),   FML(0.654390),   FML(0.236341),   FML(0.503418),   FML(0.557124),  FML(0.623233),
+    FML(0.576177),   FML(0.977037),   FML(0.598682),   FML(0.386034),   FML(0.463120),   FML(0.281903),   FML(0.397778),  FML(0.346687),
+    FML(0.402726),   FML(0.746217),   FML(0.783786),   FML(0.752348),   FML(0.982114),   FML(0.204472),   FML(0.181106),  FML(0.538679),
+    FML(0.150195),   FML(0.892030),   FML(0.798167),   FML(0.845185),   FML(0.915378),   FML(0.428578),   FML(0.272652),  FML(0.760332),
+    FML(0.372624),   FML(0.198441),   FML(0.486771),   FML(0.053301),   FML(0.125731),   FML(0.208560),   FML(0.443974),  FML(0.468624),
+    FML(0.893004),   FML(0.459111),   FML(0.013819),   FML(0.898380),   FML(0.693117),   FML(0.129526),   FML(0.069245),  FML(0.899693),
+    FML(0.014718),   FML(0.216360),   FML(0.684710),   FML(0.659945),   FML(0.866187),   FML(0.993860),   FML(0.333889),  FML(0.647957),
+    };
+    u32 inputRows = 8;
+    u32 inputCols = 8;
+
+    fml correctOutput_k33[] =
+     {  FML(1.53377),   FML(1.15628),   FML(2.14477),   FML(1.80739),   FML(2.27435),   FML(1.93867),   FML(2.68379),   FML(2.09318),  FML(2.28096),   FML(1.66937),   FML(1.95990),   FML(1.45878),   FML(2.23483),   FML(1.86346),   FML(2.14623),   FML(1.17253),
+    FML(1.87655),   FML(2.01762),   FML(3.01488),   FML(2.84062),   FML(3.32966),   FML(3.39865),   FML(2.83964),   FML(2.75734),  FML(2.50456),   FML(2.30266),   FML(2.37628),   FML(2.59370),   FML(2.39616),   FML(2.16742),   FML(2.25194),   FML(1.94240),
+    FML(2.05658),   FML(2.22016),   FML(3.04737),   FML(3.55313),   FML(3.37680),   FML(3.24656),   FML(3.25956),   FML(3.41214),  FML(3.03478),   FML(2.90606),   FML(2.73431),   FML(2.13663),   FML(2.09649),   FML(2.24308),   FML(2.08358),   FML(1.72802),
+    FML(1.87890),   FML(2.17718),   FML(3.05448),   FML(3.66251),   FML(3.77608),   FML(4.25912),   FML(3.61281),   FML(3.96652),  FML(3.44409),   FML(3.24528),   FML(2.83161),   FML(2.23699),   FML(2.16527),   FML(2.05152),   FML(2.18582),   FML(1.80286),
+    FML(1.74948),   FML(1.62302),   FML(2.68138),   FML(3.07540),   FML(2.94540),   FML(3.32109),   FML(3.01093),   FML(3.43487),  FML(2.51138),   FML(2.76933),   FML(2.14946),   FML(2.37066),   FML(2.12733),   FML(2.05292),   FML(2.32405),   FML(1.78382),
+    FML(1.92145),   FML(1.86632),   FML(2.90645),   FML(2.30922),   FML(2.44635),   FML(2.95018),   FML(2.43997),   FML(2.82414),  FML(3.00050),   FML(2.78108),   FML(2.38409),   FML(2.28370),   FML(1.92423),   FML(2.30450),   FML(2.25010),   FML(1.79869),
+    FML(1.67137),   FML(1.55002),   FML(1.87253),   FML(1.84914),   FML(2.28455),   FML(2.07252),   FML(2.90870),   FML(3.19868),  FML(2.94624),   FML(2.63460),   FML(2.86498),   FML(2.10123),   FML(2.79061),   FML(2.45645),   FML(2.38077),   FML(2.17079),
+    FML(1.36144),   FML(0.79973),   FML(1.63216),   FML(1.77376),   FML(1.74910),   FML(2.01002),   FML(2.14334),   FML(2.00367),  FML(2.36690),   FML(2.80106),   FML(1.99869),   FML(2.09250),   FML(1.74462),   FML(1.49320),   FML(1.67092),   FML(1.15952),
+    };
+
+    fml correctOutput_k55[] =
+     {  FML(3.2172),   FML(3.1697),   FML(3.9504),   FML(3.9678),   FML(4.4179),   FML(4.4699),   FML(4.2958),   FML(4.1783),  FML(4.2882),   FML(3.6895),   FML(4.2109),   FML(3.4544),   FML(3.3911),   FML(2.8563),   FML(2.4512),   FML(2.2846),
+    FML(4.2477),   FML(4.0371),   FML(5.0659),   FML(5.4053),   FML(5.5342),   FML(6.1601),   FML(5.6479),   FML(5.7298),  FML(5.6215),   FML(5.2181),   FML(4.6203),   FML(5.0623),   FML(4.2597),   FML(3.7937),   FML(3.1921),   FML(2.3066),
+    FML(5.3000),   FML(4.6134),   FML(6.5090),   FML(6.2055),   FML(8.0601),   FML(7.3017),   FML(7.7327),   FML(6.8847),  FML(6.3410),   FML(6.8870),   FML(6.0596),   FML(6.3386),   FML(5.2670),   FML(4.4887),   FML(3.6306),   FML(3.3205),
+    FML(5.3531),   FML(4.8854),   FML(6.9522),   FML(5.8303),   FML(8.0986),   FML(6.8119),   FML(7.1037),   FML(6.4166),  FML(6.9745),   FML(5.3594),   FML(6.5041),   FML(5.0596),   FML(5.0732),   FML(4.4162),   FML(3.6016),   FML(3.3075),
+    FML(5.1773),   FML(5.3033),   FML(5.4695),   FML(6.2933),   FML(7.0166),   FML(7.0804),   FML(7.6013),   FML(6.5505),  FML(6.7965),   FML(4.9452),   FML(6.1062),   FML(5.0433),   FML(5.0349),   FML(4.4859),   FML(3.7576),   FML(3.1061),
+    FML(4.1544),   FML(4.1004),   FML(5.4869),   FML(5.4680),   FML(7.0665),   FML(6.1566),   FML(7.0196),   FML(6.7970),  FML(6.0401),   FML(6.6731),   FML(6.1155),   FML(6.6714),   FML(5.5043),   FML(5.0534),   FML(4.2241),   FML(3.5630),
+    FML(4.1077),   FML(2.5856),   FML(5.1999),   FML(3.5706),   FML(6.4799),   FML(4.9352),   FML(6.5846),   FML(4.9060),  FML(5.8001),   FML(4.5024),   FML(6.2998),   FML(5.0599),   FML(5.1162),   FML(4.1866),   FML(3.5283),   FML(2.6829),
+    FML(2.7289),   FML(2.2851),   FML(2.9285),   FML(2.8426),   FML(3.6264),   FML(4.0651),   FML(4.5173),   FML(3.9493),  FML(4.8823),   FML(2.8243),   FML(4.5469),   FML(3.1905),   FML(3.9034),   FML(3.1614),   FML(3.4089),   FML(1.7295),
+    };
+
+    fml correctOutput_k57[] =
+      {  FML(4.7202),    FML(3.7638),    FML(5.1826),    FML(4.1842),    FML(5.9460),    FML(5.4340),    FML(6.3544),    FML(5.1976),   FML(7.1490),    FML(5.2847),    FML(5.4544),    FML(4.9167),    FML(4.1193),    FML(3.4356),    FML(3.9517),    FML(3.2565),
+     FML(5.4191),    FML(5.1611),    FML(6.4449),    FML(6.8469),    FML(7.3174),    FML(7.2304),    FML(8.3474),    FML(8.2880),   FML(7.3112),    FML(8.3452),    FML(7.0467),    FML(7.4009),    FML(5.3048),    FML(5.7578),    FML(4.2421),    FML(4.1351),
+     FML(7.1122),    FML(6.6268),    FML(8.9167),    FML(7.9226),    FML(9.6328),    FML(9.5804),   FML(10.5351),   FML(10.7566),  FML(11.0353),   FML(10.7647),    FML(9.2136),    FML(9.6862),    FML(7.2183),    FML(7.4129),    FML(5.0484),    FML(5.4993),
+     FML(6.5998),    FML(5.9670),    FML(8.0648),    FML(8.1475),    FML(8.6900),    FML(8.8841),   FML(10.0190),   FML(10.1843),  FML(10.5926),   FML(10.5291),    FML(9.2684),    FML(9.0821),    FML(6.3716),    FML(6.9262),    FML(5.4176),    FML(5.6938),
+     FML(5.4945),    FML(6.2283),    FML(7.8811),    FML(8.2796),    FML(8.9592),   FML(10.0842),    FML(9.0572),    FML(9.4903),   FML(9.8226),   FML(10.4030),    FML(8.1940),    FML(9.4099),    FML(6.8639),    FML(7.1817),    FML(5.1886),    FML(4.9805),
+     FML(6.4067),    FML(6.0588),    FML(7.9891),    FML(7.4176),    FML(8.5553),    FML(8.9310),    FML(9.4840),   FML(11.1633),  FML(10.4568),   FML(10.7959),    FML(9.4560),    FML(9.9027),    FML(7.4806),    FML(8.3734),    FML(5.2823),    FML(5.9134),
+     FML(5.0653),    FML(4.0463),    FML(7.1896),    FML(5.8874),    FML(7.2716),    FML(6.9413),    FML(8.0331),    FML(7.0934),   FML(9.3623),    FML(8.0957),    FML(7.4535),    FML(7.8558),    FML(6.2376),    FML(6.6512),    FML(5.2875),    FML(5.1310),
+     FML(2.8719),    FML(3.3939),    FML(3.5753),    FML(4.6807),    FML(4.5389),    FML(5.4375),    FML(4.8217),    FML(6.3267),   FML(5.2015),    FML(5.9497),    FML(5.0199),    FML(5.8468),    FML(4.0260),    FML(5.1559),    FML(3.4191),    FML(3.8997),
+      };
+
+    TEST_ALL_1_COMPONENT_2_COUNT_KERNELS
+}
+
+
 int main()
 {
     tCrashReporter::init();
@@ -2737,6 +3237,21 @@ int main()
     tTest("convolve 2d test 64", test64);
 
     tTest("convolve 2d test 65", test65);
+    tTest("convolve 2d test 66", test66);
+    tTest("convolve 2d test 67", test67);
+    tTest("convolve 2d test 68", test68);
+    tTest("convolve 2d test 69", test69);
+    tTest("convolve 2d test 70", test70);
+    tTest("convolve 2d test 71", test71);
+    tTest("convolve 2d test 72", test72);
+    tTest("convolve 2d test 73", test73);
+    tTest("convolve 2d test 74", test74);
+    tTest("convolve 2d test 75", test75);
+    tTest("convolve 2d test 76", test76);
+    tTest("convolve 2d test 77", test77);
+    tTest("convolve 2d test 78", test78);
+    tTest("convolve 2d test 79", test79);
+    tTest("convolve 2d test 80", test80);
 
     return 0;
 }
