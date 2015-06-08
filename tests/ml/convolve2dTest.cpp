@@ -13,6 +13,25 @@ using ml2::fml;
 using ml2::s_conv2d;
 
 
+/*
+ * Note: The "correctOutput" vectors in this file were calculated using Octave's
+ * conv2() function.
+ *
+ * E.g.
+ *
+ * > i = rand(5,5)                                  # the input matrix
+ * > k = rand(3,3)                                  # the convolution kernel
+ * > b = rand()                                     # the bias term
+ * > c = conv2(i, fliplr(flipud(k)), "same") + b    # the convolve step
+ *
+ *
+ * Note: Matlab and Octave also have a xcorr2() function that implements
+ * convolution like I do, but I'm not using that above because I want to draw
+ * explicit attention to this fact that conv2() and xcorr2() are different in
+ * Matlab and Octave!
+ */
+
+
 static
 void s_checkOutput(const tTest& t, fml* output, fml* correctOutput, size_t size)
 {
@@ -57,25 +76,6 @@ void test0(const tTest& t)
 
     s_checkOutput(t, output, correctOutput, inputRows*inputCols);
 }
-
-
-/*
- * Note: The "correctOutput" vectors in this file were calculated using Octave's
- * conv2() function.
- *
- * E.g.
- *
- * > i = rand(5,5)                                  # the input matrix
- * > k = rand(3,3)                                  # the convolution kernel
- * > b = rand()                                     # the bias term
- * > c = conv2(i, fliplr(flipud(k)), "same") + b    # the convolve step
- *
- *
- * Note: Matlab and Octave also have a xcorr2() function that implements
- * convolution like I do, but I'm not using that above because I want to draw
- * explicit attention to this fact that conv2() and xcorr2() are different in
- * Matlab and Octave!
- */
 
 
 fml kKernel33_1[] = {
