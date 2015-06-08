@@ -62,8 +62,8 @@ void test0(const tTest& t)
 
     fml bias = -FML(1.0);
 
-    fml correctOutput[] = {  FML(76.0),  FML(66.0),
-                             FML(46.0),  FML(36.0),  };
+    fml correctOutput[] = {  FML(38.0),  FML(33.0),
+                             FML(23.0),  FML(18.0),  };
     fml output[] = {  FML(0.0),  FML(0.0),
                       FML(0.0),  FML(0.0),  };
 
@@ -71,7 +71,7 @@ void test0(const tTest& t)
              kernel, kernelRows, kernelCols,
                      1, 1,
                      1,
-             &bias, FML(1.0),
+             &bias, FML(0.5),
              output);
 
     s_checkOutput(t, output, correctOutput, inputRows*inputCols);
@@ -3163,6 +3163,89 @@ void test80(const tTest& t)
 }
 
 
+fml kKernel33_3[] = {
+    FML(0.949953),   FML(0.429395),   FML(0.155611),   FML(0.942828),   FML(0.153559),   FML(0.411244),
+    FML(0.620832),   FML(0.718138),   FML(0.164167),   FML(0.294378),   FML(0.326532),   FML(0.047242),
+    FML(0.858914),   FML(0.426591),   FML(0.679221),   FML(0.839225),   FML(0.849002),   FML(0.837592),
+};
+fml kBias33_3     = FML(0.32018);
+
+fml kKernel55_3[] = {
+    FML(0.190823),   FML(0.090197),   FML(0.145543),   FML(0.835100),   FML(0.697089),   FML(0.518416),   FML(0.254674),  FML(0.069730),   FML(0.056365),   FML(0.078404),
+    FML(0.942368),   FML(0.504369),   FML(0.995490),   FML(0.857426),   FML(0.963833),   FML(0.420007),   FML(0.245717),  FML(0.169354),   FML(0.950606),   FML(0.332520),
+    FML(0.605449),   FML(0.760562),   FML(0.105182),   FML(0.970178),   FML(0.158836),   FML(0.612095),   FML(0.288663),  FML(0.428532),   FML(0.180745),   FML(0.421864),
+    FML(0.089072),   FML(0.591821),   FML(0.510324),   FML(0.370252),   FML(0.116792),   FML(0.466311),   FML(0.087237),  FML(0.174164),   FML(0.461513),   FML(0.449285),
+    FML(0.020371),   FML(0.159996),   FML(0.271759),   FML(0.261803),   FML(0.173699),   FML(0.611178),   FML(0.347460),  FML(0.769762),   FML(0.357367),   FML(0.044347),
+};
+fml kBias55_3     = FML(0.84436);
+
+fml kKernel57_3[] = {
+    FML(0.0213532),   FML(0.1999500),   FML(0.7609853),   FML(0.8745935),   FML(0.0815307),   FML(0.0016322),  FML(0.7562107),   FML(0.3719662),   FML(0.3359384),   FML(0.6992579),   FML(0.3825840),   FML(0.9852955),  FML(0.9738489),   FML(0.4974391),
+    FML(0.2762497),   FML(0.0456990),   FML(0.5038456),   FML(0.4030547),   FML(0.4023364),   FML(0.9566434),  FML(0.0971793),   FML(0.6499797),   FML(0.7745309),   FML(0.2905131),   FML(0.4940301),   FML(0.0828166),  FML(0.8771658),   FML(0.9233643),
+    FML(0.6586268),   FML(0.2488343),   FML(0.4879419),   FML(0.1402583),   FML(0.7912674),   FML(0.7572233),  FML(0.7936432),   FML(0.3977686),   FML(0.8955799),   FML(0.1854243),   FML(0.0412163),   FML(0.9565226),  FML(0.2703150),   FML(0.9532071),
+    FML(0.2467477),   FML(0.9606165),   FML(0.5741950),   FML(0.5516112),   FML(0.0191520),   FML(0.6962618),  FML(0.1872503),   FML(0.5046333),   FML(0.6357956),   FML(0.1834882),   FML(0.0618589),   FML(0.5941736),  FML(0.9719768),   FML(0.5786454),
+    FML(0.8293359),   FML(0.2747554),   FML(0.0195070),   FML(0.3395821),   FML(0.8516997),   FML(0.3573254),  FML(0.6979173),   FML(0.6837583),   FML(0.5113474),   FML(0.1848593),   FML(0.6939300),   FML(0.0303456),  FML(0.6107402),   FML(0.1582097),
+};
+fml kBias57_3     = FML(0.88555);
+
+
+#define TEST_ALL_2_COMPONENT_1_COUNT_KERNELS \
+    fml* output = new fml[inputRows*inputCols]; \
+    for (u32 i = 0; i < inputRows*inputCols; i++) \
+        output[i] = FML(0.0); \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel33_3, 3, 3, \
+                              1, 1, \
+                              1, \
+                 &kBias33_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k33, inputRows*inputCols); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel55_3, 5, 5, \
+                              1, 1, \
+                              1, \
+                 &kBias55_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k55, inputRows*inputCols); \
+    } \
+ \
+    { \
+        s_conv2d(input, inputRows, inputCols, 2, \
+                 kKernel57_3, 5, 7, \
+                              1, 1, \
+                              1, \
+                 &kBias57_3, FML(1.0), \
+                 output); \
+ \
+        s_checkOutput(t, output, correctOutput_k57, inputRows*inputCols); \
+    } \
+ \
+    delete [] output; \
+
+
+void test81(const tTest& t)
+{
+    fml input[] = {  FML(0.72890),   FML(0.41273),  };
+    u32 inputRows = 1;
+    u32 inputCols = 1;
+
+    fml correctOutput_k33[] = {  FML(0.56134),  };
+
+    fml correctOutput_k55[] = {  FML(1.2128),  };
+
+    fml correctOutput_k57[] = {  FML(1.6282),  };
+
+    TEST_ALL_2_COMPONENT_1_COUNT_KERNELS
+}
+
+
 int main()
 {
     tCrashReporter::init();
@@ -3252,6 +3335,8 @@ int main()
     tTest("convolve 2d test 78", test78);
     tTest("convolve 2d test 79", test79);
     tTest("convolve 2d test 80", test80);
+
+    tTest("convolve 2d test 81", test81);
 
     return 0;
 }
