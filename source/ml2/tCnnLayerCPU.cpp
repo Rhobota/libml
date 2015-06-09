@@ -212,15 +212,34 @@ void tCnnLayerCPU::takeOutputErrorGradients(
 
     fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
-    // Left off here!!!
-
     if (calculateInputErrorGradients)
-        prev_da.noalias() = n * w.transpose() * dA;
+    {
+        for (u32 i = 0; i < inputCount; i++)
+        {
+            s_conv2d_backprop(m_prev_da + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
+                              m_w, m_kernelRows, m_kernelCols,
+                                   m_kernelStepY, m_kernelStepX,
+                                   m_numKernels,
+                              m_b, n,
+                              m_dA);
+        }
+    }
 
-    dw_accum.noalias() = n * dA * inputMap.transpose();
-    db_accum = n * dA.rowwise().sum();
+    dw_accum.setZero();
+    db_accum.setZero();
+    for (u32 i = 0; i < inputCount; i++)
+    {
+        s_conv2d_accumError(input + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
+                            m_dw_accum, m_kernelRows, m_kernelCols,
+                                        m_kernelStepY, m_kernelStepX,
+                                        m_numKernels,
+                            m_db_accum, n,
+                            m_dA);
+    }
 
     fml batchSize = (fml) outputCount;
+
+    // Left off here!!!
 
     switch (m_rule)
     {

@@ -463,12 +463,13 @@ class t_RMSPROP_update_with_alpha
 
 #ifdef ENABLE_CONVOLVE_CPU
 
-void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
-              const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
-                                    u32 kernelStepY, u32 kernelStepX,
-                                    u32 numKernels,
-              const fml* kernelBiases, fml scaleFactor,
-              fml* outputPtr)
+void s_conv2d(
+        const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
+        const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
+                              u32 kernelStepY, u32 kernelStepX,
+                              u32 numKernels,
+        const fml* kernelBiases, fml scaleFactor,
+        fml* outputPtr)
 {
     // TODO: templatize -- including templatizing the block() calls
     // TODO: re-structure to remove as many ifs from the inner loops as possible
@@ -581,7 +582,7 @@ void s_conv2d_accumError(
                 fml dA = *dA_ptr++;
                 dA *= scaleFactor;
                 dk.block(ky, kx*inputComponents, h, w*inputComponents) += input.block(y, x*inputComponents, h, w*inputComponents) * dA;
-                db[i] += dA;
+                db_ptr[i] += dA;
             }
         }
     }
@@ -609,6 +610,7 @@ void s_conv2d_backprop(
     u32 kernelRadiusX = kernelCols / 2;
 
     MapRowMajor di(di_ptr, inputRows, inputCols * inputComponents);
+    di.setZero();
 
     for (u32 r = 0; r < inputRows; r += kernelStepY)
     {
