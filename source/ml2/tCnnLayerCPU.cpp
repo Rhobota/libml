@@ -2,8 +2,8 @@
 
 #include "../ml/Eigen.h"
 
-#define ENABLE_CONVOLVE_CPU
 #include "common_nn.ipp"
+#include "convolve_cpu.ipp"
 
 
 namespace ml2

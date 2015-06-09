@@ -1,8 +1,8 @@
 #include <ml2/tCnnLayerGPU.h>
 
 #define ENABLE_DEVICE_FUNCTIONS
-#define ENABLE_CONVOLVE_GPU
 #include "common_nn.ipp"
+#include "convolve_gpu.ipp"
 
 #include <cassert>
 #include <iostream>

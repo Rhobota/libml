@@ -2,8 +2,7 @@
 
 #include "../../source/ml/Eigen.h"
 
-#define ENABLE_CONVOLVE_CPU
-#include "../../source/ml2/common_nn.ipp"
+#include "../../source/ml2/convolve_cpu.ipp"
 
 #include <rho/tTest.h>
 #include <rho/tCrashReporter.h>
