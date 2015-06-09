@@ -103,11 +103,12 @@ void tCnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     }
     m_curCount = count;
 
-    Map A(m_gpu_A, numOutputDims, count);
-    Map a(m_gpu_a, numOutputDims, count);
+    thrust::device_ptr<fml> A(m_gpu_A);    // numOutputDims x count
+    thrust::device_ptr<fml> a(m_gpu_a);    // numOutputDims x count
 
     fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
+    // TODO this loop
     for (u32 i = 0; i < count; i++)
     {
         s_conv2d(input + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
@@ -123,27 +124,25 @@ void tCnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
         case kLayerTypeSoftmax:
         {
             throw eRuntimeError("A CNN softmax output layer makes no sense.");
-            break;
         }
 
         case kLayerTypeLogistic:
         {
             tLogisticFunc func;
-            a = A.unaryExpr(func);
+            thrust::transform(A, A+numOutputDims*count, a, func);
             break;
         }
 
         case kLayerTypeHyperbolic:
         {
             tHyperbolicFunc func;
-            a = A.unaryExpr(func);
+            thrust::transform(A, A+numOutputDims*count, a, func);
             break;
         }
 
         default:
         {
             throw eRuntimeError("Unknown layer type");
-            break;
         }
     }
 }
@@ -162,207 +161,207 @@ void tCnnLayerGPU::takeOutputErrorGradients(
                   const fml* input, u32 numInputDims, u32 inputCount,
                   bool calculateInputErrorGradients)
 {
-    cublasHandle_t* cublasHandle = (cublasHandle_t*)m_cublasContext;
+//  cublasHandle_t* cublasHandle = (cublasHandle_t*)m_cublasContext;
 
-    if (!outputErrorGradients)
-        throw eInvalidArgument("outputErrorGradients may not be null!");
+//  if (!outputErrorGradients)
+//      throw eInvalidArgument("outputErrorGradients may not be null!");
 
-    if (numOutputDims != m_outputRows * m_outputCols * m_numKernels)
-        throw eInvalidArgument("Unexpected numOutputDims");
+//  if (numOutputDims != m_outputRows * m_outputCols * m_numKernels)
+//      throw eInvalidArgument("Unexpected numOutputDims");
 
-    if (outputCount != m_curCount)
-        throw eInvalidArgument("Unexpected outputCount");
+//  if (outputCount != m_curCount)
+//      throw eInvalidArgument("Unexpected outputCount");
 
-    if (!input)
-        throw eInvalidArgument("input may not be null!");
+//  if (!input)
+//      throw eInvalidArgument("input may not be null!");
 
-    if (numInputDims != m_inputRows * m_inputCols * m_inputComponents)
-        throw eInvalidArgument("Unexpected numInputDims");
+//  if (numInputDims != m_inputRows * m_inputCols * m_inputComponents)
+//      throw eInvalidArgument("Unexpected numInputDims");
 
-    if (inputCount != m_curCount)
-        throw eInvalidArgument("Unexpected inputCount");
+//  if (inputCount != m_curCount)
+//      throw eInvalidArgument("Unexpected inputCount");
 
-    if (m_curCount == 0 || !m_gpu_A)
-        throw eRuntimeError("What gives?");
+//  if (m_curCount == 0 || !m_gpu_A)
+//      throw eRuntimeError("What gives?");
 
-    if (!m_gpu_dA)
-        m_gpu_dA = s_cudaMalloc(numOutputDims * m_maxCount);
+//  if (!m_gpu_dA)
+//      m_gpu_dA = s_cudaMalloc(numOutputDims * m_maxCount);
 
-    if (!m_gpu_prev_da)
-        m_gpu_prev_da = s_cudaMalloc(numInputDims * m_maxCount);
+//  if (!m_gpu_prev_da)
+//      m_gpu_prev_da = s_cudaMalloc(numInputDims * m_maxCount);
 
-    MapConst da(outputErrorGradients, numOutputDims, outputCount);
-    Map dA(m_gpu_dA, numOutputDims, outputCount);
-    Map A(m_gpu_A, numOutputDims, outputCount);
-    //Map prev_da(m_gpu_prev_da, numInputDims, inputCount);
-    //MapConst inputMap(input, numInputDims, inputCount);
+//  MapConst da(outputErrorGradients, numOutputDims, outputCount);
+//  Map dA(m_gpu_dA, numOutputDims, outputCount);
+//  Map A(m_gpu_A, numOutputDims, outputCount);
+//  //Map prev_da(m_gpu_prev_da, numInputDims, inputCount);
+//  //MapConst inputMap(input, numInputDims, inputCount);
 
-    Map w(m_gpu_w, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
-    Map b(m_gpu_b, m_numKernels, 1);
-    Map dw_accum(m_gpu_dw_accum, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
-    Map db_accum(m_gpu_db_accum, m_numKernels, 1);
+//  Map w(m_gpu_w, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
+//  Map b(m_gpu_b, m_numKernels, 1);
+//  Map dw_accum(m_gpu_dw_accum, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
+//  Map db_accum(m_gpu_db_accum, m_numKernels, 1);
 
-    switch (m_type)
-    {
-        case kLayerTypeSoftmax:
-        {
-            throw eRuntimeError("A CNN softmax output layer makes no sense.");
-            break;
-        }
+//  switch (m_type)
+//  {
+//      case kLayerTypeSoftmax:
+//      {
+//          throw eRuntimeError("A CNN softmax output layer makes no sense.");
+//          break;
+//      }
 
-        case kLayerTypeLogistic:
-        {
-            tDirLogisticFunc func;
-            dA = (da.array() * A.unaryExpr(func).array()).matrix();
-            break;
-        }
+//      case kLayerTypeLogistic:
+//      {
+//          tDirLogisticFunc func;
+//          dA = (da.array() * A.unaryExpr(func).array()).matrix();
+//          break;
+//      }
 
-        case kLayerTypeHyperbolic:
-        {
-            tDirHyperbolicFunc func;
-            dA = (da.array() * A.unaryExpr(func).array()).matrix();
-            break;
-        }
+//      case kLayerTypeHyperbolic:
+//      {
+//          tDirHyperbolicFunc func;
+//          dA = (da.array() * A.unaryExpr(func).array()).matrix();
+//          break;
+//      }
 
-        default:
-        {
-            throw eRuntimeError("Unknown layer type");
-            break;
-        }
-    }
+//      default:
+//      {
+//          throw eRuntimeError("Unknown layer type");
+//          break;
+//      }
+//  }
 
-    fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
+//  fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
-    if (calculateInputErrorGradients)
-    {
-        for (u32 i = 0; i < inputCount; i++)
-        {
-            s_conv2d_backprop(m_gpu_prev_da + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
-                              m_gpu_w, m_kernelRows, m_kernelCols,
-                                   m_kernelStepY, m_kernelStepX,
-                                   m_numKernels,
-                              m_gpu_b, n,
-                              m_gpu_dA);
-        }
-    }
+//  if (calculateInputErrorGradients)
+//  {
+//      for (u32 i = 0; i < inputCount; i++)
+//      {
+//          s_conv2d_backprop(m_gpu_prev_da + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
+//                            m_gpu_w, m_kernelRows, m_kernelCols,
+//                                 m_kernelStepY, m_kernelStepX,
+//                                 m_numKernels,
+//                            m_gpu_b, n,
+//                            m_gpu_dA);
+//      }
+//  }
 
-    dw_accum.setZero();
-    db_accum.setZero();
-    for (u32 i = 0; i < inputCount; i++)
-    {
-        s_conv2d_accumError(input + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
-                            m_gpu_dw_accum, m_kernelRows, m_kernelCols,
-                                        m_kernelStepY, m_kernelStepX,
-                                        m_numKernels,
-                            m_gpu_db_accum, n,
-                            m_gpu_dA);
-    }
+//  dw_accum.setZero();
+//  db_accum.setZero();
+//  for (u32 i = 0; i < inputCount; i++)
+//  {
+//      s_conv2d_accumError(input + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
+//                          m_gpu_dw_accum, m_kernelRows, m_kernelCols,
+//                                      m_kernelStepY, m_kernelStepX,
+//                                      m_numKernels,
+//                          m_gpu_db_accum, n,
+//                          m_gpu_dA);
+//  }
 
-    fml batchSize = (fml) outputCount;
+//  fml batchSize = (fml) outputCount;
 
-    switch (m_rule)
-    {
-        case kWeightUpRuleNone:
-        {
-            break;
-        }
+//  switch (m_rule)
+//  {
+//      case kWeightUpRuleNone:
+//      {
+//          break;
+//      }
 
-        case kWeightUpRuleFixedLearningRate:
-        {
-            if (m_alpha <= FML(0.0))
-                throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
-            fml mult = (FML(10.0) / batchSize) * m_alpha;
-            w -= mult * dw_accum;
-            b -= mult * db_accum;
-            break;
-        }
+//      case kWeightUpRuleFixedLearningRate:
+//      {
+//          if (m_alpha <= FML(0.0))
+//              throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
+//          fml mult = (FML(10.0) / batchSize) * m_alpha;
+//          w -= mult * dw_accum;
+//          b -= mult * db_accum;
+//          break;
+//      }
 
-        case kWeightUpRuleMomentum:
-        {
-            if (m_alpha <= FML(0.0))
-                throw eLogicError("When using the momentum update rule, alpha must be set.");
-            if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
-                throw eLogicError("When using the momentum update rule, viscosity must be set.");
-            if (!m_gpu_vel)
-            {
-                u32 numWeights = (m_kernelRows * m_kernelCols * m_inputComponents + 1) * m_numKernels;  // <-- +1 to handle the b vector too
-                m_gpu_vel = s_cudaMalloc(numWeights);
-                for (u32 i = 0; i < numWeights; i++)
-                    m_gpu_vel[i] = FML(0.0);
-            }
-            fml mult = (FML(10.0) / batchSize) * m_alpha;
-            {
-                // Update w:
-                Map vel(m_gpu_vel, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
-                vel *= m_viscosity;
-                vel -= mult*dw_accum;
-                w += vel;
-            }
-            {
-                // Update b:
-                Map vel(m_gpu_vel+m_kernelRows*m_kernelCols*m_inputComponents*m_numKernels, m_numKernels, 1);
-                vel *= m_viscosity;
-                vel -= mult*db_accum;
-                b += vel;
-            }
-            break;
-        }
+//      case kWeightUpRuleMomentum:
+//      {
+//          if (m_alpha <= FML(0.0))
+//              throw eLogicError("When using the momentum update rule, alpha must be set.");
+//          if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
+//              throw eLogicError("When using the momentum update rule, viscosity must be set.");
+//          if (!m_gpu_vel)
+//          {
+//              u32 numWeights = (m_kernelRows * m_kernelCols * m_inputComponents + 1) * m_numKernels;  // <-- +1 to handle the b vector too
+//              m_gpu_vel = s_cudaMalloc(numWeights);
+//              for (u32 i = 0; i < numWeights; i++)
+//                  m_gpu_vel[i] = FML(0.0);
+//          }
+//          fml mult = (FML(10.0) / batchSize) * m_alpha;
+//          {
+//              // Update w:
+//              Map vel(m_gpu_vel, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
+//              vel *= m_viscosity;
+//              vel -= mult*dw_accum;
+//              w += vel;
+//          }
+//          {
+//              // Update b:
+//              Map vel(m_gpu_vel+m_kernelRows*m_kernelCols*m_inputComponents*m_numKernels, m_numKernels, 1);
+//              vel *= m_viscosity;
+//              vel -= mult*db_accum;
+//              b += vel;
+//          }
+//          break;
+//      }
 
-        case kWeightUpRuleAdaptiveRates:
-        {
-            throw eNotImplemented("This used to be implemented in the old CNN... so look there as a reference if you want to implement it here again.");
-            break;
-        }
+//      case kWeightUpRuleAdaptiveRates:
+//      {
+//          throw eNotImplemented("This used to be implemented in the old CNN... so look there as a reference if you want to implement it here again.");
+//          break;
+//      }
 
-        case kWeightUpRuleRPROP:
-        {
-            throw eNotImplemented("This used to be implemented in the old CNN... so look there as a reference if you want to implement it here again.");
-            break;
-        }
+//      case kWeightUpRuleRPROP:
+//      {
+//          throw eNotImplemented("This used to be implemented in the old CNN... so look there as a reference if you want to implement it here again.");
+//          break;
+//      }
 
-        case kWeightUpRuleRMSPROP:
-        {
-            if (m_alpha <= FML(0.0))
-                throw eLogicError("When using the rmsprop rule, alpha must be set.");
-            if (!m_gpu_dw_accum_avg)
-            {
-                u32 numWeights = (m_kernelRows * m_kernelCols * m_inputComponents + 1) * m_numKernels;  // <-- +1 to handle the b vector too
-                m_gpu_dw_accum_avg = s_cudaMalloc(numWeights);
-                for (u32 i = 0; i < numWeights; i++)
-                    m_gpu_dw_accum_avg[i] = FML(1000.0);
-            }
-            fml batchNormMult = FML(1.0) / batchSize;
-            {
-                // Update w:
-                Map dw_accum_avg(m_gpu_dw_accum_avg, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
-                dw_accum *= batchNormMult;
-                dw_accum_avg *= FML(0.9);
-                dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
-                w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
-            }
-            {
-                // Update b:
-                Map db_accum_avg(m_gpu_dw_accum_avg+m_kernelRows*m_kernelCols*m_inputComponents*m_numKernels, m_numKernels, 1);
-                db_accum *= batchNormMult;
-                db_accum_avg *= FML(0.9);
-                db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
-                b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
-            }
-            break;
-        }
+//      case kWeightUpRuleRMSPROP:
+//      {
+//          if (m_alpha <= FML(0.0))
+//              throw eLogicError("When using the rmsprop rule, alpha must be set.");
+//          if (!m_gpu_dw_accum_avg)
+//          {
+//              u32 numWeights = (m_kernelRows * m_kernelCols * m_inputComponents + 1) * m_numKernels;  // <-- +1 to handle the b vector too
+//              m_gpu_dw_accum_avg = s_cudaMalloc(numWeights);
+//              for (u32 i = 0; i < numWeights; i++)
+//                  m_gpu_dw_accum_avg[i] = FML(1000.0);
+//          }
+//          fml batchNormMult = FML(1.0) / batchSize;
+//          {
+//              // Update w:
+//              Map dw_accum_avg(m_gpu_dw_accum_avg, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
+//              dw_accum *= batchNormMult;
+//              dw_accum_avg *= FML(0.9);
+//              dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
+//              w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
+//          }
+//          {
+//              // Update b:
+//              Map db_accum_avg(m_gpu_dw_accum_avg+m_kernelRows*m_kernelCols*m_inputComponents*m_numKernels, m_numKernels, 1);
+//              db_accum *= batchNormMult;
+//              db_accum_avg *= FML(0.9);
+//              db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
+//              b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
+//          }
+//          break;
+//      }
 
-        case kWeightUpRuleARMS:
-        {
-            throw eNotImplemented("Not sure what I want here yet...");
-            break;
-        }
+//      case kWeightUpRuleARMS:
+//      {
+//          throw eNotImplemented("Not sure what I want here yet...");
+//          break;
+//      }
 
-        default:
-        {
-            throw eRuntimeError("Unknown update rule");
-            break;
-        }
-    }
+//      default:
+//      {
+//          throw eRuntimeError("Unknown update rule");
+//          break;
+//      }
+//  }
 }
 
 
