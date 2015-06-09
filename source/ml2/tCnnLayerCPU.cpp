@@ -213,28 +213,26 @@ void tCnnLayerCPU::takeOutputErrorGradients(
 
     if (calculateInputErrorGradients)
     {
-        for (u32 i = 0; i < inputCount; i++)
-        {
-            s_conv2d_backprop(m_prev_da + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
-                              m_w, m_kernelRows, m_kernelCols,
-                                   m_kernelStepY, m_kernelStepX,
-                                   m_numKernels,
-                              m_b, n,
-                              m_dA + i*numOutputDims);
-        }
+        s_conv2d_backprop_multi_input(
+                inputCount, numInputDims, numOutputDims,
+                m_prev_da, m_inputRows, m_inputCols, m_inputComponents,
+                m_w, m_kernelRows, m_kernelCols,
+                     m_kernelStepY, m_kernelStepX,
+                     m_numKernels,
+                m_b, n,
+                m_dA);
     }
 
     dw_accum.setZero();
     db_accum.setZero();
-    for (u32 i = 0; i < inputCount; i++)
-    {
-        s_conv2d_accumError(input + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
-                            m_dw_accum, m_kernelRows, m_kernelCols,
-                                        m_kernelStepY, m_kernelStepX,
-                                        m_numKernels,
-                            m_db_accum, n,
-                            m_dA + i*numOutputDims);
-    }
+    s_conv2d_accumError_multi_input(
+            inputCount, numInputDims, numOutputDims,
+            input, m_inputRows, m_inputCols, m_inputComponents,
+            m_dw_accum, m_kernelRows, m_kernelCols,
+                        m_kernelStepY, m_kernelStepX,
+                        m_numKernels,
+            m_db_accum, n,
+            m_dA);
 
     fml batchSize = (fml) outputCount;
 

@@ -109,12 +109,13 @@ void tCnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
     s_conv2d_multi_input(
-            input, m_inputRows, m_inputCols, m_inputComponents, numInputDims,
+            count, numInputDims, numOutputDims,
+            input, m_inputRows, m_inputCols, m_inputComponents,
             m_gpu_w, m_kernelRows, m_kernelCols,
                      m_kernelStepY, m_kernelStepX,
                      m_numKernels,
             m_gpu_b, n,
-            m_gpu_A, numOutputDims);
+            m_gpu_A);
 
     switch (m_type)
     {
@@ -232,23 +233,25 @@ void tCnnLayerGPU::takeOutputErrorGradients(
 //  if (calculateInputErrorGradients)
 //  {
 //      s_conv2d_backprop_multi_input(
-//              m_gpu_prev_da, m_inputRows, m_inputCols, m_inputComponents, numInputDims,
+//              inputCount, numInputDims, numOutputDims,
+//              m_gpu_prev_da, m_inputRows, m_inputCols, m_inputComponents,
 //              m_gpu_w, m_kernelRows, m_kernelCols,
 //                       m_kernelStepY, m_kernelStepX,
 //                       m_numKernels,
 //              m_gpu_b, n,
-//              m_gpu_dA, numOutputDims);
+//              m_gpu_dA);
 //  }
 
 //  dw_accum.setZero();
 //  db_accum.setZero();
 //  s_conv2d_accumError_multi_input(
-//          input, m_inputRows, m_inputCols, m_inputComponents, numInputDims,
+//          inputCount, numInputDims, numOutputDims,
+//          input, m_inputRows, m_inputCols, m_inputComponents,
 //          m_gpu_dw_accum, m_kernelRows, m_kernelCols,
 //                          m_kernelStepY, m_kernelStepX,
 //                          m_numKernels,
 //          m_gpu_db_accum, n,
-//          m_gpu_dA, numOutputDims);
+//          m_gpu_dA);
 
 //  fml batchSize = (fml) outputCount;
 
