@@ -87,7 +87,7 @@ void tCnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     Map A(m_A, numOutputDims, count);
     Map a(m_a, numOutputDims, count);
 
-    fml n = FML(1.0) / ((fml) numInputDims);
+    fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols));
 
     for (u32 i = 0; i < count; i++)
     {
@@ -103,16 +103,7 @@ void tCnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     {
         case kLayerTypeSoftmax:
         {
-            tExpFunc func;
-            a = A.unaryExpr(func);
-            for (i32 c = 0; c < a.cols(); c++)
-            {
-                fml denom = a.col(c).sum();
-                if (denom > FML(0.0))
-                    a.col(c) /= denom;
-                else
-                    a.col(c).setConstant(FML(1.0) / (fml)a.rows());
-            }
+            throw eRuntimeError("A CNN softmax output layer makes no sense.");
             break;
         }
 
