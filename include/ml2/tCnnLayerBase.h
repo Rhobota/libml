@@ -29,7 +29,7 @@ class tCnnLayerBase : public tNNLayer
          * A subsequent call to this object's takeInput() method should
          * contain one or more images, where each image:
          *   - is stored in row-major format,
-         *   - is 'inputRows'x'inputCols' in size, and
+         *   - is 'inputCols'x'inputRows' in size, and
          *   - has 'inputComponents' channels.
          * Therefore, a subsequent call to this object's takeInput() method
          * should have 'numInputDims' set to 'inputRows*inputCols*inputComponents',
