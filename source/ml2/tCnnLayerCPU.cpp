@@ -87,7 +87,7 @@ void tCnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     Map A(m_A, numOutputDims, count);
     Map a(m_a, numOutputDims, count);
 
-    fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols));
+    fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
     for (u32 i = 0; i < count; i++)
     {
@@ -143,185 +143,188 @@ void tCnnLayerCPU::takeOutputErrorGradients(
                   const fml* input, u32 numInputDims, u32 inputCount,
                   bool calculateInputErrorGradients)
 {
-//  if (!outputErrorGradients)
-//      throw eInvalidArgument("outputErrorGradients may not be null!");
+    if (!outputErrorGradients)
+        throw eInvalidArgument("outputErrorGradients may not be null!");
 
-//  if (numOutputDims != m_numNeurons)
-//      throw eInvalidArgument("Unexpected numOutputDims");
+    if (numOutputDims != m_outputRows * m_outputCols * m_numKernels)
+        throw eInvalidArgument("Unexpected numOutputDims");
 
-//  if (outputCount != m_curCount)
-//      throw eInvalidArgument("Unexpected outputCount");
+    if (outputCount != m_curCount)
+        throw eInvalidArgument("Unexpected outputCount");
 
-//  if (!input)
-//      throw eInvalidArgument("input may not be null!");
+    if (!input)
+        throw eInvalidArgument("input may not be null!");
 
-//  if (numInputDims != m_numInputDims)
-//      throw eInvalidArgument("Unexpected numInputDims");
+    if (numInputDims != m_inputRows * m_inputCols * m_inputComponents)
+        throw eInvalidArgument("Unexpected numInputDims");
 
-//  if (inputCount != m_curCount)
-//      throw eInvalidArgument("Unexpected inputCount");
+    if (inputCount != m_curCount)
+        throw eInvalidArgument("Unexpected inputCount");
 
-//  if (m_curCount == 0 || !m_A)
-//      throw eRuntimeError("What gives?");
+    if (m_curCount == 0 || !m_A)
+        throw eRuntimeError("What gives?");
 
-//  if (!m_dA)
-//      m_dA = new fml[m_numNeurons * m_maxCount];
+    if (!m_dA)
+        m_dA = new fml[numOutputDims * m_maxCount];
 
-//  if (!m_prev_da)
-//      m_prev_da = new fml[m_numInputDims * m_maxCount];
+    if (!m_prev_da)
+        m_prev_da = new fml[numInputDims * m_maxCount];
 
-//  MapConst da(outputErrorGradients, numOutputDims, outputCount);
-//  Map dA(m_dA, numOutputDims, outputCount);
-//  Map A(m_A, numOutputDims, outputCount);
-//  Map prev_da(m_prev_da, numInputDims, inputCount);
-//  MapConst inputMap(input, numInputDims, inputCount);
-//  Map w(m_w, numOutputDims, numInputDims);
-//  Map b(m_b, numOutputDims, 1);
-//  Map dw_accum(m_dw_accum, numOutputDims, numInputDims);
-//  Map db_accum(m_db_accum, numOutputDims, 1);
+    MapConst da(outputErrorGradients, numOutputDims, outputCount);
+    Map dA(m_dA, numOutputDims, outputCount);
+    Map A(m_A, numOutputDims, outputCount);
+    Map prev_da(m_prev_da, numInputDims, inputCount);
+    MapConst inputMap(input, numInputDims, inputCount);
 
-//  switch (m_type)
-//  {
-//      case kLayerTypeSoftmax:
-//      {
-//          dA = da;
-//          break;
-//      }
+    Map w(m_w, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
+    Map b(m_b, m_numKernels, 1);
+    Map dw_accum(m_dw_accum, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
+    Map db_accum(m_db_accum, m_numKernels, 1);
 
-//      case kLayerTypeLogistic:
-//      {
-//          tDirLogisticFunc func;
-//          dA = (da.array() * A.unaryExpr(func).array()).matrix();
-//          break;
-//      }
+    switch (m_type)
+    {
+        case kLayerTypeSoftmax:
+        {
+            throw eRuntimeError("A CNN softmax output layer makes no sense.");
+            break;
+        }
 
-//      case kLayerTypeHyperbolic:
-//      {
-//          tDirHyperbolicFunc func;
-//          dA = (da.array() * A.unaryExpr(func).array()).matrix();
-//          break;
-//      }
+        case kLayerTypeLogistic:
+        {
+            tDirLogisticFunc func;
+            dA = (da.array() * A.unaryExpr(func).array()).matrix();
+            break;
+        }
 
-//      default:
-//      {
-//          throw eRuntimeError("Unknown layer type");
-//          break;
-//      }
-//  }
+        case kLayerTypeHyperbolic:
+        {
+            tDirHyperbolicFunc func;
+            dA = (da.array() * A.unaryExpr(func).array()).matrix();
+            break;
+        }
 
-//  fml n = FML(1.0) / ((fml) numInputDims);
+        default:
+        {
+            throw eRuntimeError("Unknown layer type");
+            break;
+        }
+    }
 
-//  if (calculateInputErrorGradients)
-//      prev_da.noalias() = n * w.transpose() * dA;
+    fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
-//  dw_accum.noalias() = n * dA * inputMap.transpose();
-//  db_accum = n * dA.rowwise().sum();
+    // Left off here!!!
 
-//  fml batchSize = (fml) outputCount;
+    if (calculateInputErrorGradients)
+        prev_da.noalias() = n * w.transpose() * dA;
 
-//  switch (m_rule)
-//  {
-//      case kWeightUpRuleNone:
-//      {
-//          break;
-//      }
+    dw_accum.noalias() = n * dA * inputMap.transpose();
+    db_accum = n * dA.rowwise().sum();
 
-//      case kWeightUpRuleFixedLearningRate:
-//      {
-//          if (m_alpha <= FML(0.0))
-//              throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
-//          fml mult = (FML(10.0) / batchSize) * m_alpha;
-//          w -= mult * dw_accum;
-//          b -= mult * db_accum;
-//          break;
-//      }
+    fml batchSize = (fml) outputCount;
 
-//      case kWeightUpRuleMomentum:
-//      {
-//          if (m_alpha <= FML(0.0))
-//              throw eLogicError("When using the momentum update rule, alpha must be set.");
-//          if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
-//              throw eLogicError("When using the momentum update rule, viscosity must be set.");
-//          if (!m_vel)
-//          {
-//              u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
-//              m_vel = new fml[numWeights];
-//              for (u32 i = 0; i < numWeights; i++)
-//                  m_vel[i] = FML(0.0);
-//          }
-//          fml mult = (FML(10.0) / batchSize) * m_alpha;
-//          {
-//              // Update w:
-//              Map vel(m_vel, m_numNeurons, m_numInputDims);
-//              vel *= m_viscosity;
-//              vel -= mult*dw_accum;
-//              w += vel;
-//          }
-//          {
-//              // Update b:
-//              Map vel(m_vel+m_numNeurons*m_numInputDims, m_numNeurons, 1);
-//              vel *= m_viscosity;
-//              vel -= mult*db_accum;
-//              b += vel;
-//          }
-//          break;
-//      }
+    switch (m_rule)
+    {
+        case kWeightUpRuleNone:
+        {
+            break;
+        }
 
-//      case kWeightUpRuleAdaptiveRates:
-//      {
-//          throw eNotImplemented("This used to be implemented in the old CNN... so look there as a reference if you want to implement it here again.");
-//          break;
-//      }
+        case kWeightUpRuleFixedLearningRate:
+        {
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
+            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            w -= mult * dw_accum;
+            b -= mult * db_accum;
+            break;
+        }
 
-//      case kWeightUpRuleRPROP:
-//      {
-//          throw eNotImplemented("This used to be implemented in the old CNN... so look there as a reference if you want to implement it here again.");
-//          break;
-//      }
+        case kWeightUpRuleMomentum:
+        {
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the momentum update rule, alpha must be set.");
+            if (m_viscosity <= FML(0.0) || m_viscosity >= FML(1.0))
+                throw eLogicError("When using the momentum update rule, viscosity must be set.");
+            if (!m_vel)
+            {
+                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+                m_vel = new fml[numWeights];
+                for (u32 i = 0; i < numWeights; i++)
+                    m_vel[i] = FML(0.0);
+            }
+            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            {
+                // Update w:
+                Map vel(m_vel, m_numNeurons, m_numInputDims);
+                vel *= m_viscosity;
+                vel -= mult*dw_accum;
+                w += vel;
+            }
+            {
+                // Update b:
+                Map vel(m_vel+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+                vel *= m_viscosity;
+                vel -= mult*db_accum;
+                b += vel;
+            }
+            break;
+        }
 
-//      case kWeightUpRuleRMSPROP:
-//      {
-//          if (m_alpha <= FML(0.0))
-//              throw eLogicError("When using the rmsprop rule, alpha must be set.");
-//          if (!m_dw_accum_avg)
-//          {
-//              u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
-//              m_dw_accum_avg = new fml[numWeights];
-//              for (u32 i = 0; i < numWeights; i++)
-//                  m_dw_accum_avg[i] = FML(1000.0);
-//          }
-//          fml batchNormMult = FML(1.0) / batchSize;
-//          {
-//              // Update w:
-//              Map dw_accum_avg(m_dw_accum_avg, m_numNeurons, m_numInputDims);
-//              dw_accum *= batchNormMult;
-//              dw_accum_avg *= FML(0.9);
-//              dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
-//              w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
-//          }
-//          {
-//              // Update b:
-//              Map db_accum_avg(m_dw_accum_avg+m_numNeurons*m_numInputDims, m_numNeurons, 1);
-//              db_accum *= batchNormMult;
-//              db_accum_avg *= FML(0.9);
-//              db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
-//              b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
-//          }
-//          break;
-//      }
+        case kWeightUpRuleAdaptiveRates:
+        {
+            throw eNotImplemented("This used to be implemented in the old CNN... so look there as a reference if you want to implement it here again.");
+            break;
+        }
 
-//      case kWeightUpRuleARMS:
-//      {
-//          throw eNotImplemented("Not sure what I want here yet...");
-//          break;
-//      }
+        case kWeightUpRuleRPROP:
+        {
+            throw eNotImplemented("This used to be implemented in the old CNN... so look there as a reference if you want to implement it here again.");
+            break;
+        }
 
-//      default:
-//      {
-//          throw eRuntimeError("Unknown update rule");
-//          break;
-//      }
-//  }
+        case kWeightUpRuleRMSPROP:
+        {
+            if (m_alpha <= FML(0.0))
+                throw eLogicError("When using the rmsprop rule, alpha must be set.");
+            if (!m_dw_accum_avg)
+            {
+                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+                m_dw_accum_avg = new fml[numWeights];
+                for (u32 i = 0; i < numWeights; i++)
+                    m_dw_accum_avg[i] = FML(1000.0);
+            }
+            fml batchNormMult = FML(1.0) / batchSize;
+            {
+                // Update w:
+                Map dw_accum_avg(m_dw_accum_avg, m_numNeurons, m_numInputDims);
+                dw_accum *= batchNormMult;
+                dw_accum_avg *= FML(0.9);
+                dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
+                w -= m_alpha * dw_accum.binaryExpr(dw_accum_avg, t_RMSPROP_update());
+            }
+            {
+                // Update b:
+                Map db_accum_avg(m_dw_accum_avg+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+                db_accum *= batchNormMult;
+                db_accum_avg *= FML(0.9);
+                db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
+                b -= m_alpha * db_accum.binaryExpr(db_accum_avg, t_RMSPROP_update());
+            }
+            break;
+        }
+
+        case kWeightUpRuleARMS:
+        {
+            throw eNotImplemented("Not sure what I want here yet...");
+            break;
+        }
+
+        default:
+        {
+            throw eRuntimeError("Unknown update rule");
+            break;
+        }
+    }
 }
 
 
