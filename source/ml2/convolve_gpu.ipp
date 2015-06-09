@@ -1,4 +1,6 @@
-namespace
+namespace ml2
+{
+namespace    // <-- un-named namespaces act like everything inside is statically scoped
 {
 
 
@@ -15,3 +17,4 @@ void s_conv2d(
 
 
 }  // end of anonymous namespace
+}  // end of namespace ml2
