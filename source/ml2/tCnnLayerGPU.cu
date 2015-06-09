@@ -108,16 +108,13 @@ void tCnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 
     fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
-    // TODO this loop
-    for (u32 i = 0; i < count; i++)
-    {
-        s_conv2d(input + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
-                 m_gpu_w, m_kernelRows, m_kernelCols,
-                      m_kernelStepY, m_kernelStepX,
-                      m_numKernels,
-                 m_gpu_b, n,
-                 m_gpu_A + i*numOutputDims);
-    }
+    s_conv2d_multi_input(
+            input, m_inputRows, m_inputCols, m_inputComponents, numInputDims,
+            m_gpu_w, m_kernelRows, m_kernelCols,
+                     m_kernelStepY, m_kernelStepX,
+                     m_numKernels,
+            m_gpu_b, n,
+            m_gpu_A, numOutputDims);
 
     switch (m_type)
     {
@@ -234,28 +231,24 @@ void tCnnLayerGPU::takeOutputErrorGradients(
 
 //  if (calculateInputErrorGradients)
 //  {
-//      for (u32 i = 0; i < inputCount; i++)
-//      {
-//          s_conv2d_backprop(m_gpu_prev_da + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
-//                            m_gpu_w, m_kernelRows, m_kernelCols,
-//                                 m_kernelStepY, m_kernelStepX,
-//                                 m_numKernels,
-//                            m_gpu_b, n,
-//                            m_gpu_dA + i*numOutputDims);
-//      }
+//      s_conv2d_backprop_multi_input(
+//              m_gpu_prev_da, m_inputRows, m_inputCols, m_inputComponents, numInputDims,
+//              m_gpu_w, m_kernelRows, m_kernelCols,
+//                       m_kernelStepY, m_kernelStepX,
+//                       m_numKernels,
+//              m_gpu_b, n,
+//              m_gpu_dA, numOutputDims);
 //  }
 
 //  dw_accum.setZero();
 //  db_accum.setZero();
-//  for (u32 i = 0; i < inputCount; i++)
-//  {
-//      s_conv2d_accumError(input + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
-//                          m_gpu_dw_accum, m_kernelRows, m_kernelCols,
-//                                      m_kernelStepY, m_kernelStepX,
-//                                      m_numKernels,
-//                          m_gpu_db_accum, n,
-//                          m_gpu_dA + i*numOutputDims);
-//  }
+//  s_conv2d_accumError_multi_input(
+//          input, m_inputRows, m_inputCols, m_inputComponents, numInputDims,
+//          m_gpu_dw_accum, m_kernelRows, m_kernelCols,
+//                          m_kernelStepY, m_kernelStepX,
+//                          m_numKernels,
+//          m_gpu_db_accum, n,
+//          m_gpu_dA, numOutputDims);
 
 //  fml batchSize = (fml) outputCount;
 

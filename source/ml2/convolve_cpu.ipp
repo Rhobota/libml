@@ -10,7 +10,7 @@ void s_conv2d(
                               u32 kernelStepY, u32 kernelStepX,
                               u32 numKernels,
         const fml* kernelBiases, fml scaleFactor,
-        fml* outputPtr)
+              fml* outputPtr)
 {
     // TODO: templatize -- including templatizing the block() calls
     // TODO: re-structure to remove as many ifs from the inner loops as possible
