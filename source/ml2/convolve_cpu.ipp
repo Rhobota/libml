@@ -68,27 +68,6 @@ void s_conv2d(
 }
 
 
-void s_conv2d_multi_input(
-        u32 inputCount,  u32 inputStride,  u32 outputStride,
-        const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
-        const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
-                              u32 kernelStepY, u32 kernelStepX,
-                              u32 numKernels,
-        const fml* kernelBiases, fml scaleFactor,
-              fml* outputPtr)
-{
-    for (u32 i = 0; i < inputCount; i++)
-    {
-        s_conv2d(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
-                 kernelPtr, kernelRows, kernelCols,
-                            kernelStepY, kernelStepX,
-                            numKernels,
-                 kernelBiases, scaleFactor,
-                 outputPtr + i*outputStride);
-    }
-}
-
-
 void s_conv2d_accumError(
         const fml* inputPtr, u32 inputRows,   u32 inputCols,   u32 inputComponents,
               fml* dk_ptr,   u32 kernelRows,  u32 kernelCols,
@@ -213,6 +192,69 @@ void s_conv2d_backprop(
                 di.block(y, x*inputComponents, h, w*inputComponents) += kernel.block(ky, kx*inputComponents, h, w*inputComponents) * dA;
             }
         }
+    }
+}
+
+
+void s_conv2d_multi_input(
+        u32 inputCount,  u32 inputStride,  u32 outputStride,
+        const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
+        const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
+                              u32 kernelStepY, u32 kernelStepX,
+                              u32 numKernels,
+        const fml* kernelBiases, fml scaleFactor,
+              fml* outputPtr)
+{
+    for (u32 i = 0; i < inputCount; i++)
+    {
+        s_conv2d(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
+                 kernelPtr, kernelRows, kernelCols,
+                            kernelStepY, kernelStepX,
+                            numKernels,
+                 kernelBiases, scaleFactor,
+                 outputPtr + i*outputStride);
+    }
+}
+
+
+void s_conv2d_accumError_multi_input(
+        u32 inputCount,  u32 inputStride,  u32 outputStride,
+        const fml* inputPtr, u32 inputRows,   u32 inputCols,   u32 inputComponents,
+              fml* dk_ptr,   u32 kernelRows,  u32 kernelCols,
+                             u32 kernelStepY, u32 kernelStepX,
+                             u32 numKernels,
+              fml* db_ptr, fml scaleFactor,
+        const fml* dA_ptr)
+{
+    for (u32 i = 0; i < inputCount; i++)
+    {
+        s_conv2d_accumError(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
+                            dk_ptr, kernelRows, kernelCols,
+                                    kernelStepY, kernelStepX,
+                                    numKernels,
+                            db_ptr, scaleFactor,
+                            dA_ptr + i*outputStride);
+    }
+}
+
+
+void s_conv2d_backprop_multi_input(
+        u32 inputCount,  u32 inputStride,  u32 outputStride,
+              fml* di_ptr,    u32 inputRows,   u32 inputCols,   u32 inputComponents,
+        const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
+                              u32 kernelStepY, u32 kernelStepX,
+                              u32 numKernels,
+        const fml* kernelBiases, fml scaleFactor,
+        const fml* dA_ptr)
+{
+    for (u32 i = 0; i < inputCount; i++)
+    {
+        s_conv2d_backprop(di_ptr + i*inputStride, inputRows, inputCols, inputComponents,
+                          kernelPtr, kernelRows, kernelCols,
+                                     kernelStepY, kernelStepX,
+                                     numKernels,
+                          kernelBiases, scaleFactor,
+                          dA_ptr + i*outputStride);
     }
 }
 
