@@ -68,6 +68,27 @@ void s_conv2d(
 }
 
 
+void s_conv2d_multi_input(
+        u32 inputCount,  u32 inputStride,  u32 outputStride,
+        const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
+        const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
+                              u32 kernelStepY, u32 kernelStepX,
+                              u32 numKernels,
+        const fml* kernelBiases, fml scaleFactor,
+              fml* outputPtr)
+{
+    for (u32 i = 0; i < inputCount; i++)
+    {
+        s_conv2d(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
+                 kernelPtr, kernelRows, kernelCols,
+                            kernelStepY, kernelStepX,
+                            numKernels,
+                 kernelBiases, scaleFactor,
+                 outputPtr + i*outputStride);
+    }
+}
+
+
 void s_conv2d_accumError(
         const fml* inputPtr, u32 inputRows,   u32 inputCols,   u32 inputComponents,
               fml* dk_ptr,   u32 kernelRows,  u32 kernelCols,

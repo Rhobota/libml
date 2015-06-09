@@ -89,15 +89,14 @@ void tCnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 
     fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
-    for (u32 i = 0; i < count; i++)
-    {
-        s_conv2d(input + i*numInputDims, m_inputRows, m_inputCols, m_inputComponents,
-                 m_w, m_kernelRows, m_kernelCols,
-                      m_kernelStepY, m_kernelStepX,
-                      m_numKernels,
-                 m_b, n,
-                 m_A + i*numOutputDims);
-    }
+    s_conv2d_multi_input(
+            count, numInputDims, numOutputDims,
+            input, m_inputRows, m_inputCols, m_inputComponents,
+            m_w, m_kernelRows, m_kernelCols,
+                 m_kernelStepY, m_kernelStepX,
+                 m_numKernels,
+            m_b, n,
+            m_A);
 
     switch (m_type)
     {
