@@ -524,6 +524,69 @@ void s_conv2d(const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputC
     }
 }
 
+
+void s_conv2d_accumError(
+        const fml* inputPtr, u32 inputRows,   u32 inputCols,   u32 inputComponents,
+              fml* dk_ptr,   u32 kernelRows,  u32 kernelCols,
+                             u32 kernelStepY, u32 kernelStepX,
+                             u32 numKernels,
+              fml* db_ptr, fml scaleFactor,
+        const fml* dA_ptr)
+{
+    // TODO: templatize -- including templatizing the block() calls
+    // TODO: re-structure to remove as many ifs from the inner loops as possible
+
+    assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
+    assert(dk_ptr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
+    assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
+    assert(db_ptr);
+    assert(dA_ptr);
+
+    u32 kernelRadiusY = kernelRows / 2;
+    u32 kernelRadiusX = kernelCols / 2;
+
+    MapRowMajorConst input(inputPtr, inputRows, inputCols * inputComponents);
+
+    for (u32 r = 0; r < inputRows; r += kernelStepY)
+    {
+        u32 y, ky;
+        if (r < kernelRadiusY)
+            y = 0, ky = kernelRadiusY - r;
+        else
+            y = r - kernelRadiusY, ky = 0;
+
+        u32 h = r + kernelRadiusY + 1;  // not really "+ 1", but "+ (kernelRows%2)", except we know that is always 1, so we're taking a shortcut here
+        if (h > inputRows)
+            h = inputRows;
+        h -= y;
+
+        for (u32 c = 0; c < inputCols; c += kernelStepX)
+        {
+            u32 x, kx;
+            if (c < kernelRadiusX)
+                x = 0, kx = kernelRadiusX - c;
+            else
+                x = c - kernelRadiusX, kx = 0;
+
+            u32 w = c + kernelRadiusX + 1;  // not really "+ 1", but "+ (kernelCols%2)", except we know that is always 1, so we're taking a shortcut here
+            if (w > inputCols)
+                w = inputCols;
+            w -= x;
+
+            for (u32 i = 0; i < numKernels; i++)
+            {
+                MapRowMajor dk(dk_ptr + i * kernelRows * kernelCols * inputComponents,
+                               kernelRows,
+                               kernelCols * inputComponents);
+                fml dA = *dA_ptr++;
+                dA *= scaleFactor;
+                dk.block(ky, kx*inputComponents, h, w*inputComponents) += input.block(y, x*inputComponents, h, w*inputComponents) * dA;
+                db[i] += dA;
+            }
+        }
+    }
+}
+
 #endif  // ENABLE_CONVOLVE_CPU
 
 
