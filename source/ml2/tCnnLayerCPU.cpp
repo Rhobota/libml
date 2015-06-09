@@ -221,7 +221,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
                                    m_kernelStepY, m_kernelStepX,
                                    m_numKernels,
                               m_b, n,
-                              m_dA);
+                              m_dA + i*numOutputDims);
         }
     }
 
@@ -234,7 +234,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
                                         m_kernelStepY, m_kernelStepX,
                                         m_numKernels,
                             m_db_accum, n,
-                            m_dA);
+                            m_dA + i*numOutputDims);
     }
 
     fml batchSize = (fml) outputCount;

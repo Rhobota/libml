@@ -241,7 +241,7 @@ void tCnnLayerGPU::takeOutputErrorGradients(
 //                                 m_kernelStepY, m_kernelStepX,
 //                                 m_numKernels,
 //                            m_gpu_b, n,
-//                            m_gpu_dA);
+//                            m_gpu_dA + i*numOutputDims);
 //      }
 //  }
 
@@ -254,7 +254,7 @@ void tCnnLayerGPU::takeOutputErrorGradients(
 //                                      m_kernelStepY, m_kernelStepX,
 //                                      m_numKernels,
 //                          m_gpu_db_accum, n,
-//                          m_gpu_dA);
+//                          m_gpu_dA + i*numOutputDims);
 //  }
 
 //  fml batchSize = (fml) outputCount;
