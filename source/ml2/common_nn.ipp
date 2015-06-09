@@ -587,6 +587,68 @@ void s_conv2d_accumError(
     }
 }
 
+
+void s_conv2d_backprop(
+              fml* di_ptr,    u32 inputRows,   u32 inputCols,   u32 inputComponents,
+        const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
+                              u32 kernelStepY, u32 kernelStepX,
+                              u32 numKernels,
+        const fml* kernelBiases, fml scaleFactor,
+        const fml* dA_ptr)
+{
+    // TODO: templatize -- including templatizing the block() calls
+    // TODO: re-structure to remove as many ifs from the inner loops as possible
+
+    assert(di_ptr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
+    assert(kernelPtr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
+    assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
+    assert(kernelBiases);
+    assert(dA_ptr);
+
+    u32 kernelRadiusY = kernelRows / 2;
+    u32 kernelRadiusX = kernelCols / 2;
+
+    MapRowMajor di(di_ptr, inputRows, inputCols * inputComponents);
+
+    for (u32 r = 0; r < inputRows; r += kernelStepY)
+    {
+        u32 y, ky;
+        if (r < kernelRadiusY)
+            y = 0, ky = kernelRadiusY - r;
+        else
+            y = r - kernelRadiusY, ky = 0;
+
+        u32 h = r + kernelRadiusY + 1;  // not really "+ 1", but "+ (kernelRows%2)", except we know that is always 1, so we're taking a shortcut here
+        if (h > inputRows)
+            h = inputRows;
+        h -= y;
+
+        for (u32 c = 0; c < inputCols; c += kernelStepX)
+        {
+            u32 x, kx;
+            if (c < kernelRadiusX)
+                x = 0, kx = kernelRadiusX - c;
+            else
+                x = c - kernelRadiusX, kx = 0;
+
+            u32 w = c + kernelRadiusX + 1;  // not really "+ 1", but "+ (kernelCols%2)", except we know that is always 1, so we're taking a shortcut here
+            if (w > inputCols)
+                w = inputCols;
+            w -= x;
+
+            for (u32 i = 0; i < numKernels; i++)
+            {
+                MapRowMajorConst kernel(kernelPtr + i * kernelRows * kernelCols * inputComponents,
+                                        kernelRows,
+                                        kernelCols * inputComponents);
+                fml dA = *dA_ptr++;
+                dA *= scaleFactor;
+                di.block(y, x*inputComponents, h, w*inputComponents) += kernel.block(ky, kx*inputComponents, h, w*inputComponents) * dA;
+            }
+        }
+    }
+}
+
 #endif  // ENABLE_CONVOLVE_CPU
 
 
