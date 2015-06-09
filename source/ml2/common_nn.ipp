@@ -473,6 +473,7 @@ void s_conv2d(
 {
     // TODO: templatize -- including templatizing the block() calls
     // TODO: re-structure to remove as many ifs from the inner loops as possible
+    // TODO: parallelize calls to this function -- doing so will be trivial if you do it over the input images
 
     assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(kernelPtr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
@@ -536,6 +537,7 @@ void s_conv2d_accumError(
 {
     // TODO: templatize -- including templatizing the block() calls
     // TODO: re-structure to remove as many ifs from the inner loops as possible
+    // TODO: parallelize calls to this function -- doing so will be non-trivial, since all calls will be modifying the same dk_ptr and db_ptr values, so you'll have to duplicate those arrays, and add them together after the parallelized loop
 
     assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(dk_ptr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
@@ -599,6 +601,7 @@ void s_conv2d_backprop(
 {
     // TODO: templatize -- including templatizing the block() calls
     // TODO: re-structure to remove as many ifs from the inner loops as possible
+    // TODO: parallelize calls to this function -- doing so will be trivial if you do it over the input images (well, di's in this case)
 
     assert(di_ptr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(kernelPtr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
