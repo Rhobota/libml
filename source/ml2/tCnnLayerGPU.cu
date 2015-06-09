@@ -14,7 +14,6 @@ namespace ml2
 
 tCnnLayerGPU::tCnnLayerGPU()
     : tCnnLayerBase(),
-      m_cublasContext(NULL),
       m_gpu_w(NULL),
       m_gpu_b(NULL),
       m_gpu_dw_accum(NULL),
@@ -29,7 +28,6 @@ tCnnLayerGPU::tCnnLayerGPU()
       m_gpu_columnSums(NULL),
       m_gpu_ones_vector(NULL)
 {
-    s_createCublasContext(m_cublasContext);
 }
 
 
@@ -45,7 +43,6 @@ tCnnLayerGPU::tCnnLayerGPU(nLayerType type, nLayerWeightUpdateRule rule,
                     kernelStepY, kernelStepX,
                     numKernels,
                     lcg, randWeightMin, randWeightMax),
-      m_cublasContext(NULL),
       m_gpu_w(NULL),
       m_gpu_b(NULL),
       m_gpu_dw_accum(NULL),
@@ -60,7 +57,6 @@ tCnnLayerGPU::tCnnLayerGPU(nLayerType type, nLayerWeightUpdateRule rule,
       m_gpu_columnSums(NULL),
       m_gpu_ones_vector(NULL)
 {
-    s_createCublasContext(m_cublasContext);
     m_syncWeights_hostToDevice();
     m_initAccum();
 }
@@ -76,8 +72,6 @@ tCnnLayerGPU::~tCnnLayerGPU()
 
 void tCnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 {
-    cublasHandle_t* cublasHandle = (cublasHandle_t*)m_cublasContext;
-
     if (!input)
         throw eInvalidArgument("The input matrix may not be null.");
 
@@ -159,8 +153,6 @@ void tCnnLayerGPU::takeOutputErrorGradients(
                   const fml* input, u32 numInputDims, u32 inputCount,
                   bool calculateInputErrorGradients)
 {
-//  cublasHandle_t* cublasHandle = (cublasHandle_t*)m_cublasContext;
-
 //  if (!outputErrorGradients)
 //      throw eInvalidArgument("outputErrorGradients may not be null!");
 
@@ -394,7 +386,6 @@ void tCnnLayerGPU::reset()
 {
     m_finalize();
     tCnnLayerBase::reset();
-    s_createCublasContext(m_cublasContext);
     m_syncWeights_hostToDevice();
     m_initAccum();
 }
@@ -411,7 +402,6 @@ void tCnnLayerGPU::unpack(iReadable* in)
 {
     tCnnLayerBase::unpack(in);
     m_finalize();
-    s_createCublasContext(m_cublasContext);
     m_syncWeights_hostToDevice();
     m_initAccum();
 }
@@ -449,8 +439,6 @@ void tCnnLayerGPU::m_finalize()
     s_cudaFree(m_gpu_uniqueKeys);
     s_cudaFree(m_gpu_columnSums);
     s_cudaFree(m_gpu_ones_vector);
-
-    s_destroyCublasContext(m_cublasContext);
 }
 
 

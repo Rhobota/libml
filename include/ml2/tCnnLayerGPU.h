@@ -78,8 +78,6 @@ class tCnnLayerGPU : public tCnnLayerBase
 
     private:
 
-        void* m_cublasContext;
-
         fml* m_gpu_w;
         fml* m_gpu_b;
 
