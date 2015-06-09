@@ -173,8 +173,8 @@ void tCnnLayerCPU::takeOutputErrorGradients(
     MapConst da(outputErrorGradients, numOutputDims, outputCount);
     Map dA(m_dA, numOutputDims, outputCount);
     Map A(m_A, numOutputDims, outputCount);
-    Map prev_da(m_prev_da, numInputDims, inputCount);
-    MapConst inputMap(input, numInputDims, inputCount);
+    //Map prev_da(m_prev_da, numInputDims, inputCount);
+    //MapConst inputMap(input, numInputDims, inputCount);
 
     Map w(m_w, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
     Map b(m_b, m_numKernels, 1);
@@ -239,8 +239,6 @@ void tCnnLayerCPU::takeOutputErrorGradients(
 
     fml batchSize = (fml) outputCount;
 
-    // Left off here!!!
-
     switch (m_rule)
     {
         case kWeightUpRuleNone:
@@ -266,7 +264,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
                 throw eLogicError("When using the momentum update rule, viscosity must be set.");
             if (!m_vel)
             {
-                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+                u32 numWeights = (m_kernelRows * m_kernelCols * m_inputComponents + 1) * m_numKernels;  // <-- +1 to handle the b vector too
                 m_vel = new fml[numWeights];
                 for (u32 i = 0; i < numWeights; i++)
                     m_vel[i] = FML(0.0);
@@ -274,14 +272,14 @@ void tCnnLayerCPU::takeOutputErrorGradients(
             fml mult = (FML(10.0) / batchSize) * m_alpha;
             {
                 // Update w:
-                Map vel(m_vel, m_numNeurons, m_numInputDims);
+                Map vel(m_vel, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
                 vel *= m_viscosity;
                 vel -= mult*dw_accum;
                 w += vel;
             }
             {
                 // Update b:
-                Map vel(m_vel+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+                Map vel(m_vel+m_kernelRows*m_kernelCols*m_inputComponents*m_numKernels, m_numKernels, 1);
                 vel *= m_viscosity;
                 vel -= mult*db_accum;
                 b += vel;
@@ -307,7 +305,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
                 throw eLogicError("When using the rmsprop rule, alpha must be set.");
             if (!m_dw_accum_avg)
             {
-                u32 numWeights = (m_numInputDims+1) * m_numNeurons;  // <-- +1 to handle the b vector too
+                u32 numWeights = (m_kernelRows * m_kernelCols * m_inputComponents + 1) * m_numKernels;  // <-- +1 to handle the b vector too
                 m_dw_accum_avg = new fml[numWeights];
                 for (u32 i = 0; i < numWeights; i++)
                     m_dw_accum_avg[i] = FML(1000.0);
@@ -315,7 +313,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
             fml batchNormMult = FML(1.0) / batchSize;
             {
                 // Update w:
-                Map dw_accum_avg(m_dw_accum_avg, m_numNeurons, m_numInputDims);
+                Map dw_accum_avg(m_dw_accum_avg, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);
                 dw_accum *= batchNormMult;
                 dw_accum_avg *= FML(0.9);
                 dw_accum_avg += FML(0.1) * dw_accum.array().square().matrix();
@@ -323,7 +321,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
             }
             {
                 // Update b:
-                Map db_accum_avg(m_dw_accum_avg+m_numNeurons*m_numInputDims, m_numNeurons, 1);
+                Map db_accum_avg(m_dw_accum_avg+m_kernelRows*m_kernelCols*m_inputComponents*m_numKernels, m_numKernels, 1);
                 db_accum *= batchNormMult;
                 db_accum_avg *= FML(0.9);
                 db_accum_avg += FML(0.1) * db_accum.array().square().matrix();
