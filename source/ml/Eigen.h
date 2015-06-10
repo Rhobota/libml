@@ -50,3 +50,13 @@ namespace ml2
     typedef Eigen::Map< const MatRowMajor > MapRowMajorConst;
 }
 
+
+/*
+ * We will parallelize our own CPU code only if Eigen parallelizes its code.
+ * That way there's only the one flag above to deal with turning on/off
+ * parallelization in this library.
+ */
+#ifdef EIGEN_HAS_OPENMP
+#define LIBML_HAS_OPENMP
+#endif
+

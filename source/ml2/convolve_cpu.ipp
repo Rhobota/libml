@@ -205,6 +205,9 @@ void s_conv2d_multi_input(
         const fml* kernelBiases, fml scaleFactor,
               fml* outputPtr)
 {
+    #ifdef LIBML_HAS_OPENMP
+    #pragma omp parallel for
+    #endif
     for (u32 i = 0; i < inputCount; i++)
     {
         s_conv2d(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
@@ -247,6 +250,9 @@ void s_conv2d_backprop_multi_input(
         const fml* kernelBiases, fml scaleFactor,
         const fml* dA_ptr)
 {
+    #ifdef LIBML_HAS_OPENMP
+    #pragma omp parallel for
+    #endif
     for (u32 i = 0; i < inputCount; i++)
     {
         s_conv2d_backprop(di_ptr + i*inputStride, inputRows, inputCols, inputComponents,
