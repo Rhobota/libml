@@ -32,7 +32,7 @@
 /*
  * The Eigen include file:
  */
-#include "Eigen/Core"
+#include "Eigen/Eigen/Core"
 
 
 /*
