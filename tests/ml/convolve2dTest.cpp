@@ -1,15 +1,15 @@
-#include <ml2/common.h>
+#include <ml/common.h>
 
 #include "../../source/ml/Eigen.h"
 
-#include "../../source/ml2/convolve_cpu.ipp"
+#include "../../source/ml/convolve_cpu.ipp"
 
 #include <rho/tTest.h>
 #include <rho/tCrashReporter.h>
 
 using namespace rho;
-using ml2::fml;
-using ml2::s_conv2d;
+using ml::fml;
+using ml::s_conv2d;
 
 
 /*
