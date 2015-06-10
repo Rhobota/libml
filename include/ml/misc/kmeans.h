@@ -13,6 +13,8 @@
 
 namespace ml
 {
+namespace misc
+{
 
 
 /**
@@ -71,6 +73,7 @@ std::vector< std::vector<u32> > kmeans(const std::vector<tIO>& points, u32 k,
                                              std::vector<tIO>& centers);
 
 
+}   // namespace misc
 }   // namespace ml
 
 

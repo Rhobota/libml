@@ -10,6 +10,8 @@
 
 namespace ml
 {
+namespace misc
+{
 
 
 /**
@@ -58,6 +60,7 @@ void plotImages(const std::vector<tIO>& images, bool color, u32 width,
                 u32 destWidth, img::tImage* dest);
 
 
+}  // namespace misc
 }  // namespace ml
 
 

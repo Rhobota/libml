@@ -1,4 +1,4 @@
-#include <ml/kmeans.h>
+#include <ml/misc/kmeans.h>
 
 #include <cassert>
 
@@ -6,6 +6,8 @@ using std::vector;
 
 
 namespace ml
+{
+namespace misc
 {
 
 
@@ -165,4 +167,5 @@ vector< vector<u32> > kmeans(const vector<tIO>& points, u32 k,
 }
 
 
+}   // namespace misc
 }   // namespace ml

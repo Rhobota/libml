@@ -1,4 +1,4 @@
-#include <ml/tTSNE.h>
+#include <ml/misc/tTSNE.h>
 
 #include <rho/img/tCanvas.h>
 
@@ -6,6 +6,8 @@
 
 
 namespace ml
+{
+namespace misc
 {
 
 
@@ -103,4 +105,5 @@ void plotImages(const std::vector<tIO>& images, bool color, u32 width,
 }
 
 
+}  // namespace misc
 }  // namespace ml
