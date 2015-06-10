@@ -27,6 +27,7 @@ void s_conv2d_accumError_multi_input(
         const fml* dA_ptr)
 {
     // TODO
+    // Don't forget to set dk_ptr and db_ptr vectors to zero before you begin.
 }
 
 
