@@ -2,7 +2,7 @@
 
 #include "common_nn.ipp"
 
-#include "../ml/Eigen.h"
+#include "Eigen.h"
 
 
 namespace ml

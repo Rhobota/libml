@@ -1,6 +1,6 @@
 #include <ml/tLayeredLearnerCPU.h>
 
-#include "../ml/Eigen.h"
+#include "Eigen.h"
 
 
 namespace ml

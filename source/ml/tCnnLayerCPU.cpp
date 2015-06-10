@@ -1,6 +1,6 @@
 #include <ml/tCnnLayerCPU.h>
 
-#include "../ml/Eigen.h"
+#include "Eigen.h"
 
 #include "common_nn.ipp"
 #include "convolve_cpu.ipp"
