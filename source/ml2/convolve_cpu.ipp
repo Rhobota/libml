@@ -227,8 +227,40 @@ void s_conv2d_accumError_multi_input(
                              u32 kernelStepY, u32 kernelStepX,
                              u32 numKernels,
               fml* db_ptr, fml scaleFactor,
+              fml* dk_ptr_for_parallel, fml* db_ptr_for_parallel,
         const fml* dA_ptr)
 {
+    u32 kernelDims = kernelRows*kernelCols*inputComponents*numKernels;
+
+    Map dk(dk_ptr, kernelDims, 1);
+    Map db(db_ptr, numKernels, 1);
+
+    #ifdef LIBML_HAS_OPENMP
+
+    Map dk_parallel(dk_ptr_for_parallel, kernelDims, inputCount);
+    Map db_parallel(db_ptr_for_parallel, numKernels, inputCount);
+
+    #pragma omp parallel for
+    for (u32 i = 0; i < inputCount; i++)
+    {
+        dk_parallel.col(i).setZero();
+        db_parallel.col(i).setZero();
+        s_conv2d_accumError(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
+                            dk_ptr_for_parallel + i*kernelDims, kernelRows, kernelCols,
+                                                                kernelStepY, kernelStepX,
+                                                                numKernels,
+                            db_ptr_for_parallel + i*numKernels, scaleFactor,
+                            dA_ptr + i*outputStride);
+    }
+
+    dk = dk_parallel.rowwise().sum();
+    db = db_parallel.rowwise().sum();
+
+    #else
+
+    dk.setZero();
+    db.setZero();
+
     for (u32 i = 0; i < inputCount; i++)
     {
         s_conv2d_accumError(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
@@ -238,6 +270,8 @@ void s_conv2d_accumError_multi_input(
                             db_ptr, scaleFactor,
                             dA_ptr + i*outputStride);
     }
+
+    #endif
 }
 
 
