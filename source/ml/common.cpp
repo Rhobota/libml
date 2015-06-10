@@ -1,5 +1,5 @@
-#include <ml2/common.h>
-#include <ml2/iLearner.h>
+#include <ml/common.h>
+#include <ml/iLearner.h>
 
 #include <rho/algo/stat_util.h>
 #include <rho/algo/vector_util.h>
@@ -11,7 +11,7 @@
 #include <sstream>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -1514,4 +1514,4 @@ void tLoggingWrapper::m_save(std::string filebasename,
 }
 
 
-}   // namespace ml2
+}   // namespace ml

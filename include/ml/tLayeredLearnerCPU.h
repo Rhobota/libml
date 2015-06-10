@@ -1,11 +1,11 @@
-#ifndef __ml2_tLayeredLearnerCPU_h__
-#define __ml2_tLayeredLearnerCPU_h__
+#ifndef __ml_tLayeredLearnerCPU_h__
+#define __ml_tLayeredLearnerCPU_h__
 
 
-#include <ml2/tLayeredLearnerBase.h>
+#include <ml/tLayeredLearnerBase.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -48,7 +48,7 @@ class tLayeredLearnerCPU : public tLayeredLearnerBase
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif   // __ml2_tLayeredLearnerCPU_h__
+#endif   // __ml_tLayeredLearnerCPU_h__

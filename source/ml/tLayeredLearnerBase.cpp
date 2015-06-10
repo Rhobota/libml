@@ -1,10 +1,10 @@
-#include <ml2/tLayeredLearnerBase.h>
+#include <ml/tLayeredLearnerBase.h>
 
 #include <iomanip>
 #include <sstream>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -348,4 +348,4 @@ void tLayeredLearnerBase::m_evaluate(const fml* inputMatrix, u32 inputMatrixUsed
 }
 
 
-}   // namespace ml2
+}   // namespace ml

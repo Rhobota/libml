@@ -1,11 +1,11 @@
-#ifndef __ml2_tAnnLayerGPU_h__
-#define __ml2_tAnnLayerGPU_h__
+#ifndef __ml_tAnnLayerGPU_h__
+#define __ml_tAnnLayerGPU_h__
 
 
-#include <ml2/tAnnLayerBase.h>
+#include <ml/tAnnLayerBase.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -97,7 +97,7 @@ class tAnnLayerGPU : public tAnnLayerBase
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif   // __ml2_tAnnLayerGPU_h__
+#endif   // __ml_tAnnLayerGPU_h__

@@ -1,11 +1,11 @@
-#ifndef __ml2_tCnnLayerCPU_h__
-#define __ml2_tCnnLayerCPU_h__
+#ifndef __ml_tCnnLayerCPU_h__
+#define __ml_tCnnLayerCPU_h__
 
 
-#include <ml2/tCnnLayerBase.h>
+#include <ml/tCnnLayerBase.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -90,7 +90,7 @@ class tCnnLayerCPU : public tCnnLayerBase
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif   // __ml2_tCnnLayerCPU_h__
+#endif   // __ml_tCnnLayerCPU_h__

@@ -1,8 +1,8 @@
-#ifndef __ml2_iLearner_pre_h__
-#define __ml2_iLearner_pre_h__
+#ifndef __ml_iLearner_pre_h__
+#define __ml_iLearner_pre_h__
 
 
-namespace ml2
+namespace ml
 {
 
     class iLearner;
@@ -10,4 +10,4 @@ namespace ml2
 }
 
 
-#endif  // __ml2_iLearner_pre_h__
+#endif  // __ml_iLearner_pre_h__

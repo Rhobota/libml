@@ -1,11 +1,11 @@
-#ifndef __ml2_iLayer_h__
-#define __ml2_iLayer_h__
+#ifndef __ml_iLayer_h__
+#define __ml_iLayer_h__
 
 
-#include <ml2/common.h>
+#include <ml/common.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -176,7 +176,7 @@ class iLayer : public iPackable
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif  // __ml2_iLayer_h__
+#endif  // __ml_iLayer_h__

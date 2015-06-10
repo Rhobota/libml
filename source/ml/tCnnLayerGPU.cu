@@ -1,4 +1,4 @@
-#include <ml2/tCnnLayerGPU.h>
+#include <ml/tCnnLayerGPU.h>
 
 #define ENABLE_DEVICE_FUNCTIONS
 #include "common_nn.ipp"
@@ -8,7 +8,7 @@
 #include <iostream>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -469,4 +469,4 @@ void tCnnLayerGPU::m_syncWeights_hostToDevice()
 }
 
 
-}   // namespace ml2
+}   // namespace ml

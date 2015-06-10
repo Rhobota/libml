@@ -1,4 +1,4 @@
-#include <ml2/tAnnLayerGPU.h>
+#include <ml/tAnnLayerGPU.h>
 
 #define ENABLE_DEVICE_FUNCTIONS
 #include "common_nn.ipp"
@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -512,4 +512,4 @@ void tAnnLayerGPU::m_syncWeights_hostToDevice()
 }
 
 
-}   // namespace ml2
+}   // namespace ml

@@ -1,7 +1,7 @@
-#include <ml2/iLearner.h>
+#include <ml/iLearner.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -48,4 +48,4 @@ void iLearner::writeLearnerToStream(iLearner* learner, iWritable* out)
 }
 
 
-}   // namespace ml2
+}   // namespace ml

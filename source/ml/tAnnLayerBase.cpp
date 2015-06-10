@@ -1,11 +1,11 @@
-#include <ml2/tAnnLayerBase.h>
+#include <ml/tAnnLayerBase.h>
 
 #include <cassert>
 #include <iomanip>
 #include <sstream>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -257,4 +257,4 @@ void tAnnLayerBase::m_initWeights(algo::iLCG& lcg,
 }
 
 
-}   // namespace ml2
+}   // namespace ml

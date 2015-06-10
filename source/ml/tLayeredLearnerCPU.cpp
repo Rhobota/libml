@@ -1,9 +1,9 @@
-#include <ml2/tLayeredLearnerCPU.h>
+#include <ml/tLayeredLearnerCPU.h>
 
 #include "../ml/Eigen.h"
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -96,4 +96,4 @@ void tLayeredLearnerCPU::m_calculate_output_da(const fml* output, fml* target, u
 }
 
 
-}   // namespace ml2
+}   // namespace ml

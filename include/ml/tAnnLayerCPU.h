@@ -1,11 +1,11 @@
-#ifndef __ml2_tAnnLayerCPU_h__
-#define __ml2_tAnnLayerCPU_h__
+#ifndef __ml_tAnnLayerCPU_h__
+#define __ml_tAnnLayerCPU_h__
 
 
-#include <ml2/tAnnLayerBase.h>
+#include <ml/tAnnLayerBase.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -84,7 +84,7 @@ class tAnnLayerCPU : public tAnnLayerBase
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif   // __ml2_tAnnLayerCPU_h__
+#endif   // __ml_tAnnLayerCPU_h__

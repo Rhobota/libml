@@ -1,4 +1,4 @@
-#include <ml2/tLayeredLearnerGPU.h>
+#include <ml/tLayeredLearnerGPU.h>
 
 #define ENABLE_DEVICE_FUNCTIONS
 #include "common_nn.ipp"
@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -190,4 +190,4 @@ void tLayeredLearnerGPU::m_copyTo_local_buf_1(const fml* gpu_buf, u32 size)
 }
 
 
-}   // namespace ml2
+}   // namespace ml

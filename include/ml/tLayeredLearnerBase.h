@@ -1,12 +1,12 @@
-#ifndef __ml2_tLayeredLearnerBase_h__
-#define __ml2_tLayeredLearnerBase_h__
+#ifndef __ml_tLayeredLearnerBase_h__
+#define __ml_tLayeredLearnerBase_h__
 
 
-#include <ml2/iLearner.h>
-#include <ml2/iLayer.h>
+#include <ml/iLearner.h>
+#include <ml/iLayer.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -96,7 +96,7 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif   // __ml2_tLayeredLearnerBase_h__
+#endif   // __ml_tLayeredLearnerBase_h__

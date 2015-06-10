@@ -1,4 +1,4 @@
-namespace ml2
+namespace ml
 {
 namespace    // <-- un-named namespaces act like everything inside is statically scoped
 {
@@ -44,4 +44,4 @@ void s_conv2d_backprop_multi_input(
 
 
 }  // end of anonymous namespace
-}  // end of namespace ml2
+}  // end of namespace ml

@@ -16,7 +16,7 @@
 #include <cassert>
 
 
-namespace ml2
+namespace ml
 {
 namespace    // <-- un-named namespaces act like everything inside is statically scoped
 {
@@ -462,4 +462,4 @@ class t_RMSPROP_update_with_alpha
 
 
 }  // <-- end of un-named namespace
-}  // <-- end of namespace ml2
+}  // <-- end of namespace ml

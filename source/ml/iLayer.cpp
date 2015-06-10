@@ -1,7 +1,7 @@
-#include <ml2/iLayer.h>
+#include <ml/iLayer.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -48,4 +48,4 @@ void iLayer::writeLayerToStream(iLayer* layer, iWritable* out)
 }
 
 
-}   // namespace ml2
+}   // namespace ml

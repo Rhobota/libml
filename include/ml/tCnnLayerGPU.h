@@ -1,11 +1,11 @@
-#ifndef __ml2_tCnnLayerGPU_h__
-#define __ml2_tCnnLayerGPU_h__
+#ifndef __ml_tCnnLayerGPU_h__
+#define __ml_tCnnLayerGPU_h__
 
 
-#include <ml2/tCnnLayerBase.h>
+#include <ml/tCnnLayerBase.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -98,7 +98,7 @@ class tCnnLayerGPU : public tCnnLayerBase
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif   // __ml2_tCnnLayerGPU_h__
+#endif   // __ml_tCnnLayerGPU_h__

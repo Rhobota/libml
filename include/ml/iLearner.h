@@ -1,13 +1,13 @@
-#ifndef __ml2_iLearner_h__
-#define __ml2_iLearner_h__
+#ifndef __ml_iLearner_h__
+#define __ml_iLearner_h__
 
 
-#include <ml2/common.h>
+#include <ml/common.h>
 
 #include <rho/iPackable.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -134,7 +134,7 @@ class iLearner : public iPackable
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif  // __ml2_iLearner_h__
+#endif  // __ml_iLearner_h__

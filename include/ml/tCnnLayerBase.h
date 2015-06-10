@@ -1,11 +1,11 @@
-#ifndef __ml2_tCnnLayerBase_h__
-#define __ml2_tCnnLayerBase_h__
+#ifndef __ml_tCnnLayerBase_h__
+#define __ml_tCnnLayerBase_h__
 
 
-#include <ml2/tNNLayer.h>
+#include <ml/tNNLayer.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -137,7 +137,7 @@ class tCnnLayerBase : public tNNLayer
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif   // __ml2_tCnnLayerBase_h__
+#endif   // __ml_tCnnLayerBase_h__

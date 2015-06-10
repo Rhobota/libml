@@ -1,4 +1,4 @@
-#include <ml2/tCnnLayerCPU.h>
+#include <ml/tCnnLayerCPU.h>
 
 #include "../ml/Eigen.h"
 
@@ -6,7 +6,7 @@
 #include "convolve_cpu.ipp"
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -432,4 +432,4 @@ void tCnnLayerCPU::m_finalize()
 }
 
 
-}   // namespace ml2
+}   // namespace ml

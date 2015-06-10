@@ -1,9 +1,9 @@
-#include <ml2/tNNLayer.h>
+#include <ml/tNNLayer.h>
 
 #include <cassert>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -87,4 +87,4 @@ char tNNLayer::weightUpRuleToChar(nLayerWeightUpdateRule rule)
 }
 
 
-}  // namespace ml2
+}  // namespace ml

@@ -1,11 +1,11 @@
-#ifndef __ml2_tAnnLayerBase_h__
-#define __ml2_tAnnLayerBase_h__
+#ifndef __ml_tAnnLayerBase_h__
+#define __ml_tAnnLayerBase_h__
 
 
-#include <ml2/tNNLayer.h>
+#include <ml/tNNLayer.h>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -141,7 +141,7 @@ class tAnnLayerBase : public tNNLayer
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif   // __ml2_tAnnLayerBase_h__
+#endif   // __ml_tAnnLayerBase_h__

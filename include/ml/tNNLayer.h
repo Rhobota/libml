@@ -1,8 +1,8 @@
-#ifndef __ml2_tNNLayer_h__
-#define __ml2_tNNLayer_h__
+#ifndef __ml_tNNLayer_h__
+#define __ml_tNNLayer_h__
 
 
-#include <ml2/iLayer.h>
+#include <ml/iLayer.h>
 
 #include <rho/bNonCopyable.h>
 #include <rho/algo/tLCG.h>
@@ -10,7 +10,7 @@
 #include <string>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -62,7 +62,7 @@ class tNNLayer : public iLayer, public bNonCopyable
 };
 
 
-}   // namespace ml2
+}   // namespace ml
 
 
-#endif  // __ml2_tNNLayer_h__
+#endif  // __ml_tNNLayer_h__

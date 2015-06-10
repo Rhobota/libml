@@ -1,11 +1,11 @@
-#include <ml2/tCnnLayerBase.h>
+#include <ml/tCnnLayerBase.h>
 
 #include <cassert>
 #include <iomanip>
 #include <sstream>
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -309,4 +309,4 @@ void tCnnLayerBase::m_initWeights(algo::iLCG& lcg,
 }
 
 
-}   // namespace ml2
+}   // namespace ml

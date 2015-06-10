@@ -1,11 +1,11 @@
-#include <ml2/tAnnLayerCPU.h>
+#include <ml/tAnnLayerCPU.h>
 
 #include "common_nn.ipp"
 
 #include "../ml/Eigen.h"
 
 
-namespace ml2
+namespace ml
 {
 
 
@@ -396,4 +396,4 @@ void tAnnLayerCPU::m_finalize()
 }
 
 
-}   // namespace ml2
+}   // namespace ml
