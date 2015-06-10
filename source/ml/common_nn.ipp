@@ -353,20 +353,27 @@ class tNoOp
 };
 
 
-template<class T>
-class tMultWithUniOperator
+class tMultWithDirLogisticFunc
 {
     public:
 
         __host__ __device__
         fml operator()(const fml& a, const fml& b)
         {
-            return a * m_uniOp(b);
+            return a * derivative_of_logistic_function(b);
         }
+};
 
-    private:
 
-        T m_uniOp;
+class tMultWithDirHyperbolicFunc
+{
+    public:
+
+        __host__ __device__
+        fml operator()(const fml& a, const fml& b)
+        {
+            return a * derivative_of_hyperbolic_function(b);
+        }
 };
 
 

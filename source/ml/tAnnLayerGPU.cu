@@ -237,14 +237,14 @@ void tAnnLayerGPU::takeOutputErrorGradients(
 
         case kLayerTypeLogistic:
         {
-            tMultWithUniOperator<tDirLogisticFunc> func;
+            tMultWithDirLogisticFunc func;
             thrust::transform(da, da + numOutputDims*outputCount, A, dA, func);
             break;
         }
 
         case kLayerTypeHyperbolic:
         {
-            tMultWithUniOperator<tDirHyperbolicFunc> func;
+            tMultWithDirHyperbolicFunc func;
             thrust::transform(da, da + numOutputDims*outputCount, A, dA, func);
             break;
         }
