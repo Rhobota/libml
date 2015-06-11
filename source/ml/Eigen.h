@@ -48,6 +48,14 @@ namespace ml
     typedef Eigen::Matrix< ml::fml, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > MatRowMajor;
     typedef Eigen::Map< MatRowMajor > MapRowMajor;
     typedef Eigen::Map< const MatRowMajor > MapRowMajorConst;
+
+    typedef Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic> Stride;
+
+    typedef Eigen::Map< Mat, Eigen::Unaligned, Stride > MapWithStride;
+    typedef Eigen::Map< const Mat, Eigen::Unaligned, Stride > MapWithStrideConst;
+
+    typedef Eigen::Map< MatRowMajor, Eigen::Unaligned, Stride > MapRowMajorWithStride;
+    typedef Eigen::Map< const MatRowMajor, Eigen::Unaligned, Stride > MapRowMajorWithStrideConst;
 }
 
 
