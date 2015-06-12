@@ -1,5 +1,7 @@
 #include <ml/conv2d/cpu_optimized.h>
 
+#include "../Eigen.h"
+
 
 namespace ml
 {

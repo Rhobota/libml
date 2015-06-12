@@ -1,5 +1,7 @@
 #include <ml/conv2d/cpu_golden.h>
 
+#include "../Eigen.h"
+
 
 namespace ml
 {
