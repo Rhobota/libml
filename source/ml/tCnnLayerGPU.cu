@@ -102,7 +102,7 @@ void tCnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 
     fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
-    s_conv2d_multi_input(
+    conv2d::gpu::conv2d_multi_input(
             count, numInputDims, numOutputDims,
             input, m_inputRows, m_inputCols, m_inputComponents,
             m_gpu_w, m_kernelRows, m_kernelCols,
@@ -222,7 +222,7 @@ void tCnnLayerGPU::takeOutputErrorGradients(
 
     if (calculateInputErrorGradients)
     {
-        s_conv2d_backprop_multi_input(
+        conv2d::gpu::conv2d_backprop_multi_input(
                 inputCount, numInputDims, numOutputDims,
                 m_gpu_prev_da, m_inputRows, m_inputCols, m_inputComponents,
                 m_gpu_w, m_kernelRows, m_kernelCols,
@@ -232,7 +232,7 @@ void tCnnLayerGPU::takeOutputErrorGradients(
                 m_gpu_dA);
     }
 
-    s_conv2d_accumError_multi_input(
+    conv2d::gpu::conv2d_accumError_multi_input(
             inputCount, numInputDims, numOutputDims,
             input, m_inputRows, m_inputCols, m_inputComponents,
             m_gpu_dw_accum, m_kernelRows, m_kernelCols,

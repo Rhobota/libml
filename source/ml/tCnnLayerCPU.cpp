@@ -89,7 +89,7 @@ void tCnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 
     fml n = FML(1.0) / ((fml) (m_kernelRows*m_kernelCols*m_inputComponents));
 
-    s_conv2d_multi_input(
+    conv2d::cpu_optimized::conv2d_multi_input(
             count, numInputDims, numOutputDims,
             input, m_inputRows, m_inputCols, m_inputComponents,
             m_w, m_kernelRows, m_kernelCols,
@@ -213,7 +213,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
 
     if (calculateInputErrorGradients)
     {
-        s_conv2d_backprop_multi_input(
+        conv2d::cpu_optimized::conv2d_backprop_multi_input(
                 inputCount, numInputDims, numOutputDims,
                 m_prev_da, m_inputRows, m_inputCols, m_inputComponents,
                 m_w, m_kernelRows, m_kernelCols,
@@ -223,7 +223,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
                 m_dA);
     }
 
-    s_conv2d_accumError_multi_input(
+    conv2d::cpu_optimized::conv2d_accumError_multi_input(
             inputCount, numInputDims, numOutputDims,
             input, m_inputRows, m_inputCols, m_inputComponents,
             m_dw_accum, m_kernelRows, m_kernelCols,
