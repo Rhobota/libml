@@ -2,7 +2,7 @@
 
 #define ENABLE_DEVICE_FUNCTIONS
 #include "common_nn.ipp"
-#include "convolve_gpu.ipp"
+#include "conv2d/conv2d_gpu.ipp"
 
 #include <cassert>
 #include <iostream>
