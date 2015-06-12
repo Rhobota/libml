@@ -70,7 +70,9 @@ void test0(const tTest& t)
     fml output[] = {  FML(0.0),  FML(0.0),
                       FML(0.0),  FML(0.0),  };
 
-    ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, inputComponents,
+    ml::conv2d::cpu_golden::conv2d_multi_input(
+            1, 0, 0,
+            input, inputRows, inputCols, inputComponents,
              kernel, kernelRows, kernelCols,
                      1, 1,
                      1,
@@ -114,136 +116,160 @@ fml kBias57_1     = FML(0.81093);
  \
     /* Step (1, 1) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33_1, 3, 3, \
-                              1, 1, \
-                              1, \
-                 &kBias33_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel33_1, 3, 3, \
+                             1, 1, \
+                             1, \
+                &kBias33_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55_1, 5, 5, \
-                              1, 1, \
-                              1, \
-                 &kBias55_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel55_1, 5, 5, \
+                             1, 1, \
+                             1, \
+                &kBias55_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57_1, 5, 7, \
-                              1, 1, \
-                              1, \
-                 &kBias57_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel57_1, 5, 7, \
+                             1, 1, \
+                             1, \
+                &kBias57_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols); \
     } \
  \
     /* Step (2, 1) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33_1, 3, 3, \
-                              2, 1, \
-                              1, \
-                 &kBias33_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel33_1, 3, 3, \
+                             2, 1, \
+                             1, \
+                &kBias33_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 1); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55_1, 5, 5, \
-                              2, 1, \
-                              1, \
-                 &kBias55_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel55_1, 5, 5, \
+                             2, 1, \
+                             1, \
+                &kBias55_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 1); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57_1, 5, 7, \
-                              2, 1, \
-                              1, \
-                 &kBias57_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel57_1, 5, 7, \
+                             2, 1, \
+                             1, \
+                &kBias57_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 1); \
     } \
  \
     /* Step (1, 2) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33_1, 3, 3, \
-                              1, 2, \
-                              1, \
-                 &kBias33_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel33_1, 3, 3, \
+                             1, 2, \
+                             1, \
+                &kBias33_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 1, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55_1, 5, 5, \
-                              1, 2, \
-                              1, \
-                 &kBias55_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel55_1, 5, 5, \
+                             1, 2, \
+                             1, \
+                &kBias55_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 1, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57_1, 5, 7, \
-                              1, 2, \
-                              1, \
-                 &kBias57_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel57_1, 5, 7, \
+                             1, 2, \
+                             1, \
+                &kBias57_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 1, 2); \
     } \
  \
     /* Step (2, 2) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33_1, 3, 3, \
-                              2, 2, \
-                              1, \
-                 &kBias33_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel33_1, 3, 3, \
+                             2, 2, \
+                             1, \
+                &kBias33_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55_1, 5, 5, \
-                              2, 2, \
-                              1, \
-                 &kBias55_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel55_1, 5, 5, \
+                             2, 2, \
+                             1, \
+                &kBias55_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57_1, 5, 7, \
-                              2, 2, \
-                              1, \
-                 &kBias57_1, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel57_1, 5, 7, \
+                             2, 2, \
+                             1, \
+                &kBias57_1, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 2); \
     } \
@@ -2719,136 +2745,160 @@ fml kBias57_2[]   = {
  \
     /* Step (1, 1) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33_2, 3, 3, \
-                              1, 1, \
-                              2, \
-                 kBias33_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel33_2, 3, 3, \
+                             1, 1, \
+                             2, \
+                kBias33_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 1, 1, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55_2, 5, 5, \
-                              1, 1, \
-                              2, \
-                 kBias55_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel55_2, 5, 5, \
+                             1, 1, \
+                             2, \
+                kBias55_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 1, 1, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57_2, 5, 7, \
-                              1, 1, \
-                              2, \
-                 kBias57_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel57_2, 5, 7, \
+                             1, 1, \
+                             2, \
+                kBias57_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 1, 1, 2); \
     } \
  \
     /* Step (1, 2) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33_2, 3, 3, \
-                              1, 2, \
-                              2, \
-                 kBias33_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel33_2, 3, 3, \
+                             1, 2, \
+                             2, \
+                kBias33_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 1, 2, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55_2, 5, 5, \
-                              1, 2, \
-                              2, \
-                 kBias55_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel55_2, 5, 5, \
+                             1, 2, \
+                             2, \
+                kBias55_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 1, 2, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57_2, 5, 7, \
-                              1, 2, \
-                              2, \
-                 kBias57_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel57_2, 5, 7, \
+                             1, 2, \
+                             2, \
+                kBias57_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 1, 2, 2); \
     } \
  \
     /* Step (2, 1) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33_2, 3, 3, \
-                              2, 1, \
-                              2, \
-                 kBias33_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel33_2, 3, 3, \
+                             2, 1, \
+                             2, \
+                kBias33_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 1, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55_2, 5, 5, \
-                              2, 1, \
-                              2, \
-                 kBias55_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel55_2, 5, 5, \
+                             2, 1, \
+                             2, \
+                kBias55_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 1, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57_2, 5, 7, \
-                              2, 1, \
-                              2, \
-                 kBias57_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel57_2, 5, 7, \
+                             2, 1, \
+                             2, \
+                kBias57_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 1, 2); \
     } \
  \
     /* Step (2, 2) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel33_2, 3, 3, \
-                              2, 2, \
-                              2, \
-                 kBias33_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel33_2, 3, 3, \
+                             2, 2, \
+                             2, \
+                kBias33_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 2, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel55_2, 5, 5, \
-                              2, 2, \
-                              2, \
-                 kBias55_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel55_2, 5, 5, \
+                             2, 2, \
+                             2, \
+                kBias55_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 2, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 1, \
-                 kKernel57_2, 5, 7, \
-                              2, 2, \
-                              2, \
-                 kBias57_2, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 1, \
+                kKernel57_2, 5, 7, \
+                             2, 2, \
+                             2, \
+                kBias57_2, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 2, 2); \
     } \
@@ -3405,136 +3455,160 @@ fml kBias57_3     = FML(0.88555);
  \
     /* Step (1, 1) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel33_3, 3, 3, \
-                              1, 1, \
-                              1, \
-                 &kBias33_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel33_3, 3, 3, \
+                             1, 1, \
+                             1, \
+                &kBias33_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel55_3, 5, 5, \
-                              1, 1, \
-                              1, \
-                 &kBias55_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel55_3, 5, 5, \
+                             1, 1, \
+                             1, \
+                &kBias55_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel57_3, 5, 7, \
-                              1, 1, \
-                              1, \
-                 &kBias57_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel57_3, 5, 7, \
+                             1, 1, \
+                             1, \
+                &kBias57_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols); \
     } \
  \
     /* Step (1, 2) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel33_3, 3, 3, \
-                              1, 2, \
-                              1, \
-                 &kBias33_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel33_3, 3, 3, \
+                             1, 2, \
+                             1, \
+                &kBias33_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 1, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel55_3, 5, 5, \
-                              1, 2, \
-                              1, \
-                 &kBias55_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel55_3, 5, 5, \
+                             1, 2, \
+                             1, \
+                &kBias55_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 1, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel57_3, 5, 7, \
-                              1, 2, \
-                              1, \
-                 &kBias57_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel57_3, 5, 7, \
+                             1, 2, \
+                             1, \
+                &kBias57_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 1, 2); \
     } \
  \
     /* Step (2, 1) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel33_3, 3, 3, \
-                              2, 1, \
-                              1, \
-                 &kBias33_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel33_3, 3, 3, \
+                             2, 1, \
+                             1, \
+                &kBias33_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 1); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel55_3, 5, 5, \
-                              2, 1, \
-                              1, \
-                 &kBias55_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel55_3, 5, 5, \
+                             2, 1, \
+                             1, \
+                &kBias55_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 1); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel57_3, 5, 7, \
-                              2, 1, \
-                              1, \
-                 &kBias57_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel57_3, 5, 7, \
+                             2, 1, \
+                             1, \
+                &kBias57_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 1); \
     } \
  \
     /* Step (2, 2) */ \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel33_3, 3, 3, \
-                              2, 2, \
-                              1, \
-                 &kBias33_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel33_3, 3, 3, \
+                             2, 2, \
+                             1, \
+                &kBias33_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k33, inputRows, inputCols, 2, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel55_3, 5, 5, \
-                              2, 2, \
-                              1, \
-                 &kBias55_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel55_3, 5, 5, \
+                             2, 2, \
+                             1, \
+                &kBias55_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k55, inputRows, inputCols, 2, 2); \
     } \
  \
     { \
-        ml::conv2d::cpu_golden::conv2d(input, inputRows, inputCols, 2, \
-                 kKernel57_3, 5, 7, \
-                              2, 2, \
-                              1, \
-                 &kBias57_3, FML(1.0), \
-                 output); \
+        ml::conv2d::cpu_golden::conv2d_multi_input( \
+                1, 0, 0, \
+                input, inputRows, inputCols, 2, \
+                kKernel57_3, 5, 7, \
+                             2, 2, \
+                             1, \
+                &kBias57_3, FML(1.0), \
+                output); \
  \
         s_checkOutput(t, output, correctOutput_k57, inputRows, inputCols, 2, 2); \
     } \

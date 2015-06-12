@@ -50,7 +50,7 @@ void convolveTest(
     for (u32 i = 0; i < numKernels; i++)
         kernelBiases[i] = rand() % 100;
 
-    ml::cpu_optimized::conv2d_multi_input(
+    ml::conv2d::cpu_optimized::conv2d_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             input, inputRows, inputCols, inputComponents,
             kernels, kernelRows, kernelCols,
@@ -70,7 +70,7 @@ void convolveTest(
     }
     dout << std::endl;
 
-    ml::cpu_golden::conv2d_multi_input(
+    ml::conv2d::cpu_golden::conv2d_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             input, inputRows, inputCols, inputComponents,
             kernels, kernelRows, kernelCols,
@@ -198,7 +198,7 @@ void backpropTest(
     for (u32 i = 0; i < numKernels; i++)
         kernelBiases[i] = rand() % 100;
 
-    ml::cpu_optimized::conv2d_backprop_multi_input(
+    ml::conv2d::cpu_optimized::conv2d_backprop_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             di1, inputRows, inputCols, inputComponents,
             kernels, kernelRows, kernelCols,
@@ -218,7 +218,7 @@ void backpropTest(
     }
     dout << std::endl;
 
-    ml::cpu_golden::conv2d_backprop_multi_input(
+    ml::conv2d::cpu_golden::conv2d_backprop_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             di2, inputRows, inputCols, inputComponents,
             kernels, kernelRows, kernelCols,
@@ -348,7 +348,7 @@ void accumErrorTest(
     for (u32 i = 0; i < numKernels; i++)
         db2[i] = FML(400000.0);
 
-    ml::cpu_optimized::conv2d_accumError_multi_input(
+    ml::conv2d::cpu_optimized::conv2d_accumError_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             input, inputRows, inputCols, inputComponents,
             dk1, kernelRows, kernelCols,
@@ -371,7 +371,7 @@ void accumErrorTest(
         dout << " " << db1[i];
     dout << std::endl << std::endl;
 
-    ml::cpu_golden::conv2d_accumError_multi_input(
+    ml::conv2d::cpu_golden::conv2d_accumError_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             input, inputRows, inputCols, inputComponents,
             dk2, kernelRows, kernelCols,

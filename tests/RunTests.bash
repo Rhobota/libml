@@ -9,6 +9,7 @@ CC="$TARGET""g++"
 CC_FLAGS_LOCAL="$CC_FLAGS \
     -g -O0 -fvisibility=hidden -fno-inline -Wall -Wextra \
     -Wno-unused-parameter -Wno-long-long -Werror -pedantic \
+	-fopenmp \
     -D_FILE_OFFSET_BITS=64 \
     $INCLUDE_FLAGS"
 CC_LIB_FLAGS="$LIB_PATH -lpthread $CC_LIB_FLAGS"
