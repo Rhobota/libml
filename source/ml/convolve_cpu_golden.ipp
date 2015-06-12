@@ -1,3 +1,9 @@
+/*
+ * This file has the gold standard implementation of these three functions.
+ * Any new implementations should be tested against these.
+ */
+
+
 namespace ml
 {
 namespace    // <-- un-named namespaces act like everything inside is statically scoped
@@ -12,9 +18,6 @@ void s_conv2d(
         const fml* kernelBiases, fml scaleFactor,
               fml* outputPtr)
 {
-    // TODO: templatize -- including templatizing the block() calls
-    // TODO: re-structure to remove as many ifs from the inner loops as possible
-
     assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(kernelPtr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
     assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
@@ -75,9 +78,6 @@ void s_conv2d_backprop(
         const fml* kernelBiases, fml scaleFactor,
         const fml* dA_ptr)
 {
-    // TODO: templatize -- including templatizing the block() calls
-    // TODO: re-structure to remove as many ifs from the inner loops as possible
-
     assert(di_ptr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(kernelPtr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
     assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
@@ -138,9 +138,6 @@ void s_conv2d_accumError(
               fml* db_ptr, fml scaleFactor,
         const fml* dA_ptr)
 {
-    // TODO: templatize -- including templatizing the block() calls
-    // TODO: re-structure to remove as many ifs from the inner loops as possible
-
     assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(dk_ptr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
     assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
@@ -202,9 +199,6 @@ void s_conv2d_multi_input(
         const fml* kernelBiases, fml scaleFactor,
               fml* outputPtr)
 {
-    #ifdef LIBML_HAS_OPENMP
-    #pragma omp parallel for
-    #endif
     for (u32 i = 0; i < inputCount; i++)
     {
         s_conv2d(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
@@ -226,9 +220,6 @@ void s_conv2d_backprop_multi_input(
         const fml* kernelBiases, fml scaleFactor,
         const fml* dA_ptr)
 {
-    #ifdef LIBML_HAS_OPENMP
-    #pragma omp parallel for
-    #endif
     for (u32 i = 0; i < inputCount; i++)
     {
         s_conv2d_backprop(di_ptr + i*inputStride, inputRows, inputCols, inputComponents,
@@ -248,36 +239,12 @@ void s_conv2d_accumError_multi_input(
                              u32 kernelStepY, u32 kernelStepX,
                              u32 numKernels,
               fml* db_ptr, fml scaleFactor,
-              fml* dk_ptr_for_parallel, fml* db_ptr_for_parallel,
         const fml* dA_ptr)
 {
     u32 kernelDims = kernelRows*kernelCols*inputComponents*numKernels;
 
     Map dk(dk_ptr, kernelDims, 1);
     Map db(db_ptr, numKernels, 1);
-
-    #ifdef LIBML_HAS_OPENMP
-
-    Map dk_parallel(dk_ptr_for_parallel, kernelDims, inputCount);
-    Map db_parallel(db_ptr_for_parallel, numKernels, inputCount);
-
-    #pragma omp parallel for
-    for (u32 i = 0; i < inputCount; i++)
-    {
-        dk_parallel.col(i).setZero();
-        db_parallel.col(i).setZero();
-        s_conv2d_accumError(inputPtr + i*inputStride, inputRows, inputCols, inputComponents,
-                            dk_ptr_for_parallel + i*kernelDims, kernelRows, kernelCols,
-                                                                kernelStepY, kernelStepX,
-                                                                numKernels,
-                            db_ptr_for_parallel + i*numKernels, scaleFactor,
-                            dA_ptr + i*outputStride);
-    }
-
-    dk = dk_parallel.rowwise().sum();
-    db = db_parallel.rowwise().sum();
-
-    #else
 
     dk.setZero();
     db.setZero();
@@ -291,8 +258,6 @@ void s_conv2d_accumError_multi_input(
                             db_ptr, scaleFactor,
                             dA_ptr + i*outputStride);
     }
-
-    #endif
 }
 
 

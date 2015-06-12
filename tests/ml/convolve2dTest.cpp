@@ -2,7 +2,7 @@
 
 #include "../../source/ml/Eigen.h"
 
-#include "../../source/ml/convolve_cpu.ipp"
+#include "../../source/ml/convolve_cpu_golden.ipp"
 
 #include <rho/tTest.h>
 #include <rho/tCrashReporter.h>
