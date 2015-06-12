@@ -19,6 +19,16 @@ using ml::fml;
 #define dout if (false) std::cout
 
 
+void convolveTest(const tTest& t)
+{
+}
+
+
+void backpropTest(const tTest& t)
+{
+}
+
+
 void accumErrorTest(
         const tTest& t,
 
@@ -190,6 +200,10 @@ int main()
     tCrashReporter::init();
 
     srand(time(0));
+
+    tTest("conv2d() optimized test", convolveTest);
+
+    tTest("conv2d_backprop() optimized test", backpropTest);
 
     tTest("conv2d_accumError() optimized test", accumErrorTest);
 
