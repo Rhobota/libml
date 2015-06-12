@@ -77,9 +77,6 @@ class tCnnLayerCPU : public tCnnLayerBase
         fml* m_dw_accum;
         fml* m_db_accum;
 
-        fml* m_dw_accum_for_parallel;
-        fml* m_db_accum_for_parallel;
-
         fml* m_A;
         fml* m_a;
         fml* m_dA;

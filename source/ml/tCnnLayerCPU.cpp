@@ -3,7 +3,7 @@
 #include "Eigen.h"
 
 #include "common_nn.ipp"
-#include "convolve_cpu_optimized.ipp"
+#include "convolve_cpu_optimized2.ipp"
 
 
 namespace ml
@@ -14,8 +14,6 @@ tCnnLayerCPU::tCnnLayerCPU()
     : tCnnLayerBase(),
       m_dw_accum(NULL),
       m_db_accum(NULL),
-      m_dw_accum_for_parallel(NULL),
-      m_db_accum_for_parallel(NULL),
       m_A(NULL),
       m_a(NULL),
       m_dA(NULL),
@@ -40,8 +38,6 @@ tCnnLayerCPU::tCnnLayerCPU(nLayerType type, nLayerWeightUpdateRule rule,
                     lcg, randWeightMin, randWeightMax),
       m_dw_accum(NULL),
       m_db_accum(NULL),
-      m_dw_accum_for_parallel(NULL),
-      m_db_accum_for_parallel(NULL),
       m_A(NULL),
       m_a(NULL),
       m_dA(NULL),
@@ -85,10 +81,6 @@ void tCnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
         delete [] m_prev_da;
         m_dA = NULL;
         m_prev_da = NULL;
-        delete [] m_dw_accum_for_parallel;
-        delete [] m_db_accum_for_parallel;
-        m_dw_accum_for_parallel = NULL;
-        m_db_accum_for_parallel = NULL;
     }
     m_curCount = count;
 
@@ -177,12 +169,6 @@ void tCnnLayerCPU::takeOutputErrorGradients(
     if (!m_prev_da)
         m_prev_da = new fml[numInputDims * m_maxCount];
 
-    if (!m_dw_accum_for_parallel)
-        m_dw_accum_for_parallel = new fml[m_kernelRows*m_kernelCols*m_inputComponents*m_numKernels * m_maxCount];
-
-    if (!m_db_accum_for_parallel)
-        m_db_accum_for_parallel = new fml[m_numKernels * m_maxCount];
-
     MapConst da(outputErrorGradients, numOutputDims, outputCount);
     Map dA(m_dA, numOutputDims, outputCount);
     Map A(m_A, numOutputDims, outputCount);
@@ -244,7 +230,6 @@ void tCnnLayerCPU::takeOutputErrorGradients(
                         m_kernelStepY, m_kernelStepX,
                         m_numKernels,
             m_db_accum, n,
-            m_dw_accum_for_parallel, m_db_accum_for_parallel,
             m_dA);
 
     fml batchSize = (fml) outputCount;
@@ -421,8 +406,6 @@ void tCnnLayerCPU::m_finalize()
 {
     delete [] m_dw_accum; m_dw_accum = NULL;
     delete [] m_db_accum; m_db_accum = NULL;
-    delete [] m_dw_accum_for_parallel; m_dw_accum_for_parallel = NULL;
-    delete [] m_db_accum_for_parallel; m_db_accum_for_parallel = NULL;
     delete [] m_A; m_A = NULL;
     delete [] m_a; m_a = NULL;
     delete [] m_dA; m_dA = NULL;
