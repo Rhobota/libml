@@ -19,7 +19,7 @@ using ml::fml;
 #define dout if (false) std::cout
 
 
-void doit(
+void accumErrorTest(
         const tTest& t,
 
         u32 inputRows,
@@ -139,7 +139,7 @@ void doit(
 }
 
 
-void test1(const tTest& t)
+void accumErrorTest(const tTest& t)
 {
     for (int i = 0; i < 1000; i++)
     {
@@ -167,7 +167,7 @@ void test1(const tTest& t)
         dout << "kernelStepY = " << kernelStepY << std::endl;
         dout << "kernelStepX = " << kernelStepX << std::endl;
 
-        doit(
+        accumErrorTest(
                 t,
 
                 inputRows,
@@ -191,7 +191,7 @@ int main()
 
     srand(time(0));
 
-    tTest("conv2d_accumError() optimized test 1", test1);
+    tTest("conv2d_accumError() optimized test", accumErrorTest);
 
     return 0;
 }
