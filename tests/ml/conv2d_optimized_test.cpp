@@ -24,8 +24,151 @@ void convolveTest(const tTest& t)
 }
 
 
+void backpropTest(
+        const tTest& t,
+
+        u32 inputRows,
+        u32 inputCols,
+        u32 inputComponents,
+        u32 numInputs,
+
+        u32 kernelRows,
+        u32 kernelCols,
+        u32 numKernels,
+
+        u32 kernelStepY,
+        u32 kernelStepX)
+{
+    fml* di1 = new fml[inputRows*inputCols*inputComponents*numInputs];
+    for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
+        di1[i] = FML(400000.0);
+
+    fml* di2 = new fml[inputRows*inputCols*inputComponents*numInputs];
+    for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
+        di2[i] = FML(7000000.0);
+
+    u32 outputRows = (inputRows - 1) / kernelStepY + 1;
+    u32 outputCols = (inputCols - 1) / kernelStepX + 1;
+
+    fml* da = new fml[outputRows*outputCols*numKernels*numInputs];
+    for (u32 i = 0; i < outputRows*outputCols*numKernels*numInputs; i++)
+        da[i] = rand() % 100;
+
+    fml* kernels = new fml[kernelRows*kernelCols*inputComponents*numKernels];
+    fml* kernelBiases = new fml[numKernels];
+
+    for (u32 i = 0; i < kernelRows*kernelCols*inputComponents*numKernels; i++)
+        kernels[i] = rand() % 100;
+    for (u32 i = 0; i < numKernels; i++)
+        kernelBiases[i] = rand() % 100;
+
+    optimized::ml::s_conv2d_backprop_multi_input(
+            numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
+            di1, inputRows, inputCols, inputComponents,
+            kernels, kernelRows, kernelCols,
+                     kernelStepY, kernelStepX,
+                     numKernels,
+            kernelBiases, FML(0.5),
+            da);
+
+    dout << "di1:" << std::endl;
+    for (u32 r = 0; r < inputRows*numInputs; r++)
+    {
+        for (u32 c = 0; c < inputCols*inputComponents; c++)
+        {
+            dout << ' ' << di1[r*inputCols*inputComponents + c];
+        }
+        dout << std::endl;
+    }
+    dout << std::endl;
+
+    ml::s_conv2d_backprop_multi_input(
+            numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
+            di2, inputRows, inputCols, inputComponents,
+            kernels, kernelRows, kernelCols,
+                     kernelStepY, kernelStepX,
+                     numKernels,
+            kernelBiases, FML(0.5),
+            da);
+
+    dout << "di2:" << std::endl;
+    for (u32 r = 0; r < inputRows*numInputs; r++)
+    {
+        for (u32 c = 0; c < inputCols*inputComponents; c++)
+        {
+            dout << ' ' << di2[r*inputCols*inputComponents + c];
+        }
+        dout << std::endl;
+    }
+    dout << std::endl;
+
+    for (u32 r = 0; r < inputRows*numInputs; r++)
+    {
+        for (u32 c = 0; c < inputCols*inputComponents; c++)
+        {
+            fml a = di1[r*inputCols*inputComponents + c];
+            fml b = di2[r*inputCols*inputComponents + c];
+            if (fabs(a - b) > 0.00000001)
+            {
+                std::cerr << "NOT EQUAL! " << a << " != " << b << std::endl;
+                t.fail();
+            }
+        }
+    }
+
+    delete [] kernelBiases;
+    delete [] kernels;
+
+    delete [] da;
+
+    delete [] di2;
+    delete [] di1;
+}
+
+
 void backpropTest(const tTest& t)
 {
+    for (int i = 0; i < 1000; i++)
+    {
+        u32 inputRows = (rand() % 15) + 1;
+        u32 inputCols = (rand() % 15) + 1;
+        u32 inputComponents = (rand() % 3) + 1;
+        u32 numInputs = (rand() % 5) + 1;
+
+        u32 kernelRows = 2*(rand() % 4) + 1;
+        u32 kernelCols = 2*(rand() % 4) + 1;
+        u32 numKernels = (rand() % 15) + 1;
+
+        u32 kernelStepY = (rand() % 4) + 1;
+        u32 kernelStepX = (rand() % 4) + 1;
+
+        dout << "inputRows = " << inputRows << std::endl;
+        dout << "inputCols = " << inputCols << std::endl;
+        dout << "inputComponents = " << inputComponents << std::endl;
+        dout << "numInputs = " << numInputs << std::endl;
+
+        dout << "kernelRows = " << kernelRows << std::endl;
+        dout << "kernelCols = " << kernelCols << std::endl;
+        dout << "numKernels = " << numKernels << std::endl;
+
+        dout << "kernelStepY = " << kernelStepY << std::endl;
+        dout << "kernelStepX = " << kernelStepX << std::endl;
+
+        backpropTest(
+                t,
+
+                inputRows,
+                inputCols,
+                inputComponents,
+                numInputs,
+
+                kernelRows,
+                kernelCols,
+                numKernels,
+
+                kernelStepY,
+                kernelStepX);
+    }
 }
 
 
