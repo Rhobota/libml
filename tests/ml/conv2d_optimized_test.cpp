@@ -19,8 +19,151 @@ using ml::fml;
 #define dout if (false) std::cout
 
 
+void convolveTest(
+        const tTest& t,
+
+        u32 inputRows,
+        u32 inputCols,
+        u32 inputComponents,
+        u32 numInputs,
+
+        u32 kernelRows,
+        u32 kernelCols,
+        u32 numKernels,
+
+        u32 kernelStepY,
+        u32 kernelStepX)
+{
+    fml* input = new fml[inputRows*inputCols*inputComponents*numInputs];
+    for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
+        input[i] = rand() % 100;
+
+    u32 outputRows = (inputRows - 1) / kernelStepY + 1;
+    u32 outputCols = (inputCols - 1) / kernelStepX + 1;
+
+    fml* output1 = new fml[outputRows*outputCols*numKernels*numInputs];
+    for (u32 i = 0; i < outputRows*outputCols*numKernels*numInputs; i++)
+        output1[i] = FML(1000.0);
+
+    fml* output2 = new fml[outputRows*outputCols*numKernels*numInputs];
+    for (u32 i = 0; i < outputRows*outputCols*numKernels*numInputs; i++)
+        output2[i] = FML(700000.0);
+
+    fml* kernels = new fml[kernelRows*kernelCols*inputComponents*numKernels];
+    fml* kernelBiases = new fml[numKernels];
+
+    for (u32 i = 0; i < kernelRows*kernelCols*inputComponents*numKernels; i++)
+        kernels[i] = rand() % 100;
+    for (u32 i = 0; i < numKernels; i++)
+        kernelBiases[i] = rand() % 100;
+
+    optimized::ml::s_conv2d_multi_input(
+            numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
+            input, inputRows, inputCols, inputComponents,
+            kernels, kernelRows, kernelCols,
+                     kernelStepY, kernelStepX,
+                     numKernels,
+            kernelBiases, FML(0.5),
+            output1);
+
+    dout << "output1:" << std::endl;
+    for (u32 r = 0; r < outputRows*numInputs; r++)
+    {
+        for (u32 c = 0; c < outputCols*numKernels; c++)
+        {
+            dout << ' ' << output1[r*outputCols*numKernels + c];
+        }
+        dout << std::endl;
+    }
+    dout << std::endl;
+
+    ml::s_conv2d_multi_input(
+            numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
+            input, inputRows, inputCols, inputComponents,
+            kernels, kernelRows, kernelCols,
+                     kernelStepY, kernelStepX,
+                     numKernels,
+            kernelBiases, FML(0.5),
+            output2);
+
+    dout << "output2:" << std::endl;
+    for (u32 r = 0; r < outputRows*numInputs; r++)
+    {
+        for (u32 c = 0; c < outputCols*numKernels; c++)
+        {
+            dout << ' ' << output2[r*outputCols*numKernels + c];
+        }
+        dout << std::endl;
+    }
+    dout << std::endl;
+
+    for (u32 r = 0; r < outputRows*numInputs; r++)
+    {
+        for (u32 c = 0; c < outputCols*numKernels; c++)
+        {
+            fml a = output1[r*outputCols*numKernels + c];
+            fml b = output2[r*outputCols*numKernels + c];
+            if (fabs(a - b) > 0.00000001)
+            {
+                std::cerr << "NOT EQUAL! " << a << " != " << b << std::endl;
+                t.fail();
+            }
+        }
+    }
+
+    delete [] kernelBiases;
+    delete [] kernels;
+
+    delete [] output2;
+    delete [] output1;
+
+    delete [] input;
+}
+
+
 void convolveTest(const tTest& t)
 {
+    for (int i = 0; i < 1000; i++)
+    {
+        u32 inputRows = (rand() % 15) + 1;
+        u32 inputCols = (rand() % 15) + 1;
+        u32 inputComponents = (rand() % 3) + 1;
+        u32 numInputs = (rand() % 5) + 1;
+
+        u32 kernelRows = 2*(rand() % 4) + 1;
+        u32 kernelCols = 2*(rand() % 4) + 1;
+        u32 numKernels = (rand() % 15) + 1;
+
+        u32 kernelStepY = (rand() % 4) + 1;
+        u32 kernelStepX = (rand() % 4) + 1;
+
+        dout << "inputRows = " << inputRows << std::endl;
+        dout << "inputCols = " << inputCols << std::endl;
+        dout << "inputComponents = " << inputComponents << std::endl;
+        dout << "numInputs = " << numInputs << std::endl;
+
+        dout << "kernelRows = " << kernelRows << std::endl;
+        dout << "kernelCols = " << kernelCols << std::endl;
+        dout << "numKernels = " << numKernels << std::endl;
+
+        dout << "kernelStepY = " << kernelStepY << std::endl;
+        dout << "kernelStepX = " << kernelStepX << std::endl;
+
+        convolveTest(
+                t,
+
+                inputRows,
+                inputCols,
+                inputComponents,
+                numInputs,
+
+                kernelRows,
+                kernelCols,
+                numKernels,
+
+                kernelStepY,
+                kernelStepX);
+    }
 }
 
 
