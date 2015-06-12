@@ -139,7 +139,7 @@ void doit(
 }
 
 
-void test(const tTest& t)
+void test1(const tTest& t)
 {
     for (int i = 0; i < 1000; i++)
     {
@@ -191,7 +191,7 @@ int main()
 
     srand(time(0));
 
-    tTest("convolve 2d optimized test", test);
+    tTest("conv2d_accumError() optimized test 1", test1);
 
     return 0;
 }
