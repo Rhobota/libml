@@ -3,7 +3,7 @@
 #include "Eigen.h"
 
 #include "common_nn.ipp"
-#include "convolve_cpu_golden.ipp"
+#include "convolve_cpu_optimized.ipp"
 
 
 namespace ml
