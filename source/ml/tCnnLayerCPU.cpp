@@ -1,9 +1,9 @@
 #include <ml/tCnnLayerCPU.h>
+#include <ml/conv2d/cpu_optimized.h>
 
 #include "Eigen.h"
 
 #include "common_nn.ipp"
-#include "conv2d/conv2d_cpu_optimized.ipp"
 
 
 namespace ml

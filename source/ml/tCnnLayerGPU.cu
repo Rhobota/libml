@@ -1,8 +1,8 @@
 #include <ml/tCnnLayerGPU.h>
+#include <ml/conv2d/gpu.h>
 
 #define ENABLE_DEVICE_FUNCTIONS
 #include "common_nn.ipp"
-#include "conv2d/conv2d_gpu.ipp"
 
 #include <cassert>
 #include <iostream>

@@ -1,6 +1,5 @@
 #include <ml/common.h>
-#include "../../source/ml/Eigen.h"
-#include "../../source/ml/conv2d/conv2d_cpu_golden.ipp"
+#include <ml/conv2d/cpu_golden.h>
 
 #include <rho/tTest.h>
 #include <rho/tCrashReporter.h>
