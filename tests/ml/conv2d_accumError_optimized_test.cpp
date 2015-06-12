@@ -6,7 +6,7 @@ namespace optimized
 {
     using namespace rho;
     using namespace ml;
-    #include "../../source/ml/convolve_cpu_optimized2.ipp"
+    #include "../../source/ml/conv2d/conv2d_cpu_optimized.ipp"
 }
 
 #include <rho/tTest.h>

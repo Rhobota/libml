@@ -1,7 +1,5 @@
 #include <ml/common.h>
-
 #include "../../source/ml/Eigen.h"
-
 #include "../../source/ml/conv2d/conv2d_cpu_golden.ipp"
 
 #include <rho/tTest.h>
@@ -9,7 +7,6 @@
 
 using namespace rho;
 using ml::fml;
-using ml::s_conv2d;
 
 
 /*
@@ -74,7 +71,7 @@ void test0(const tTest& t)
     fml output[] = {  FML(0.0),  FML(0.0),
                       FML(0.0),  FML(0.0),  };
 
-    s_conv2d(input, inputRows, inputCols, inputComponents,
+    ml::s_conv2d(input, inputRows, inputCols, inputComponents,
              kernel, kernelRows, kernelCols,
                      1, 1,
                      1,
@@ -118,7 +115,7 @@ fml kBias57_1     = FML(0.81093);
  \
     /* Step (1, 1) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_1, 3, 3, \
                               1, 1, \
                               1, \
@@ -129,7 +126,7 @@ fml kBias57_1     = FML(0.81093);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel55_1, 5, 5, \
                               1, 1, \
                               1, \
@@ -140,7 +137,7 @@ fml kBias57_1     = FML(0.81093);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel57_1, 5, 7, \
                               1, 1, \
                               1, \
@@ -152,7 +149,7 @@ fml kBias57_1     = FML(0.81093);
  \
     /* Step (2, 1) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_1, 3, 3, \
                               2, 1, \
                               1, \
@@ -163,7 +160,7 @@ fml kBias57_1     = FML(0.81093);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel55_1, 5, 5, \
                               2, 1, \
                               1, \
@@ -174,7 +171,7 @@ fml kBias57_1     = FML(0.81093);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel57_1, 5, 7, \
                               2, 1, \
                               1, \
@@ -186,7 +183,7 @@ fml kBias57_1     = FML(0.81093);
  \
     /* Step (1, 2) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_1, 3, 3, \
                               1, 2, \
                               1, \
@@ -197,7 +194,7 @@ fml kBias57_1     = FML(0.81093);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel55_1, 5, 5, \
                               1, 2, \
                               1, \
@@ -208,7 +205,7 @@ fml kBias57_1     = FML(0.81093);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel57_1, 5, 7, \
                               1, 2, \
                               1, \
@@ -220,7 +217,7 @@ fml kBias57_1     = FML(0.81093);
  \
     /* Step (2, 2) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_1, 3, 3, \
                               2, 2, \
                               1, \
@@ -231,7 +228,7 @@ fml kBias57_1     = FML(0.81093);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel55_1, 5, 5, \
                               2, 2, \
                               1, \
@@ -242,7 +239,7 @@ fml kBias57_1     = FML(0.81093);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel57_1, 5, 7, \
                               2, 2, \
                               1, \
@@ -2723,7 +2720,7 @@ fml kBias57_2[]   = {
  \
     /* Step (1, 1) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_2, 3, 3, \
                               1, 1, \
                               2, \
@@ -2734,7 +2731,7 @@ fml kBias57_2[]   = {
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel55_2, 5, 5, \
                               1, 1, \
                               2, \
@@ -2745,7 +2742,7 @@ fml kBias57_2[]   = {
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel57_2, 5, 7, \
                               1, 1, \
                               2, \
@@ -2757,7 +2754,7 @@ fml kBias57_2[]   = {
  \
     /* Step (1, 2) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_2, 3, 3, \
                               1, 2, \
                               2, \
@@ -2768,7 +2765,7 @@ fml kBias57_2[]   = {
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel55_2, 5, 5, \
                               1, 2, \
                               2, \
@@ -2779,7 +2776,7 @@ fml kBias57_2[]   = {
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel57_2, 5, 7, \
                               1, 2, \
                               2, \
@@ -2791,7 +2788,7 @@ fml kBias57_2[]   = {
  \
     /* Step (2, 1) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_2, 3, 3, \
                               2, 1, \
                               2, \
@@ -2802,7 +2799,7 @@ fml kBias57_2[]   = {
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel55_2, 5, 5, \
                               2, 1, \
                               2, \
@@ -2813,7 +2810,7 @@ fml kBias57_2[]   = {
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel57_2, 5, 7, \
                               2, 1, \
                               2, \
@@ -2825,7 +2822,7 @@ fml kBias57_2[]   = {
  \
     /* Step (2, 2) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel33_2, 3, 3, \
                               2, 2, \
                               2, \
@@ -2836,7 +2833,7 @@ fml kBias57_2[]   = {
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel55_2, 5, 5, \
                               2, 2, \
                               2, \
@@ -2847,7 +2844,7 @@ fml kBias57_2[]   = {
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 1, \
+        ml::s_conv2d(input, inputRows, inputCols, 1, \
                  kKernel57_2, 5, 7, \
                               2, 2, \
                               2, \
@@ -3409,7 +3406,7 @@ fml kBias57_3     = FML(0.88555);
  \
     /* Step (1, 1) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel33_3, 3, 3, \
                               1, 1, \
                               1, \
@@ -3420,7 +3417,7 @@ fml kBias57_3     = FML(0.88555);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel55_3, 5, 5, \
                               1, 1, \
                               1, \
@@ -3431,7 +3428,7 @@ fml kBias57_3     = FML(0.88555);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel57_3, 5, 7, \
                               1, 1, \
                               1, \
@@ -3443,7 +3440,7 @@ fml kBias57_3     = FML(0.88555);
  \
     /* Step (1, 2) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel33_3, 3, 3, \
                               1, 2, \
                               1, \
@@ -3454,7 +3451,7 @@ fml kBias57_3     = FML(0.88555);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel55_3, 5, 5, \
                               1, 2, \
                               1, \
@@ -3465,7 +3462,7 @@ fml kBias57_3     = FML(0.88555);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel57_3, 5, 7, \
                               1, 2, \
                               1, \
@@ -3477,7 +3474,7 @@ fml kBias57_3     = FML(0.88555);
  \
     /* Step (2, 1) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel33_3, 3, 3, \
                               2, 1, \
                               1, \
@@ -3488,7 +3485,7 @@ fml kBias57_3     = FML(0.88555);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel55_3, 5, 5, \
                               2, 1, \
                               1, \
@@ -3499,7 +3496,7 @@ fml kBias57_3     = FML(0.88555);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel57_3, 5, 7, \
                               2, 1, \
                               1, \
@@ -3511,7 +3508,7 @@ fml kBias57_3     = FML(0.88555);
  \
     /* Step (2, 2) */ \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel33_3, 3, 3, \
                               2, 2, \
                               1, \
@@ -3522,7 +3519,7 @@ fml kBias57_3     = FML(0.88555);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel55_3, 5, 5, \
                               2, 2, \
                               1, \
@@ -3533,7 +3530,7 @@ fml kBias57_3     = FML(0.88555);
     } \
  \
     { \
-        s_conv2d(input, inputRows, inputCols, 2, \
+        ml::s_conv2d(input, inputRows, inputCols, 2, \
                  kKernel57_3, 5, 7, \
                               2, 2, \
                               1, \
