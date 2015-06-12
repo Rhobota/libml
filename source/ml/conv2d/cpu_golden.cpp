@@ -1,15 +1,15 @@
-/*
- * This file has the gold standard implementation of these three functions.
- * Any new implementations should be tested against these.
- */
+#include <ml/conv2d/cpu_golden.h>
 
 
 namespace ml
 {
-namespace    // <-- un-named namespaces act like everything inside is statically scoped
+namespace conv2d
+{
+namespace cpu_golden
 {
 
 
+static
 void s_conv2d(
         const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
         const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
@@ -70,6 +70,7 @@ void s_conv2d(
 }
 
 
+static
 void s_conv2d_backprop(
               fml* di_ptr,    u32 inputRows,   u32 inputCols,   u32 inputComponents,
         const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
@@ -130,6 +131,7 @@ void s_conv2d_backprop(
 }
 
 
+static
 void s_conv2d_accumError(
         const fml* inputPtr, u32 inputRows,   u32 inputCols,   u32 inputComponents,
               fml* dk_ptr,   u32 kernelRows,  u32 kernelCols,
@@ -261,5 +263,6 @@ void s_conv2d_accumError_multi_input(
 }
 
 
-}  // end of anonymous namespace
-}  // end of namespace ml
+}  // namespace cpu_golden
+}  // namespace conv2d
+}  // namespace ml

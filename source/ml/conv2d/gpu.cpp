@@ -1,6 +1,11 @@
+#include <ml/conv2d/gpu.h>
+
+
 namespace ml
 {
-namespace    // <-- un-named namespaces act like everything inside is statically scoped
+namespace conv2d
+{
+namespace gpu
 {
 
 
@@ -44,5 +49,6 @@ void s_conv2d_accumError_multi_input(
 }
 
 
-}  // end of anonymous namespace
-}  // end of namespace ml
+}  // namespace gpu
+}  // namespace conv2d
+}  // namespace ml

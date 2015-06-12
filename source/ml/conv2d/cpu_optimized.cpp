@@ -1,9 +1,15 @@
+#include <ml/conv2d/cpu_optimized.h>
+
+
 namespace ml
 {
-namespace    // <-- un-named namespaces act like everything inside is statically scoped
+namespace conv2d
+{
+namespace cpu_optimized
 {
 
 
+static
 void s_conv2d(
         const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
         const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
@@ -67,6 +73,7 @@ void s_conv2d(
 }
 
 
+static
 void s_conv2d_backprop(
               fml* di_ptr,    u32 inputRows,   u32 inputCols,   u32 inputComponents,
         const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
@@ -130,6 +137,7 @@ void s_conv2d_backprop(
 }
 
 
+static
 void s_conv2d_accumError(
         u32 inputCount,  u32 inputStride,  u32 outputStride,
         const fml* inputPtr, u32 inputRows,   u32 inputCols,  u32 inputComponents,
@@ -316,5 +324,6 @@ void s_conv2d_accumError_multi_input(
 }
 
 
-}  // end of anonymous namespace
-}  // end of namespace ml
+}  // namespace cpu_optimized
+}  // namespace conv2d
+}  // namespace ml

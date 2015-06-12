@@ -26,7 +26,7 @@ void s_conv2d_backprop_multi_input(
                               u32 kernelStepY, u32 kernelStepX,
                               u32 numKernels,
         const fml* kernelBiases, fml scaleFactor,
-        const fml* dA_ptr)
+        const fml* dA_ptr);
 
 
 void s_conv2d_accumError_multi_input(
