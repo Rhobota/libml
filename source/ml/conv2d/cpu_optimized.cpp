@@ -149,6 +149,7 @@ void s_conv2d_accumError(
               fml* db_ptr, fml scaleFactor,
         const fml* dA_ptr)
 {
+    // TODO: templatize -- including templatizing the block() calls
     // TODO: re-structure to remove as many ifs from the inner loops as possible
 
     assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
@@ -186,8 +187,6 @@ void s_conv2d_accumError(
 
             for (u32 kernelColIndex = 0; kernelColIndex < kernelCols; kernelColIndex++)
             {
-                fml* dk_here = dk_row + kernelColIndex*inputComponents;
-
                 u32 dA_firstRow;
                 u32 input_firstRow;
                 u32 numRowsToProcess;
@@ -229,6 +228,8 @@ void s_conv2d_accumError(
                         continue;
                     numColsToProcess = (inputCols-input_firstCol-1) / kernelStepX + 1;
                 }
+
+                fml* dk_here = dk_row + kernelColIndex*inputComponents;
 
                 for (u32 inputComponentIndex = 0; inputComponentIndex < inputComponents; inputComponentIndex++)
                 {
