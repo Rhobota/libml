@@ -1,6 +1,6 @@
 #include <ml/common.h>
 #include <ml/conv2d/cpu_golden.h>
-#include <ml/conv2d/cpu_optimized.h>
+#include <ml/conv2d/gpu.h>
 
 #include <rho/tTest.h>
 #include <rho/tCrashReporter.h>
@@ -13,6 +13,45 @@ using ml::fml;
 
 
 static const int kTestIterations = 3000;
+
+
+void gpu_helper_conv2d_multi_input(
+        u32 inputCount,  u32 inputStride,  u32 outputStride,
+        const fml* inputPtr,  u32 inputRows,   u32 inputCols,   u32 inputComponents,
+        const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
+                              u32 kernelStepY, u32 kernelStepX,
+                              u32 numKernels,
+        const fml* kernelBiases, fml scaleFactor,
+              fml* outputPtr)
+{
+    // TODO
+}
+
+
+void gpu_helper_conv2d_backprop_multi_input(
+        u32 inputCount,  u32 inputStride,  u32 outputStride,
+              fml* di_ptr,    u32 inputRows,   u32 inputCols,   u32 inputComponents,
+        const fml* kernelPtr, u32 kernelRows,  u32 kernelCols,
+                              u32 kernelStepY, u32 kernelStepX,
+                              u32 numKernels,
+        const fml* kernelBiases, fml scaleFactor,
+        const fml* dA_ptr)
+{
+    // TODO
+}
+
+
+void gpu_helper_conv2d_accumError_multi_input(
+        u32 inputCount,  u32 inputStride,  u32 outputStride,
+        const fml* inputPtr, u32 inputRows,   u32 inputCols,   u32 inputComponents,
+              fml* dk_ptr,   u32 kernelRows,  u32 kernelCols,
+                             u32 kernelStepY, u32 kernelStepX,
+                             u32 numKernels,
+              fml* db_ptr, fml scaleFactor,
+        const fml* dA_ptr)
+{
+    // TODO
+}
 
 
 void convolveTest(
@@ -53,7 +92,7 @@ void convolveTest(
     for (u32 i = 0; i < numKernels; i++)
         kernelBiases[i] = rand() % 100;
 
-    ml::conv2d::cpu_optimized::conv2d_multi_input(
+    gpu_helper_conv2d_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             input, inputRows, inputCols, inputComponents,
             kernels, kernelRows, kernelCols,
@@ -201,7 +240,7 @@ void backpropTest(
     for (u32 i = 0; i < numKernels; i++)
         kernelBiases[i] = rand() % 100;
 
-    ml::conv2d::cpu_optimized::conv2d_backprop_multi_input(
+    gpu_helper_conv2d_backprop_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             di1, inputRows, inputCols, inputComponents,
             kernels, kernelRows, kernelCols,
@@ -351,7 +390,7 @@ void accumErrorTest(
     for (u32 i = 0; i < numKernels; i++)
         db2[i] = FML(400000.0);
 
-    ml::conv2d::cpu_optimized::conv2d_accumError_multi_input(
+    gpu_helper_conv2d_accumError_multi_input(
             numInputs, inputRows*inputCols*inputComponents, outputRows*outputCols*numKernels,
             input, inputRows, inputCols, inputComponents,
             dk1, kernelRows, kernelCols,
@@ -483,11 +522,11 @@ int main()
 
     srand(time(0));
 
-    tTest("conv2d() optimized test", convolveTest);
+    tTest("conv2d() gpu test", convolveTest);
 
-    tTest("conv2d_backprop() optimized test", backpropTest);
+    tTest("conv2d_backprop() gpu test", backpropTest);
 
-    tTest("conv2d_accumError() optimized test", accumErrorTest);
+    tTest("conv2d_accumError() gpu test", accumErrorTest);
 
     return 0;
 }
