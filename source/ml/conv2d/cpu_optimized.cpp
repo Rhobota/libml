@@ -164,8 +164,6 @@ void s_conv2d_accumError(
     u32 outputRows = (inputRows - 1) / kernelStepY + 1;
     u32 outputCols = (inputCols - 1) / kernelStepX + 1;
 
-    fml* sum = new fml[inputComponents];
-
     *db_ptr = FML(0.0);
 
     {
@@ -176,13 +174,11 @@ void s_conv2d_accumError(
     for (u32 inputIndex = 0; inputIndex < inputCount; inputIndex++)
     {
         const fml* input_start = inputPtr + inputIndex*inputStride;
-        const fml* dA_start = dA_ptr + inputIndex*outputStride + kernelIndex;
 
-        {
-            MapRowMajorWithStrideConst dA_map(dA_start, outputRows, outputCols,
-                                              Stride(outputCols*numKernels, numKernels));
-            *db_ptr += dA_map.sum() * scaleFactor;
-        }
+        MapRowMajorWithStrideConst dA_map(dA_ptr + inputIndex*outputStride + kernelIndex,
+                                          outputRows, outputCols,
+                                          Stride(outputCols*numKernels, numKernels));
+        *db_ptr += dA_map.sum() * scaleFactor;
 
         for (u32 kernelRowIndex = 0; kernelRowIndex < kernelRows; kernelRowIndex++)
         {
@@ -191,9 +187,6 @@ void s_conv2d_accumError(
             for (u32 kernelColIndex = 0; kernelColIndex < kernelCols; kernelColIndex++)
             {
                 fml* dk_here = dk_row + kernelColIndex*inputComponents;
-
-                for (u32 inputComponentIndex = 0; inputComponentIndex < inputComponents; inputComponentIndex++)
-                    sum[inputComponentIndex] = FML(0.0);
 
                 for (u32 inputRowIndex = 0, dA_rowIndex = 0; inputRowIndex < inputRows; inputRowIndex += kernelStepY, dA_rowIndex++)
                 {
@@ -212,41 +205,41 @@ void s_conv2d_accumError(
                     }
 
                     const fml* input_row = input_start + rowOfInterest*inputCols*inputComponents;
-                    const fml* dA_row = dA_start + dA_rowIndex*outputCols*numKernels;
 
-                    for (u32 inputColIndex = 0, dA_colIndex = 0; inputColIndex < inputCols; inputColIndex += kernelStepX, dA_colIndex++)
+                    u32 dA_firstCol;
+                    u32 input_firstCol;
+                    u32 numColsToProcess;
+
+                    if (kernelColIndex < kernelRadiusX)
                     {
-                        u32 colOfInterest;
-                        if (kernelColIndex < kernelRadiusX)
-                        {
-                            if (inputColIndex < (kernelRadiusX - kernelColIndex))
-                                continue;
-                            colOfInterest = inputColIndex - (kernelRadiusX - kernelColIndex);
-                        }
-                        else
-                        {
-                            colOfInterest = inputColIndex + (kernelColIndex - kernelRadiusX);
-                            if (colOfInterest >= inputCols)
-                                continue;
-                        }
+                        dA_firstCol = (kernelRadiusX-kernelColIndex-1) / kernelStepX + 1;
+                        u32 startIndex = dA_firstCol*kernelStepX;
+                        if (inputCols <= startIndex)
+                            continue;
+                        numColsToProcess = (inputCols-startIndex-1) / kernelStepX + 1;
+                        input_firstCol = startIndex - (kernelRadiusX-kernelColIndex);
+                    }
+                    else
+                    {
+                        dA_firstCol = 0;
+                        input_firstCol = kernelColIndex - kernelRadiusX;
+                        if (inputCols <= input_firstCol)
+                            continue;
+                        numColsToProcess = (inputCols-input_firstCol-1) / kernelStepX + 1;
+                    }
 
-                        const fml* input_here = input_row + colOfInterest*inputComponents;
-                        fml dA_here = dA_row[dA_colIndex*numKernels];
+                    for (u32 inputComponentIndex = 0; inputComponentIndex < inputComponents; inputComponentIndex++)
+                    {
+                        MapRowMajorWithStrideConst input_map(input_row + input_firstCol*inputComponents + inputComponentIndex,
+                                                             1, numColsToProcess,
+                                                             Stride(inputCols*inputComponents, kernelStepX*inputComponents));
 
-                        for (u32 inputComponentIndex = 0; inputComponentIndex < inputComponents; inputComponentIndex++)
-                        {
-                            sum[inputComponentIndex] += input_here[inputComponentIndex] * dA_here;
-                        }
+                        dk_here[inputComponentIndex] += scaleFactor * input_map.cwiseProduct(dA_map.block(dA_rowIndex, dA_firstCol, 1, numColsToProcess)).sum();
                     }
                 }
-
-                for (u32 inputComponentIndex = 0; inputComponentIndex < inputComponents; inputComponentIndex++)
-                    dk_here[inputComponentIndex] += sum[inputComponentIndex] * scaleFactor;
             }
         }
     }
-
-    delete [] sum;
 }
 
 
