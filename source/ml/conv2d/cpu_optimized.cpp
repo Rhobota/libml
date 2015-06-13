@@ -188,54 +188,59 @@ void s_conv2d_accumError(
             {
                 fml* dk_here = dk_row + kernelColIndex*inputComponents;
 
-                for (u32 inputRowIndex = 0, dA_rowIndex = 0; inputRowIndex < inputRows; inputRowIndex += kernelStepY, dA_rowIndex++)
+                u32 dA_firstRow;
+                u32 input_firstRow;
+                u32 numRowsToProcess;
+                if (kernelRowIndex < kernelRadiusY)
                 {
-                    u32 rowOfInterest;
-                    if (kernelRowIndex < kernelRadiusY)
-                    {
-                        if (inputRowIndex < (kernelRadiusY - kernelRowIndex))
-                            continue;
-                        rowOfInterest = inputRowIndex - (kernelRadiusY - kernelRowIndex);
-                    }
-                    else
-                    {
-                        rowOfInterest = inputRowIndex + (kernelRowIndex - kernelRadiusY);
-                        if (rowOfInterest >= inputRows)
-                            continue;
-                    }
+                    dA_firstRow = (kernelRadiusY-kernelRowIndex-1) / kernelStepY + 1;
+                    u32 startIndex = dA_firstRow*kernelStepY;
+                    if (inputRows <= startIndex)
+                        continue;
+                    numRowsToProcess = (inputRows-startIndex-1) / kernelStepY + 1;
+                    input_firstRow = startIndex - (kernelRadiusY-kernelRowIndex);
+                }
+                else
+                {
+                    dA_firstRow = 0;
+                    input_firstRow = kernelRowIndex - kernelRadiusY;
+                    if (inputRows <= input_firstRow)
+                        continue;
+                    numRowsToProcess = (inputRows-input_firstRow-1) / kernelStepY + 1;
+                }
 
-                    const fml* input_row = input_start + rowOfInterest*inputCols*inputComponents;
+                u32 dA_firstCol;
+                u32 input_firstCol;
+                u32 numColsToProcess;
+                if (kernelColIndex < kernelRadiusX)
+                {
+                    dA_firstCol = (kernelRadiusX-kernelColIndex-1) / kernelStepX + 1;
+                    u32 startIndex = dA_firstCol*kernelStepX;
+                    if (inputCols <= startIndex)
+                        continue;
+                    numColsToProcess = (inputCols-startIndex-1) / kernelStepX + 1;
+                    input_firstCol = startIndex - (kernelRadiusX-kernelColIndex);
+                }
+                else
+                {
+                    dA_firstCol = 0;
+                    input_firstCol = kernelColIndex - kernelRadiusX;
+                    if (inputCols <= input_firstCol)
+                        continue;
+                    numColsToProcess = (inputCols-input_firstCol-1) / kernelStepX + 1;
+                }
 
-                    u32 dA_firstCol;
-                    u32 input_firstCol;
-                    u32 numColsToProcess;
+                for (u32 inputComponentIndex = 0; inputComponentIndex < inputComponents; inputComponentIndex++)
+                {
+                    MapRowMajorWithStrideConst input_map(input_start + input_firstRow*inputCols*inputComponents
+                                                                     + input_firstCol*inputComponents + inputComponentIndex,
+                                                         numRowsToProcess, numColsToProcess,
+                                                         Stride(kernelStepY*inputCols*inputComponents, kernelStepX*inputComponents));
 
-                    if (kernelColIndex < kernelRadiusX)
-                    {
-                        dA_firstCol = (kernelRadiusX-kernelColIndex-1) / kernelStepX + 1;
-                        u32 startIndex = dA_firstCol*kernelStepX;
-                        if (inputCols <= startIndex)
-                            continue;
-                        numColsToProcess = (inputCols-startIndex-1) / kernelStepX + 1;
-                        input_firstCol = startIndex - (kernelRadiusX-kernelColIndex);
-                    }
-                    else
-                    {
-                        dA_firstCol = 0;
-                        input_firstCol = kernelColIndex - kernelRadiusX;
-                        if (inputCols <= input_firstCol)
-                            continue;
-                        numColsToProcess = (inputCols-input_firstCol-1) / kernelStepX + 1;
-                    }
-
-                    for (u32 inputComponentIndex = 0; inputComponentIndex < inputComponents; inputComponentIndex++)
-                    {
-                        MapRowMajorWithStrideConst input_map(input_row + input_firstCol*inputComponents + inputComponentIndex,
-                                                             1, numColsToProcess,
-                                                             Stride(inputCols*inputComponents, kernelStepX*inputComponents));
-
-                        dk_here[inputComponentIndex] += scaleFactor * input_map.cwiseProduct(dA_map.block(dA_rowIndex, dA_firstCol, 1, numColsToProcess)).sum();
-                    }
+                    dk_here[inputComponentIndex] += scaleFactor *
+                                                        input_map.cwiseProduct(
+                                                            dA_map.block(dA_firstRow, dA_firstCol, numRowsToProcess, numColsToProcess))
+                                                        .sum();
                 }
             }
         }
