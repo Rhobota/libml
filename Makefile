@@ -32,6 +32,7 @@ endif
 CC_CUDA := /usr/local/cuda-6.5/bin/nvcc
 CC_CUDA_FLAGS_LOCAL := $(CC_FLAGS) \
 	-g -O3 \
+	-Xcompiler -fopenmp \
 	-D_FILE_OFFSET_BITS=64 \
 	-I ../librho/include \
 	-I $(INCLUDE_DIR)
