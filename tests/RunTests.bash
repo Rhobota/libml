@@ -32,7 +32,8 @@ fi
 
 CC_CUDA="/usr/local/cuda-6.5/bin/nvcc"
 CC_CUDA_FLAGS_LOCAL="$CC_FLAGS \
-    -g -O0 \
+    -g -O0 -Xcompiler -fvisibility=hidden -Xcompiler -fno-inline -Xcompiler -Wall -Xcompiler -Wextra \
+    -Xcompiler -Wno-unused-parameter -Xcompiler -Wno-long-long -Xcompiler -Werror \
     -D_FILE_OFFSET_BITS=64 \
     $INCLUDE_FLAGS"
 CC_CUDA_LIB_FLAGS="$LIB_PATH \
