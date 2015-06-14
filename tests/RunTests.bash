@@ -47,7 +47,7 @@ RUN_PREFIX="$2"
 
 function getExtension
 {
-    filename=filename="${1##*/}"
+    filename="${1##*/}"
     extension="${filename##*.}"
     echo "$extension"
 }
