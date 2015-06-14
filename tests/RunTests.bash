@@ -9,10 +9,9 @@ CC="$TARGET""g++"
 CC_FLAGS_LOCAL="$CC_FLAGS \
     -g -O0 -fvisibility=hidden -fno-inline -Wall -Wextra \
     -Wno-unused-parameter -Wno-long-long -Werror -pedantic \
-	-fopenmp \
     -D_FILE_OFFSET_BITS=64 \
     $INCLUDE_FLAGS"
-CC_LIB_FLAGS="$LIB_PATH -lpthread $CC_LIB_FLAGS"
+CC_LIB_FLAGS="$LIB_PATH -fopenmp $CC_LIB_FLAGS"
 
 if [ $(uname) == "Linux" ]
 then
@@ -31,12 +30,27 @@ else
     CC_LIB_FLAGS+=" -lwsock32 -lws2_32"
 fi
 
+CC_CUDA="/usr/local/cuda-6.5/bin/nvcc"
+CC_CUDA_FLAGS_LOCAL="$CC_FLAGS \
+    -g -O0 \
+    -D_FILE_OFFSET_BITS=64 \
+    $INCLUDE_FLAGS"
+CC_CUDA_LIB_FLAGS="$LIB_PATH \
+    -lcublas_static -lculibos -Xcompiler -fopenmp"
+
 if [ -n "$1" ]
 then
     TEST_DIR="$1"
 fi
 
 RUN_PREFIX="$2"
+
+function getExtension
+{
+    filename=filename="${1##*/}"
+    extension="${filename##*.}"
+    echo "$extension"
+}
 
 function cleanup
 {
@@ -60,11 +74,16 @@ trap gotSignal SIGTERM SIGINT
 
 somethingRun=0
 
-for testPath in $(find "$TEST_DIR" -name '*.cpp' -o -name '*.mm' | sort)
+for testPath in $(find "$TEST_DIR" -name '*.cpp' -o -name '*.cu' | sort)
 do
     somethingRun=1
     echo "---- $testPath ----"
-    $CC $CC_FLAGS_LOCAL $testPath $CC_LIB_FLAGS -o "$OUT_FILE"
+    if [ $(getExtension $testPath) = "cu" ]
+    then
+        $CC_CUDA $CC_CUDA_FLAGS_LOCAL $testPath $CC_CUDA_LIB_FLAGS -o "$OUT_FILE"
+    else
+        $CC $CC_FLAGS_LOCAL $testPath $CC_LIB_FLAGS -o "$OUT_FILE"
+    fi
     compileStatus=$?
     if [ $compileStatus -eq 0 ]
     then
