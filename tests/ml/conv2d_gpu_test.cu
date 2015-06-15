@@ -126,8 +126,8 @@ void convolveTest(const tTest& t)
         u32 inputComponents = (rand() % 3) + 1;
         u32 numInputs = (rand() % 5) + 1;
 
-        u32 kernelRows = 2*(rand() % 4) + 1;
-        u32 kernelCols = 2*(rand() % 4) + 1;
+        u32 kernelRows = 2*(rand() % 3) + 3;
+        u32 kernelCols = 2*(rand() % 3) + 3;
         u32 numKernels = (rand() % 15) + 1;
 
         u32 kernelStepY = (rand() % 4) + 1;
@@ -274,8 +274,8 @@ void backpropTest(const tTest& t)
         u32 inputComponents = (rand() % 3) + 1;
         u32 numInputs = (rand() % 5) + 1;
 
-        u32 kernelRows = 2*(rand() % 4) + 1;
-        u32 kernelCols = 2*(rand() % 4) + 1;
+        u32 kernelRows = 2*(rand() % 3) + 3;
+        u32 kernelCols = 2*(rand() % 3) + 3;
         u32 numKernels = (rand() % 15) + 1;
 
         u32 kernelStepY = (rand() % 4) + 1;
@@ -440,8 +440,8 @@ void accumErrorTest(const tTest& t)
         u32 inputComponents = (rand() % 3) + 1;
         u32 numInputs = (rand() % 5) + 1;
 
-        u32 kernelRows = 2*(rand() % 4) + 1;
-        u32 kernelCols = 2*(rand() % 4) + 1;
+        u32 kernelRows = 2*(rand() % 3) + 3;
+        u32 kernelCols = 2*(rand() % 3) + 3;
         u32 numKernels = (rand() % 15) + 1;
 
         u32 kernelStepY = (rand() % 4) + 1;
