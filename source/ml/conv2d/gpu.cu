@@ -284,6 +284,10 @@ void conv2d_multi_input(
         default:
             throw eImpossiblePath();
     }
+
+    cudaError_t errSync  = cudaGetLastError();
+    if (errSync != cudaSuccess)
+        throw eRuntimeError(std::string("CUDA launch error: ") + cudaGetErrorString(errSync));
 }
 
 
