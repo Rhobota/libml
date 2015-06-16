@@ -485,9 +485,9 @@ int main()
 
     tTest("conv2d() gpu test", convolveTest);
 
-    tTest("conv2d_backprop() gpu test", backpropTest);
+    //tTest("conv2d_backprop() gpu test", backpropTest);
 
-    tTest("conv2d_accumError() gpu test", accumErrorTest);
+    //tTest("conv2d_accumError() gpu test", accumErrorTest);
 
     return 0;
 }

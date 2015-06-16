@@ -41,9 +41,10 @@ void gpu_conv2d_multi_input(
 {
     // We use shared memory so that each global memory value only must be read once!
     // Makes everything much much faster.
-    __shared__ fml input_shared[BLOCK_SIZE_Y * BLOCK_SIZE_X];
-    __shared__ fml kernel_shared[KERNEL_ROWS * KERNEL_COLS];
-    __shared__ fml bias_shared;
+    extern __shared__ fml memory_shared[];
+    fml* input_shared  = memory_shared;
+    fml* kernel_shared = input_shared  + BLOCK_SIZE_Y * BLOCK_SIZE_X;
+    fml* bias_shared   = kernel_shared + KERNEL_ROWS  * KERNEL_COLS;
 
     // Useful things to have:
     const fml* input_start  = inputPtr  + blockIdx.z * inputStride;
@@ -102,7 +103,7 @@ void gpu_conv2d_multi_input(
 
             // Grab the bias term from global memory.
             if (inputComponentIndex == 0 && threadIdx.y == 0 && threadIdx.x == 0)
-                bias_shared = kernelBiases[kernelIndex];
+                *bias_shared = kernelBiases[kernelIndex];
 
             // Don't move on until all threads have copied the values they are each responsible for.
             __syncthreads();
@@ -120,7 +121,7 @@ void gpu_conv2d_multi_input(
                                 * input_shared[(kernelRowIndex + threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_Y + (kernelColIndex + threadIdx.x - KERNEL_COLS/2)];
                     }
                 }
-                bias = bias_shared;
+                bias = *bias_shared;
             }
 
             // Don't loop back up and start messing with shared memory again until all threads are finished
@@ -180,10 +181,12 @@ void conv2d_multi_input(
     if (kernelCols != 3 && kernelCols != 5 && kernelCols != 7)
         throw eInvalidArgument("Unsupported kernelCols: must be 3, 5, or 7.");
 
+    u32 sharedMemNeeded = (BLOCK_SIZE_Y * BLOCK_SIZE_X + kernelRows * kernelCols + 1) * sizeof(fml);
+
     switch ((kernelRows * 0x10) + kernelCols)
     {
         case 0x33:
-            gpu_conv2d_multi_input<3,3><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<3,3><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
@@ -194,7 +197,7 @@ void conv2d_multi_input(
             break;
 
         case 0x35:
-            gpu_conv2d_multi_input<3,5><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<3,5><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
@@ -205,7 +208,7 @@ void conv2d_multi_input(
             break;
 
         case 0x37:
-            gpu_conv2d_multi_input<3,7><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<3,7><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
@@ -216,7 +219,7 @@ void conv2d_multi_input(
             break;
 
         case 0x53:
-            gpu_conv2d_multi_input<5,3><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<5,3><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
@@ -227,7 +230,7 @@ void conv2d_multi_input(
             break;
 
         case 0x55:
-            gpu_conv2d_multi_input<5,5><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<5,5><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
@@ -238,7 +241,7 @@ void conv2d_multi_input(
             break;
 
         case 0x57:
-            gpu_conv2d_multi_input<5,7><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<5,7><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
@@ -249,7 +252,7 @@ void conv2d_multi_input(
             break;
 
         case 0x73:
-            gpu_conv2d_multi_input<7,3><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<7,3><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
@@ -260,7 +263,7 @@ void conv2d_multi_input(
             break;
 
         case 0x75:
-            gpu_conv2d_multi_input<7,5><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<7,5><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
@@ -271,7 +274,7 @@ void conv2d_multi_input(
             break;
 
         case 0x77:
-            gpu_conv2d_multi_input<7,7><<<gridSize, blockSize>>>(
+            gpu_conv2d_multi_input<7,7><<<gridSize, blockSize, sharedMemNeeded>>>(
                 inputStride,  outputStride,
                 effectiveBlockSizeY, effectiveBlockSizeX,
                 inputPtr,  inputRows,   inputCols,   inputComponents,
