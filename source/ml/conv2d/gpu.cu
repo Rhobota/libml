@@ -52,6 +52,7 @@ gpu_conv2d_multi_input(
     outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS;
     i32 global_y = blockIdx.y * (BLOCK_SIZE_Y-KERNEL_ROWS+1) + threadIdx.y;  global_y -= KERNEL_ROWS/2;
     i32 global_x = blockIdx.x * (BLOCK_SIZE_X-KERNEL_COLS+1) + threadIdx.x;  global_x -= KERNEL_COLS/2;
+    outputPtr += global_y/kernelStepY * outputCols * NUM_KERNELS + global_x/kernelStepX * NUM_KERNELS;
 
     // All threads will help copy values into the shared memory. But not
     // all threads will be required to calculate output values. Only
@@ -129,14 +130,20 @@ gpu_conv2d_multi_input(
                     }
                 }
 
-                // The storage to the accumulator.
+                // The storage to the accumulator (or output it if we're finished).
                 if (inputComponentIndex == 0)
                 {
-                    accumulators[kernelIndex] = result + bias_shared[kernelIndex];
+                    if (INPUT_COMPONENTS == 1)
+                        outputPtr[kernelIndex] = (result + bias_shared[kernelIndex]) * scaleFactor;
+                    else
+                        accumulators[kernelIndex] = result + bias_shared[kernelIndex];
                 }
                 else
                 {
-                    accumulators[kernelIndex] += result;
+                    if (inputComponentIndex+1 < INPUT_COMPONENTS)
+                        accumulators[kernelIndex] += result;
+                    else
+                        outputPtr[kernelIndex] = (accumulators[kernelIndex] + result) * scaleFactor;
                 }
             }
         }
@@ -144,16 +151,6 @@ gpu_conv2d_multi_input(
         // Don't loop back up and start messing with shared memory again until all threads are finished
         // with the calculation above (which uses the current shared memory values).
         __syncthreads();
-    }
-
-    // Output the final results.
-    if (isOutputThread)
-    {
-        outputPtr += global_y/kernelStepY * outputCols * NUM_KERNELS + global_x/kernelStepX * NUM_KERNELS;
-        for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
-        {
-            outputPtr[kernelIndex] = accumulators[kernelIndex] * scaleFactor;
-        }
     }
 }
 
