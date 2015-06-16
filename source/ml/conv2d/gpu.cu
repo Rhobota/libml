@@ -132,11 +132,11 @@ gpu_conv2d_multi_input(
                 // The storage to the accumulator.
                 if (inputComponentIndex == 0)
                 {
-                    accumulators[kernelIndex] = (result + bias_shared[kernelIndex]) * scaleFactor;
+                    accumulators[kernelIndex] = result + bias_shared[kernelIndex];
                 }
                 else
                 {
-                    accumulators[kernelIndex] += result * scaleFactor;
+                    accumulators[kernelIndex] += result;
                 }
             }
         }
@@ -152,7 +152,7 @@ gpu_conv2d_multi_input(
         outputPtr += global_y/kernelStepY * outputCols * NUM_KERNELS + global_x/kernelStepX * NUM_KERNELS;
         for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
         {
-            outputPtr[kernelIndex] = accumulators[kernelIndex];
+            outputPtr[kernelIndex] = accumulators[kernelIndex] * scaleFactor;
         }
     }
 }
