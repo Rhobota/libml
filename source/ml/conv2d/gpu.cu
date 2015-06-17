@@ -49,9 +49,13 @@ gpu_conv2d_multi_input(
     // Useful things to have:
     inputPtr  += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS;
     outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS;
-    i32 global_y = blockIdx.y * (BLOCK_SIZE_Y-KERNEL_ROWS+1) + threadIdx.y;  global_y -= KERNEL_ROWS/2;
-    i32 global_x = blockIdx.x * (BLOCK_SIZE_X-KERNEL_COLS+1) + threadIdx.x;  global_x -= KERNEL_COLS/2;
-    outputPtr += global_y/kernelStepY * outputCols * NUM_KERNELS + global_x/kernelStepX * NUM_KERNELS;
+    u32 effectiveBlockSizeY = BLOCK_SIZE_Y-KERNEL_ROWS+1;
+    u32 effectiveBlockSizeX = BLOCK_SIZE_X-KERNEL_COLS+1;
+    u32 block_offset_y = blockIdx.y * effectiveBlockSizeY;
+    u32 block_offset_x = blockIdx.x * effectiveBlockSizeX;
+    i32 global_y = block_offset_y + threadIdx.y;  global_y -= KERNEL_ROWS/2;
+    i32 global_x = block_offset_x + threadIdx.x;  global_x -= KERNEL_COLS/2;
+    u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
 
     // All threads will help copy values into the shared memory. But not
     // all threads will be required to calculate output values. Only
@@ -60,29 +64,58 @@ gpu_conv2d_multi_input(
     //   - be inside the effective block,
     //   - be inside the input, and
     //   - be aligned to the kernel step size.
-    bool isInsideEffectiveBlock =
-                (threadIdx.y >= KERNEL_ROWS/2 && (threadIdx.y - KERNEL_ROWS/2) < (BLOCK_SIZE_Y-KERNEL_ROWS+1) &&
-                 threadIdx.x >= KERNEL_COLS/2 && (threadIdx.x - KERNEL_COLS/2) < (BLOCK_SIZE_X-KERNEL_COLS+1));
+    //
+    // EDIT: THE ABOVE IS HOW WE USED TO DO THIS. READ BELOW.
+    // Now what we do is shift down all the threads that should
+    // be calculating output values so that they're all together at
+    // the beginning of a thread block, which will group them better
+    // into warps-which-all-calculate-things vs warps-which-do-not,
+    // which will give less warp divergence, which will give us better
+    // warp utilization.
+
+    // Determine if this thread can copy input pixels or not.
     bool isInsideInput =
                 (global_y >= 0 && global_y < inputRows &&
                  global_x >= 0 && global_x < inputCols);
-    bool isAlignedToKerenlStep =
-                ((global_y % kernelStepY) == 0 &&
-                 (global_x % kernelStepX) == 0);
-    bool isOutputThread =
-                (isInsideEffectiveBlock &&
-                 isInsideInput &&
-                 isAlignedToKerenlStep);
+    inputPtr += global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
+
+    // Determine if this thread is an output thread or not.
+    bool isOutputThread;
+    u32 input_start_shift;
+    {
+        u32 max_y = block_offset_y + effectiveBlockSizeY - 1;
+        if (max_y >= inputRows)
+            max_y = inputRows - 1;
+        u32 min_y = ((block_offset_y + kernelStepY - 1) / kernelStepY) * kernelStepY;
+        u32 num_outputs_y = (max_y - min_y) / kernelStepY + 1;  // This line will break if kernelStepY is too big (>=effectiveBlockSizeY?).
+
+        u32 max_x = block_offset_x + effectiveBlockSizeX - 1;
+        if (max_x >= inputCols)
+            max_x = inputCols - 1;
+        u32 min_x = ((block_offset_x + kernelStepX - 1) / kernelStepX) * kernelStepX;
+        u32 num_outputs_x = (max_x - min_x) / kernelStepX + 1;  // This line will break if kernelStepX is too big (>=effectiveBlockSizeX?).
+
+        u32 num_total_output = num_outputs_y * num_outputs_x;
+
+        isOutputThread = linearThreadIndex < num_total_output;
+        if (isOutputThread)
+        {
+            u32 centerRow = min_y + (linearThreadIndex / num_outputs_x) * kernelStepY;
+            u32 centerCol = min_x + (linearThreadIndex % num_outputs_x) * kernelStepX;
+            outputPtr += centerRow/kernelStepY * outputCols * NUM_KERNELS + centerCol/kernelStepX * NUM_KERNELS;
+            input_start_shift = (centerRow-block_offset_y) * BLOCK_SIZE_X + (centerCol-block_offset_x);
+        }
+    }
 
     // Copy all the kernels into shared memory.
     {
         u32 sizeToCopy = KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;
-        for (u32 copyIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
+        for (u32 copyIndex = linearThreadIndex; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
         {
             kernel_shared[copyIndex] = kernelPtr[copyIndex];
         }
         sizeToCopy = NUM_KERNELS;
-        for (u32 copyIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
+        for (u32 copyIndex = linearThreadIndex; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
         {
             bias_shared[copyIndex] = kernelBiases[copyIndex];
         }
@@ -95,11 +128,11 @@ gpu_conv2d_multi_input(
         // Copy this channel into the shared memory.
         if (isInsideInput)
         {
-            input_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x] = *(inputPtr + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS + inputComponentIndex);
+            input_shared[linearThreadIndex] = inputPtr[inputComponentIndex];
         }
         else
         {
-            input_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x] = FML(0.0);
+            input_shared[linearThreadIndex] = FML(0.0);
         }
 
         // Don't move on until all threads have copied the values they are each responsible for.
@@ -111,7 +144,7 @@ gpu_conv2d_multi_input(
         // values into shared memory, and some threads are not aligned to the kernel step size.
         if (isOutputThread)
         {
-            const fml* input_start = input_shared + (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + threadIdx.x - KERNEL_COLS/2;
+            const fml* input_start = input_shared + input_start_shift;
 
             for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
             {
@@ -302,8 +335,8 @@ void conv2d_multi_input(
     switch (inputComponents)
     {
         case 1: SWITCH_NUM_KERNELS(1) break;
-//      case 2: SWITCH_NUM_KERNELS(2) break;
-//      case 3: SWITCH_NUM_KERNELS(3) break;
+        case 2: SWITCH_NUM_KERNELS(2) break;
+        case 3: SWITCH_NUM_KERNELS(3) break;
 //      case 4: SWITCH_NUM_KERNELS(4) break;
 //      case 5: SWITCH_NUM_KERNELS(5) break;
         case 6: SWITCH_NUM_KERNELS(6) break;
