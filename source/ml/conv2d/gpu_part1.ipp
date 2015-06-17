@@ -95,13 +95,13 @@ gpu_conv2d_multi_input(
         if (max_y >= inputRows)
             max_y = inputRows - 1;
         u32 min_y = ((block_offset_y + kernelStepY - 1) / kernelStepY) * kernelStepY;
-        u32 num_outputs_y = (max_y - min_y) / kernelStepY + 1;  // This line will break if kernelStepY is too big (>=effectiveBlockSizeY?).
+        u32 num_outputs_y = (max_y < min_y) ? 0 : ((max_y - min_y) / kernelStepY + 1);  // This ternary operator isn't needed when the kernelStepY is even... because min_y will equal block_offset_y, so there's no way max_y could be smaller. (Right?)
 
         u32 max_x = block_offset_x + effectiveBlockSizeX - 1;
         if (max_x >= inputCols)
             max_x = inputCols - 1;
         u32 min_x = ((block_offset_x + kernelStepX - 1) / kernelStepX) * kernelStepX;
-        u32 num_outputs_x = (max_x - min_x) / kernelStepX + 1;  // This line will break if kernelStepX is too big (>=effectiveBlockSizeX?).
+        u32 num_outputs_x = (max_x < min_x) ? 0 : ((max_x - min_x) / kernelStepX + 1);  // (See comment above. Same logic applies here.)
 
         u32 num_total_output = num_outputs_y * num_outputs_x;
 
