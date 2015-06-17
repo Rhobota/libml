@@ -47,8 +47,6 @@ gpu_conv2d_multi_input(
     __shared__ fml bias_shared  [NUM_KERNELS];
 
     // Useful things to have:
-    inputPtr  += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS;
-    outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS;
     u32 effectiveBlockSizeY = BLOCK_SIZE_Y-KERNEL_ROWS+1;
     u32 effectiveBlockSizeX = BLOCK_SIZE_X-KERNEL_COLS+1;
     u32 block_offset_y = blockIdx.y * effectiveBlockSizeY;
@@ -77,7 +75,7 @@ gpu_conv2d_multi_input(
     bool isInsideInput =
                 (global_y >= 0 && global_y < inputRows &&
                  global_x >= 0 && global_x < inputCols);
-    inputPtr += global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
+    inputPtr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
 
     // Determine if this thread is an output thread or not.
     bool isOutputThread;
@@ -98,13 +96,10 @@ gpu_conv2d_multi_input(
         u32 num_total_output = num_outputs_y * num_outputs_x;
 
         isOutputThread = linearThreadIndex < num_total_output;
-        if (isOutputThread)
-        {
-            u32 centerRow = min_y + (linearThreadIndex / num_outputs_x) * kernelStepY;
-            u32 centerCol = min_x + (linearThreadIndex % num_outputs_x) * kernelStepX;
-            outputPtr += centerRow/kernelStepY * outputCols * NUM_KERNELS + centerCol/kernelStepX * NUM_KERNELS;
-            input_start_shift = (centerRow-block_offset_y) * BLOCK_SIZE_X + (centerCol-block_offset_x);
-        }
+        u32 centerRow = min_y + (linearThreadIndex / num_outputs_x) * kernelStepY;
+        u32 centerCol = min_x + (linearThreadIndex % num_outputs_x) * kernelStepX;
+        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + centerRow/kernelStepY * outputCols * NUM_KERNELS + centerCol/kernelStepX * NUM_KERNELS;
+        input_start_shift = (centerRow-block_offset_y) * BLOCK_SIZE_X + (centerCol-block_offset_x);
     }
 
     // Copy all the kernels into shared memory.
@@ -157,8 +152,9 @@ gpu_conv2d_multi_input(
                     const fml* input_row = input_start + kernelRowIndex * BLOCK_SIZE_X;
                     for (u32 kernelColIndex = 0; kernelColIndex < KERNEL_COLS; kernelColIndex++)
                     {
-                        result += kernel_row[kernelColIndex * INPUT_COMPONENTS]
-                                * input_row[kernelColIndex];
+                        fml k = kernel_row[kernelColIndex * INPUT_COMPONENTS];
+                        fml i = input_row[kernelColIndex];
+                        result += k * i;
                     }
                 }
 
