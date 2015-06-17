@@ -1,7 +1,15 @@
 #include <ml/conv2d/gpu.h>
 
+#define ENABLE_DEVICE_FUNCTIONS
+#include "../common_nn.ipp"
+
+#define GPU_PART1_USE_TEMPLATE 0
+#include "gpu_part1.ipp"
+#undef  GPU_PART1_USE_TEMPLATE
+
 #define GPU_PART1_USE_TEMPLATE 1
 #include "gpu_part1.ipp"
+#undef  GPU_PART1_USE_TEMPLATE
 
 
 namespace ml
@@ -10,110 +18,6 @@ namespace conv2d
 {
 namespace gpu
 {
-
-
-#define SWITCH_KERNEL_DIMS(inputComponents, numKernels) \
-    switch ((kernelRows * 0x10) + kernelCols) \
-    { \
-        case 0x33: \
-            gpu_conv2d_multi_input<inputComponents, 3, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        case 0x35: \
-            gpu_conv2d_multi_input<inputComponents, 3, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        case 0x37: \
-            gpu_conv2d_multi_input<inputComponents, 3, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        case 0x53: \
-            gpu_conv2d_multi_input<inputComponents, 5, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        case 0x55: \
-            gpu_conv2d_multi_input<inputComponents, 5, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        case 0x57: \
-            gpu_conv2d_multi_input<inputComponents, 5, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        case 0x73: \
-            gpu_conv2d_multi_input<inputComponents, 7, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        case 0x75: \
-            gpu_conv2d_multi_input<inputComponents, 7, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        case 0x77: \
-            gpu_conv2d_multi_input<inputComponents, 7, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, kernelStepY, kernelStepX, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
- \
-        default: \
-            throw eImpossiblePath(); \
-    } \
-
-
-#define SWITCH_NUM_KERNELS(inputComponents) \
-    switch (numKernels) \
-    { \
-        case 1: SWITCH_KERNEL_DIMS(inputComponents, 1) break; \
-        case 2: SWITCH_KERNEL_DIMS(inputComponents, 2) break; \
-        case 3: SWITCH_KERNEL_DIMS(inputComponents, 3) break; \
-        case 4: SWITCH_KERNEL_DIMS(inputComponents, 4) break; \
-        case 5: SWITCH_KERNEL_DIMS(inputComponents, 5) break; \
-        case 6: SWITCH_KERNEL_DIMS(inputComponents, 6) break; \
-        case 7: SWITCH_KERNEL_DIMS(inputComponents, 7) break; \
-        case 8: SWITCH_KERNEL_DIMS(inputComponents, 8) break; \
-        case 9: SWITCH_KERNEL_DIMS(inputComponents, 9) break; \
-        case 10: SWITCH_KERNEL_DIMS(inputComponents, 10) break; \
-        case 11: SWITCH_KERNEL_DIMS(inputComponents, 11) break; \
-        case 12: SWITCH_KERNEL_DIMS(inputComponents, 12) break; \
-        case 13: SWITCH_KERNEL_DIMS(inputComponents, 13) break; \
-        case 14: SWITCH_KERNEL_DIMS(inputComponents, 14) break; \
-        case 15: SWITCH_KERNEL_DIMS(inputComponents, 15) break; \
-        case 16: SWITCH_KERNEL_DIMS(inputComponents, 16) break; \
-        default: \
-            throw eInvalidArgument("Unsupported numKernels"); \
-    } \
 
 
 void conv2d_multi_input(
@@ -159,27 +63,15 @@ void conv2d_multi_input(
 
     u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
 
-    switch (inputComponents)
-    {
-        case 1: SWITCH_NUM_KERNELS(1) break;
-        case 2: SWITCH_NUM_KERNELS(2) break;
-        case 3: SWITCH_NUM_KERNELS(3) break;
-//      case 4: SWITCH_NUM_KERNELS(4) break;
-//      case 5: SWITCH_NUM_KERNELS(5) break;
-        case 6: SWITCH_NUM_KERNELS(6) break;
-//      case 7: SWITCH_NUM_KERNELS(7) break;
-//      case 8: SWITCH_NUM_KERNELS(8) break;
-//      case 9: SWITCH_NUM_KERNELS(9) break;
-//      case 10: SWITCH_NUM_KERNELS(10) break;
-//      case 11: SWITCH_NUM_KERNELS(11) break;
-//      case 12: SWITCH_NUM_KERNELS(12) break;
-//      case 13: SWITCH_NUM_KERNELS(13) break;
-//      case 14: SWITCH_NUM_KERNELS(14) break;
-//      case 15: SWITCH_NUM_KERNELS(15) break;
-//      case 16: SWITCH_NUM_KERNELS(16) break;
-        default:
-            throw eInvalidArgument("Unsupported inputComponents");
-    }
+    if (numKernels > MAX_KERNELS_SUPPORTED)
+        throw eInvalidArgument("Unsupported numKernels -- too large!");
+
+    gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>(
+        inputComponents, kernelRows, kernelCols, numKernels,
+        inputPtr,  inputRows,   inputCols,
+        kernelPtr, kernelStepY, kernelStepX,
+        kernelBiases, scaleFactor,
+        outputPtr, outputRows, outputCols);
 
     cudaError_t errSync  = cudaGetLastError();
     if (errSync != cudaSuccess)

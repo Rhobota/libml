@@ -32,7 +32,7 @@ endif
 CC_CUDA := /usr/local/cuda-6.5/bin/nvcc
 CC_CUDA_FLAGS_LOCAL := $(CC_FLAGS) \
 	-g -lineinfo -O3 -Xcompiler -fvisibility=hidden -Xcompiler -Wall -Xcompiler -Wextra -Xcompiler -Werror \
-	-Xcompiler -Wswitch-default -Xcompiler -Wcast-qual -Xcompiler -Wcast-align \
+	-Xcompiler -Wswitch-default -Xcompiler -Wcast-align \
 	-Xcompiler -Wno-unused-parameter -Xcompiler -Wno-long-long -Xcompiler -Wno-sign-conversion \
 	-Xcompiler -fopenmp \
 	-D_FILE_OFFSET_BITS=64 \

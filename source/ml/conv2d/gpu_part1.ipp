@@ -1,7 +1,3 @@
-#define ENABLE_DEVICE_FUNCTIONS
-#include "../common_nn.ipp"
-
-
 /*
  * Note: CNNs has a concept of "kernel" and CUDA has a concept of "kernel". That could
  * cause confusion. In this file we will only talk about CNN kernels, and we will avoid
@@ -26,13 +22,23 @@ namespace gpu
 #define BLOCK_SIZE_X 32
 
 
+/*
+ * This def is effective only when using the non-templated version of the function below.
+ */
+#define MAX_KERNELS_SUPPORTED 100
+
+
 #if GPU_PART1_USE_TEMPLATE
 template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS>
 #endif
 __global__
 void
 __launch_bounds__(BLOCK_SIZE_Y*BLOCK_SIZE_X, 1)
+#if GPU_PART1_USE_TEMPLATE
+gpu_conv2d_multi_input_templated(
+#else
 gpu_conv2d_multi_input(
+#endif
 #if !GPU_PART1_USE_TEMPLATE
         u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS,
 #endif
@@ -121,7 +127,11 @@ gpu_conv2d_multi_input(
     }
 
     // For each component of the input, we will process it independently.
+#if GPU_PART1_USE_TEMPLATE
     fml accumulators[NUM_KERNELS];
+#else
+    fml accumulators[MAX_KERNELS_SUPPORTED];
+#endif
     for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
     {
         // Copy this channel into the shared memory.
