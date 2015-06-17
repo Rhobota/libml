@@ -121,17 +121,17 @@ void convolveTest(const tTest& t)
 {
     for (int i = 0; i < kTestIterations; i++)
     {
-        u32 inputRows = (rand() % 15) + 1;
-        u32 inputCols = (rand() % 15) + 1;
-        u32 inputComponents = (rand() % 3) + 1;
-        u32 numInputs = (rand() % 5) + 1;
+        u32 inputRows = (rand() % 100) + 1;
+        u32 inputCols = (rand() % 100) + 1;
+        u32 inputComponents = (rand() % 15) + 1;
+        u32 numInputs = (rand() % 10) + 1;
 
-        u32 kernelRows = 2*(rand() % 3) + 3;
-        u32 kernelCols = 2*(rand() % 3) + 3;
+        u32 kernelRows = 2*(rand() % 4) + 1;
+        u32 kernelCols = 2*(rand() % 4) + 1;
         u32 numKernels = (rand() % 15) + 1;
 
-        u32 kernelStepY = (rand() % 4) + 1;
-        u32 kernelStepX = (rand() % 4) + 1;
+        u32 kernelStepY = (rand() % 5) + 1;
+        u32 kernelStepX = (rand() % 5) + 1;
 
         dout << "inputRows = " << inputRows << std::endl;
         dout << "inputCols = " << inputCols << std::endl;
@@ -269,17 +269,17 @@ void backpropTest(const tTest& t)
 {
     for (int i = 0; i < kTestIterations; i++)
     {
-        u32 inputRows = (rand() % 15) + 1;
-        u32 inputCols = (rand() % 15) + 1;
-        u32 inputComponents = (rand() % 3) + 1;
-        u32 numInputs = (rand() % 5) + 1;
+        u32 inputRows = (rand() % 100) + 1;
+        u32 inputCols = (rand() % 100) + 1;
+        u32 inputComponents = (rand() % 15) + 1;
+        u32 numInputs = (rand() % 10) + 1;
 
-        u32 kernelRows = 2*(rand() % 3) + 3;
-        u32 kernelCols = 2*(rand() % 3) + 3;
+        u32 kernelRows = 2*(rand() % 4) + 1;
+        u32 kernelCols = 2*(rand() % 4) + 1;
         u32 numKernels = (rand() % 15) + 1;
 
-        u32 kernelStepY = (rand() % 4) + 1;
-        u32 kernelStepX = (rand() % 4) + 1;
+        u32 kernelStepY = (rand() % 5) + 1;
+        u32 kernelStepX = (rand() % 5) + 1;
 
         dout << "inputRows = " << inputRows << std::endl;
         dout << "inputCols = " << inputCols << std::endl;
@@ -435,17 +435,17 @@ void accumErrorTest(const tTest& t)
 {
     for (int i = 0; i < kTestIterations; i++)
     {
-        u32 inputRows = (rand() % 15) + 1;
-        u32 inputCols = (rand() % 15) + 1;
-        u32 inputComponents = (rand() % 3) + 1;
-        u32 numInputs = (rand() % 5) + 1;
+        u32 inputRows = (rand() % 100) + 1;
+        u32 inputCols = (rand() % 100) + 1;
+        u32 inputComponents = (rand() % 15) + 1;
+        u32 numInputs = (rand() % 10) + 1;
 
-        u32 kernelRows = 2*(rand() % 3) + 3;
-        u32 kernelCols = 2*(rand() % 3) + 3;
+        u32 kernelRows = 2*(rand() % 4) + 1;
+        u32 kernelCols = 2*(rand() % 4) + 1;
         u32 numKernels = (rand() % 15) + 1;
 
-        u32 kernelStepY = (rand() % 4) + 1;
-        u32 kernelStepX = (rand() % 4) + 1;
+        u32 kernelStepY = (rand() % 5) + 1;
+        u32 kernelStepX = (rand() % 5) + 1;
 
         dout << "inputRows = " << inputRows << std::endl;
         dout << "inputCols = " << inputCols << std::endl;
