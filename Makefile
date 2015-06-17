@@ -37,7 +37,7 @@ CC_CUDA_FLAGS_LOCAL := $(CC_FLAGS) \
 	-Xcompiler -fopenmp \
 	-D_FILE_OFFSET_BITS=64 \
 	-I ../librho/include \
-	-I $(INCLUDE_DIR)
+	-I $(INCLUDE_DIR)  # helpful: -Xptxas="-v"
 
 CPP_SRC_FILES = $(shell find $(SRC_DIR) -name '*.cpp' -type f)
 CPP_OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPP_SRC_FILES))

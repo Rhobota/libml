@@ -42,10 +42,9 @@ gpu_conv2d_multi_input(
     // Makes everything much much faster.
     // We will keep only one component of the input block in shared memory at a time.
     // We will keep all the components of all the kernels in shared memory at the same time though!
-    extern __shared__ fml memory_shared[];
-    fml* input_shared  = memory_shared;
-    fml* kernel_shared = input_shared  + BLOCK_SIZE_Y * BLOCK_SIZE_X;
-    fml* bias_shared   = kernel_shared + KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;
+    __shared__ fml input_shared [BLOCK_SIZE_Y * BLOCK_SIZE_X];
+    __shared__ fml kernel_shared[KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS * NUM_KERNELS];
+    __shared__ fml bias_shared  [NUM_KERNELS];
 
     // Useful things to have:
     inputPtr  += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS;
@@ -159,7 +158,7 @@ gpu_conv2d_multi_input(
     switch ((kernelRows * 0x10) + kernelCols) \
     { \
         case 0x33: \
-            gpu_conv2d_multi_input<inputComponents, 3, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 3, 3, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -167,7 +166,7 @@ gpu_conv2d_multi_input(
             break; \
  \
         case 0x35: \
-            gpu_conv2d_multi_input<inputComponents, 3, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 3, 5, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -175,7 +174,7 @@ gpu_conv2d_multi_input(
             break; \
  \
         case 0x37: \
-            gpu_conv2d_multi_input<inputComponents, 3, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 3, 7, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -183,7 +182,7 @@ gpu_conv2d_multi_input(
             break; \
  \
         case 0x53: \
-            gpu_conv2d_multi_input<inputComponents, 5, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 5, 3, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -191,7 +190,7 @@ gpu_conv2d_multi_input(
             break; \
  \
         case 0x55: \
-            gpu_conv2d_multi_input<inputComponents, 5, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 5, 5, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -199,7 +198,7 @@ gpu_conv2d_multi_input(
             break; \
  \
         case 0x57: \
-            gpu_conv2d_multi_input<inputComponents, 5, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 5, 7, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -207,7 +206,7 @@ gpu_conv2d_multi_input(
             break; \
  \
         case 0x73: \
-            gpu_conv2d_multi_input<inputComponents, 7, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 7, 3, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -215,7 +214,7 @@ gpu_conv2d_multi_input(
             break; \
  \
         case 0x75: \
-            gpu_conv2d_multi_input<inputComponents, 7, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 7, 5, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -223,7 +222,7 @@ gpu_conv2d_multi_input(
             break; \
  \
         case 0x77: \
-            gpu_conv2d_multi_input<inputComponents, 7, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input<inputComponents, 7, 7, numKernels><<<gridSize, blockSize>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -299,8 +298,6 @@ void conv2d_multi_input(
         throw eInvalidArgument("Unsupported kernelRows: must be 3, 5, or 7.");
     if (kernelCols != 3 && kernelCols != 5 && kernelCols != 7)
         throw eInvalidArgument("Unsupported kernelCols: must be 3, 5, or 7.");
-
-    u32 sharedMemNeeded = (BLOCK_SIZE_Y * BLOCK_SIZE_X + kernelRows * kernelCols * inputComponents * numKernels + numKernels) * sizeof(fml);
 
     switch (inputComponents)
     {
