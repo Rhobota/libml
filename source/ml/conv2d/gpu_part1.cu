@@ -1,5 +1,6 @@
 #include <ml/conv2d/gpu.h>
 
+#define GPU_PART1_USE_TEMPLATE 1
 #include "gpu_part1.ipp"
 
 
@@ -15,7 +16,7 @@ namespace gpu
     switch ((kernelRows * 0x10) + kernelCols) \
     { \
         case 0x33: \
-            gpu_conv2d_multi_input<inputComponents, 3, 3, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 3, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -23,7 +24,7 @@ namespace gpu
             break; \
  \
         case 0x35: \
-            gpu_conv2d_multi_input<inputComponents, 3, 5, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 3, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -31,7 +32,7 @@ namespace gpu
             break; \
  \
         case 0x37: \
-            gpu_conv2d_multi_input<inputComponents, 3, 7, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 3, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -39,7 +40,7 @@ namespace gpu
             break; \
  \
         case 0x53: \
-            gpu_conv2d_multi_input<inputComponents, 5, 3, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 5, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -47,7 +48,7 @@ namespace gpu
             break; \
  \
         case 0x55: \
-            gpu_conv2d_multi_input<inputComponents, 5, 5, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 5, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -55,7 +56,7 @@ namespace gpu
             break; \
  \
         case 0x57: \
-            gpu_conv2d_multi_input<inputComponents, 5, 7, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 5, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -63,7 +64,7 @@ namespace gpu
             break; \
  \
         case 0x73: \
-            gpu_conv2d_multi_input<inputComponents, 7, 3, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 7, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -71,7 +72,7 @@ namespace gpu
             break; \
  \
         case 0x75: \
-            gpu_conv2d_multi_input<inputComponents, 7, 5, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 7, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -79,7 +80,7 @@ namespace gpu
             break; \
  \
         case 0x77: \
-            gpu_conv2d_multi_input<inputComponents, 7, 7, numKernels><<<gridSize, blockSize>>>( \
+            gpu_conv2d_multi_input<inputComponents, 7, 7, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, kernelStepY, kernelStepX, \
                 kernelBiases, scaleFactor, \
@@ -155,6 +156,8 @@ void conv2d_multi_input(
         throw eInvalidArgument("Unsupported kernelRows: must be 3, 5, or 7.");
     if (kernelCols != 3 && kernelCols != 5 && kernelCols != 7)
         throw eInvalidArgument("Unsupported kernelCols: must be 3, 5, or 7.");
+
+    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
 
     switch (inputComponents)
     {

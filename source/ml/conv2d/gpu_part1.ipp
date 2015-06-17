@@ -26,11 +26,16 @@ namespace gpu
 #define BLOCK_SIZE_X 32
 
 
+#if GPU_PART1_USE_TEMPLATE
 template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS>
+#endif
 __global__
 void
 __launch_bounds__(BLOCK_SIZE_Y*BLOCK_SIZE_X, 1)
 gpu_conv2d_multi_input(
+#if !GPU_PART1_USE_TEMPLATE
+        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS,
+#endif
         const fml* inputPtr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr, u32 kernelStepY, u32 kernelStepX,
         const fml* kernelBiases, fml scaleFactor,
@@ -40,9 +45,10 @@ gpu_conv2d_multi_input(
     // Makes everything much much faster.
     // We will keep only one component of the input block in shared memory at a time.
     // We will keep all the components of all the kernels in shared memory at the same time though!
-    __shared__ fml input_shared [BLOCK_SIZE_Y * BLOCK_SIZE_X];
-    __shared__ fml kernel_shared[KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS * NUM_KERNELS];
-    __shared__ fml bias_shared  [NUM_KERNELS];
+    extern __shared__ fml memory_shared[];
+    fml* input_shared  = memory_shared + 0;
+    fml* kernel_shared = input_shared  + BLOCK_SIZE_Y * BLOCK_SIZE_X;
+    fml* bias_shared   = kernel_shared + KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;
 
     // Useful things to have:
     u32 effectiveBlockSizeY = BLOCK_SIZE_Y-KERNEL_ROWS+1;
