@@ -43,7 +43,7 @@ namespace gpu
     throw eRuntimeError("The fallback (aka, slow) implementation is needed to convolve this input. But we've turned off the fallback implementation, so you'll need to turn it on or (preferably) modify your code to use one of the fast implementation paths.");
 #else
 #define RUN_FALLBACK_IMPL \
-    gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
+    gpu_conv2d_multi_input_for_large_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
         inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
         inputPtr,  inputRows,   inputCols, \
         kernelPtr, \
@@ -56,14 +56,14 @@ namespace gpu
     switch ((kernelRows * 0x10) + kernelCols) \
     { \
         case 0x33: \
-            gpu_conv2d_multi_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, \
                 kernelBiases, scaleFactor, \
                 outputPtr, outputRows, outputCols); \
             break; \
         case 0x55: \
-            gpu_conv2d_multi_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+            gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \
                 kernelPtr, \
                 kernelBiases, scaleFactor, \

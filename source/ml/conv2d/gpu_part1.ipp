@@ -53,7 +53,7 @@ gpu_conv2d_multi_input(
     // We will keep all the components of all the kernels in shared memory at the same time though!
     extern __shared__ fml memory_shared[];
     fml* input_shared  = memory_shared + 0;
-    fml* kernel_shared = input_shared  + BLOCK_SIZE_Y * BLOCK_SIZE_X;
+    fml* kernel_shared = input_shared  + BLOCK_SIZE_Y * BLOCK_SIZE_X  * INPUT_COMPONENTS;
     fml* bias_shared   = kernel_shared + KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;
 
     // Useful things to have:
@@ -145,40 +145,37 @@ gpu_conv2d_multi_input(
         }
     }
 
-    // For each component of the input, we will process it independently.
-#if GPU_PART1_USE_TEMPLATE
-    fml accumulators[NUM_KERNELS];
-#else
-    fml accumulators[MAX_KERNELS_SUPPORTED];
-#endif
+    // Copy all the input of this block into shared memory.
     for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
     {
         // Copy this channel into the shared memory.
         if (isInsideInput)
         {
-            input_shared[linearThreadIndex] = inputPtr[inputComponentIndex];
+            input_shared[inputComponentIndex*BLOCK_SIZE_Y*BLOCK_SIZE_X + linearThreadIndex] = inputPtr[inputComponentIndex];
         }
         else
         {
-            input_shared[linearThreadIndex] = FML(0.0);
+            input_shared[inputComponentIndex*BLOCK_SIZE_Y*BLOCK_SIZE_X + linearThreadIndex] = FML(0.0);
         }
+    }
 
-        // Don't move on until all threads have copied the values they are each responsible for.
-        // Because we are about to use all these values in a calculation.
-        __syncthreads();
+    // Don't move on until all threads have copied the values they are each responsible for.
+    // Because we are about to use all these values in a calculation.
+    __syncthreads();
 
-        // Do the convolution of this channel, and add it to the accumulator.
-        // Not all threads have work here, because some threads exist only to copy the apron
-        // values into shared memory, and some threads are not aligned to the kernel step size.
-        if (isOutputThread)
+    // Do the convolution.
+    // Not all threads have work here, because some threads exist only to copy the apron
+    // values into shared memory, and some threads are not aligned to the kernel step size.
+    if (isOutputThread)
+    {
+        for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
         {
-            const fml* input_start = input_shared + input_start_shift;
-
-            for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
+            // The calculation.
+            fml result = bias_shared[kernelIndex];
+            for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
             {
-                // The calculation.
                 const fml* kernel_start = kernel_shared + kernelIndex * KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS + inputComponentIndex;
-                fml result = FML(0.0);
+                const fml* input_start = input_shared + input_start_shift + inputComponentIndex*BLOCK_SIZE_Y*BLOCK_SIZE_X;
                 for (u32 kernelRowIndex = 0; kernelRowIndex < KERNEL_ROWS; kernelRowIndex++)
                 {
                     const fml* kernel_row = kernel_start + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS;
@@ -190,28 +187,11 @@ gpu_conv2d_multi_input(
                         result += k * i;
                     }
                 }
-
-                // The storage to the accumulator (or output it if we're finished).
-                if (inputComponentIndex == 0)
-                {
-                    if (INPUT_COMPONENTS == 1)
-                        outputPtr[kernelIndex] = (result + bias_shared[kernelIndex]) * scaleFactor;
-                    else
-                        accumulators[kernelIndex] = result + bias_shared[kernelIndex];
-                }
-                else
-                {
-                    if (inputComponentIndex+1 < INPUT_COMPONENTS)
-                        accumulators[kernelIndex] += result;
-                    else
-                        outputPtr[kernelIndex] = (accumulators[kernelIndex] + result) * scaleFactor;
-                }
             }
-        }
 
-        // Don't loop back up and start messing with shared memory again until all threads are finished
-        // with the calculation above (which uses the current shared memory values).
-        __syncthreads();
+            // The storage.
+            outputPtr[kernelIndex] = result * scaleFactor;
+        }
     }
 }
 
