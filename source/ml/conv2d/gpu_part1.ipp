@@ -66,10 +66,10 @@ gpu_conv2d_multi_input(
     u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
 
     // Determine if this thread can copy input pixels or not.
-    bool isInsideInput =
-                (global_y >= 0 && global_y < inputRows &&
-                 global_x >= 0 && global_x < inputCols);
-    inputPtr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
+    u32 input_row_width = inputCols * INPUT_COMPONENTS;
+    i32 input_offset_y = ((i32)block_offset_y) - KERNEL_ROWS/2;
+    i32 input_offset_x = ((i32)block_offset_x) - KERNEL_COLS/2;
+    inputPtr += blockIdx.z * inputRows * input_row_width;
 
     // Determine if this thread is an output thread or not.
     bool isOutputThread;
@@ -88,11 +88,12 @@ gpu_conv2d_multi_input(
         // The drawback is that warp utilization will be less (although with a 3x3 kernel, it will be
         // minimally less).
 
-        isOutputThread = (isInsideInput &&
+        isOutputThread = (global_y >= 0 && global_y < inputRows &&
+                          global_x >= 0 && global_x < inputCols &&
                           threadIdx.x >= KERNEL_COLS/2 && threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2 &&
                           threadIdx.y >= KERNEL_ROWS/2 && threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2);
         outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
-        input_start_shift = (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
+        input_start_shift = ((threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2) * INPUT_COMPONENTS);
     }
     else
     {
@@ -128,7 +129,7 @@ gpu_conv2d_multi_input(
         u32 centerRow = min_y + (linearThreadIndex / num_outputs_x) * KERNEL_STEP_Y;
         u32 centerCol = min_x + (linearThreadIndex % num_outputs_x) * KERNEL_STEP_X;
         outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + centerRow/KERNEL_STEP_Y * outputCols * NUM_KERNELS + centerCol/KERNEL_STEP_X * NUM_KERNELS;
-        input_start_shift = (centerRow-block_offset_y) * BLOCK_SIZE_X + (centerCol-block_offset_x);
+        input_start_shift = ((centerRow-block_offset_y) * BLOCK_SIZE_X + (centerCol-block_offset_x)) * INPUT_COMPONENTS;
     }
 
     // Copy all the kernels into shared memory.
@@ -146,16 +147,19 @@ gpu_conv2d_multi_input(
     }
 
     // Copy all the input of this block into shared memory.
-    for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
     {
-        // Copy this channel into the shared memory.
-        if (isInsideInput)
+        u32 sizeToCopy = BLOCK_SIZE_Y * BLOCK_SIZE_X * INPUT_COMPONENTS;
+        for (u32 copyIndex = linearThreadIndex; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
         {
-            input_shared[inputComponentIndex*BLOCK_SIZE_Y*BLOCK_SIZE_X + linearThreadIndex] = inputPtr[inputComponentIndex];
-        }
-        else
-        {
-            input_shared[inputComponentIndex*BLOCK_SIZE_Y*BLOCK_SIZE_X + linearThreadIndex] = FML(0.0);
+            i32 componentHere = copyIndex % INPUT_COMPONENTS;
+            i32 rowHere = input_offset_y + copyIndex / (INPUT_COMPONENTS * BLOCK_SIZE_X);
+            i32 colHere = input_offset_x + (copyIndex % (INPUT_COMPONENTS * BLOCK_SIZE_X)) / INPUT_COMPONENTS;
+            fml value;
+            if (rowHere < 0 || rowHere >= inputRows || colHere < 0 || colHere >= inputCols)
+                value = FML(0.0);
+            else
+                value = inputPtr[rowHere * input_row_width + colHere * INPUT_COMPONENTS + componentHere];
+            input_shared[copyIndex] = value;
         }
     }
 
@@ -172,18 +176,20 @@ gpu_conv2d_multi_input(
         {
             // The calculation.
             fml result = bias_shared[kernelIndex];
-            for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
+            const fml* kernel_start = kernel_shared + kernelIndex * KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS;
+            const fml* input_start = input_shared + input_start_shift;
+            for (u32 kernelRowIndex = 0; kernelRowIndex < KERNEL_ROWS; kernelRowIndex++)
             {
-                const fml* kernel_start = kernel_shared + kernelIndex * KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS + inputComponentIndex;
-                const fml* input_start = input_shared + input_start_shift + inputComponentIndex*BLOCK_SIZE_Y*BLOCK_SIZE_X;
-                for (u32 kernelRowIndex = 0; kernelRowIndex < KERNEL_ROWS; kernelRowIndex++)
+                const fml* kernel_row = kernel_start + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS;
+                const fml* input_row = input_start + kernelRowIndex * BLOCK_SIZE_X * INPUT_COMPONENTS;
+                for (u32 kernelColIndex = 0; kernelColIndex < KERNEL_COLS; kernelColIndex++)
                 {
-                    const fml* kernel_row = kernel_start + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS;
-                    const fml* input_row = input_start + kernelRowIndex * BLOCK_SIZE_X;
-                    for (u32 kernelColIndex = 0; kernelColIndex < KERNEL_COLS; kernelColIndex++)
+                    const fml* kernel_col = kernel_row + kernelColIndex * INPUT_COMPONENTS;
+                    const fml* input_col = input_row + kernelColIndex * INPUT_COMPONENTS;
+                    for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
                     {
-                        fml k = kernel_row[kernelColIndex * INPUT_COMPONENTS];
-                        fml i = input_row[kernelColIndex];
+                        fml k = kernel_col[inputComponentIndex];
+                        fml i = input_col[inputComponentIndex];
                         result += k * i;
                     }
                 }
