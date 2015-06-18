@@ -29,7 +29,7 @@ namespace gpu
 
 
 #if GPU_PART1_USE_TEMPLATE
-template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS>
+template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
 #endif
 __global__
 void
@@ -40,10 +40,10 @@ gpu_conv2d_multi_input_templated(
 gpu_conv2d_multi_input(
 #endif
 #if !GPU_PART1_USE_TEMPLATE
-        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS,
+        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
 #endif
         const fml* inputPtr,  u32 inputRows,   u32 inputCols,
-        const fml* kernelPtr, u32 kernelStepY, u32 kernelStepX,
+        const fml* kernelPtr,
         const fml* kernelBiases, fml scaleFactor,
               fml* outputPtr, u32 outputRows, u32 outputCols)
 {
@@ -94,21 +94,21 @@ gpu_conv2d_multi_input(
         u32 max_y = block_offset_y + effectiveBlockSizeY - 1;
         if (max_y >= inputRows)
             max_y = inputRows - 1;
-        u32 min_y = ((block_offset_y + kernelStepY - 1) / kernelStepY) * kernelStepY;
-        u32 num_outputs_y = (max_y < min_y) ? 0 : ((max_y - min_y) / kernelStepY + 1);  // This ternary operator isn't needed when the kernelStepY is even... because min_y will equal block_offset_y, so there's no way max_y could be smaller. (Right?)
+        u32 min_y = ((block_offset_y + KERNEL_STEP_Y - 1) / KERNEL_STEP_Y) * KERNEL_STEP_Y;
+        u32 num_outputs_y = (max_y < min_y) ? 0 : ((max_y - min_y) / KERNEL_STEP_Y + 1);  // This ternary operator isn't needed when the KERNEL_STEP_Y is even... because min_y will equal block_offset_y, so there's no way max_y could be smaller. (Right?)
 
         u32 max_x = block_offset_x + effectiveBlockSizeX - 1;
         if (max_x >= inputCols)
             max_x = inputCols - 1;
-        u32 min_x = ((block_offset_x + kernelStepX - 1) / kernelStepX) * kernelStepX;
-        u32 num_outputs_x = (max_x < min_x) ? 0 : ((max_x - min_x) / kernelStepX + 1);  // (See comment above. Same logic applies here.)
+        u32 min_x = ((block_offset_x + KERNEL_STEP_X - 1) / KERNEL_STEP_X) * KERNEL_STEP_X;
+        u32 num_outputs_x = (max_x < min_x) ? 0 : ((max_x - min_x) / KERNEL_STEP_X + 1);  // (See comment above. Same logic applies here.)
 
         u32 num_total_output = num_outputs_y * num_outputs_x;
 
         isOutputThread = linearThreadIndex < num_total_output;
-        u32 centerRow = min_y + (linearThreadIndex / num_outputs_x) * kernelStepY;
-        u32 centerCol = min_x + (linearThreadIndex % num_outputs_x) * kernelStepX;
-        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + centerRow/kernelStepY * outputCols * NUM_KERNELS + centerCol/kernelStepX * NUM_KERNELS;
+        u32 centerRow = min_y + (linearThreadIndex / num_outputs_x) * KERNEL_STEP_Y;
+        u32 centerCol = min_x + (linearThreadIndex % num_outputs_x) * KERNEL_STEP_X;
+        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + centerRow/KERNEL_STEP_Y * outputCols * NUM_KERNELS + centerCol/KERNEL_STEP_X * NUM_KERNELS;
         input_start_shift = (centerRow-block_offset_y) * BLOCK_SIZE_X + (centerCol-block_offset_x);
     }
 

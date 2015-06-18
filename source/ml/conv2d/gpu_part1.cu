@@ -72,9 +72,9 @@ void conv2d_multi_input(
     u32 outputCols = (inputCols - 1) / kernelStepX + 1;
 
     gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>(
-        inputComponents, kernelRows, kernelCols, numKernels,
+        inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels,
         inputPtr,  inputRows,   inputCols,
-        kernelPtr, kernelStepY, kernelStepX,
+        kernelPtr,
         kernelBiases, scaleFactor,
         outputPtr, outputRows, outputCols);
 
