@@ -17,7 +17,7 @@
  * will output very fast code. You should turn this on for
  * production code, but turn it off to do quick test iterations.
  */
-#define COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE 0
+#define COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE 1
 
 
 /*
@@ -50,6 +50,71 @@ namespace gpu
         kernelBiases, scaleFactor, \
         outputPtr, outputRows, outputCols);
 #endif
+
+
+#define SWITCH_KERNEL_DIMS(inputComponents, kernelStepY, kernelStepX, numKernels) \
+    switch ((kernelRows * 0x10) + kernelCols) \
+    { \
+        case 0x11: \
+            gpu_conv2d_multi_input_templated<inputComponents, 1, 1, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                inputPtr,  inputRows,   inputCols, \
+                kernelPtr, \
+                kernelBiases, scaleFactor, \
+                outputPtr, outputRows, outputCols); \
+            break; \
+        case 0x33: \
+            gpu_conv2d_multi_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                inputPtr,  inputRows,   inputCols, \
+                kernelPtr, \
+                kernelBiases, scaleFactor, \
+                outputPtr, outputRows, outputCols); \
+            break; \
+        case 0x55: \
+            gpu_conv2d_multi_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                inputPtr,  inputRows,   inputCols, \
+                kernelPtr, \
+                kernelBiases, scaleFactor, \
+                outputPtr, outputRows, outputCols); \
+            break; \
+        default: \
+            RUN_FALLBACK_IMPL \
+    } \
+
+
+#define SWITCH_KERNEL_STEP(inputComponents, numKernels) \
+    switch ((kernelStepY * 0x10) + kernelStepX) \
+    { \
+        case 0x11: SWITCH_KERNEL_DIMS(inputComponents, 1, 1, numKernels)  break; \
+        case 0x22: SWITCH_KERNEL_DIMS(inputComponents, 2, 2, numKernels)  break; \
+        default: \
+            RUN_FALLBACK_IMPL \
+    } \
+
+
+#define SWITCH_NUM_KERNELS(inputComponents) \
+    switch (numKernels) \
+    { \
+        case 1: SWITCH_KERNEL_STEP(inputComponents, 1)  break; \
+        case 2: SWITCH_KERNEL_STEP(inputComponents, 2)  break; \
+        case 3: SWITCH_KERNEL_STEP(inputComponents, 3)  break; \
+        case 4: SWITCH_KERNEL_STEP(inputComponents, 4)  break; \
+        case 5: SWITCH_KERNEL_STEP(inputComponents, 5)  break; \
+        case 6: SWITCH_KERNEL_STEP(inputComponents, 6)  break; \
+        case 7: SWITCH_KERNEL_STEP(inputComponents, 7)  break; \
+        case 8: SWITCH_KERNEL_STEP(inputComponents, 8)  break; \
+        case 9: SWITCH_KERNEL_STEP(inputComponents, 9)  break; \
+        case 10: SWITCH_KERNEL_STEP(inputComponents, 10)  break; \
+        case 15: SWITCH_KERNEL_STEP(inputComponents, 15)  break; \
+        case 16: SWITCH_KERNEL_STEP(inputComponents, 16)  break; \
+        case 20: SWITCH_KERNEL_STEP(inputComponents, 20)  break; \
+        case 25: SWITCH_KERNEL_STEP(inputComponents, 25)  break; \
+        case 32: SWITCH_KERNEL_STEP(inputComponents, 32)  break; \
+        case 50: SWITCH_KERNEL_STEP(inputComponents, 50)  break; \
+        case 64: SWITCH_KERNEL_STEP(inputComponents, 64)  break; \
+        case 100: SWITCH_KERNEL_STEP(inputComponents, 100)  break; \
+        default: \
+            RUN_FALLBACK_IMPL \
+    } \
 
 
 void conv2d_multi_input(
@@ -104,7 +169,29 @@ void conv2d_multi_input(
     u32 outputCols = (inputCols - 1) / kernelStepX + 1;
 
 #if COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE
-    dasfasdfasdf;
+    switch (inputComponents)
+    {
+        case 1: SWITCH_NUM_KERNELS(1)  break;
+        case 2: SWITCH_NUM_KERNELS(2)  break;
+        case 3: SWITCH_NUM_KERNELS(3)  break;
+        case 4: SWITCH_NUM_KERNELS(4)  break;
+        case 5: SWITCH_NUM_KERNELS(5)  break;
+        case 6: SWITCH_NUM_KERNELS(6)  break;
+        case 7: SWITCH_NUM_KERNELS(7)  break;
+        case 8: SWITCH_NUM_KERNELS(8)  break;
+        case 9: SWITCH_NUM_KERNELS(9)  break;
+        case 10: SWITCH_NUM_KERNELS(10)  break;
+        case 15: SWITCH_NUM_KERNELS(15)  break;
+        case 16: SWITCH_NUM_KERNELS(16)  break;
+        case 20: SWITCH_NUM_KERNELS(20)  break;
+        case 25: SWITCH_NUM_KERNELS(25)  break;
+        case 32: SWITCH_NUM_KERNELS(32)  break;
+        case 50: SWITCH_NUM_KERNELS(50)  break;
+        case 64: SWITCH_NUM_KERNELS(64)  break;
+        case 100: SWITCH_NUM_KERNELS(100)  break;
+        default:
+            RUN_FALLBACK_IMPL
+    }
 #else
     RUN_FALLBACK_IMPL
 #endif
