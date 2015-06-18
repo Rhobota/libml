@@ -65,22 +65,6 @@ gpu_conv2d_multi_input(
     i32 global_x = block_offset_x + threadIdx.x;  global_x -= KERNEL_COLS/2;
     u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
 
-    // All threads will help copy values into the shared memory. But not
-    // all threads will be required to calculate output values. Only
-    // threads that have all the following attributes will be required
-    // to calculate output values:
-    //   - be inside the effective block,
-    //   - be inside the input, and
-    //   - be aligned to the kernel step size.
-    //
-    // EDIT: THE ABOVE IS HOW WE USED TO DO THIS. READ BELOW.
-    // Now what we do is shift down all the threads that should
-    // be calculating output values so that they're all together at
-    // the beginning of a thread block, which will group them better
-    // into warps-which-all-calculate-things vs warps-which-do-not,
-    // which will give less warp divergence, which will give us better
-    // warp utilization.
-
     // Determine if this thread can copy input pixels or not.
     bool isInsideInput =
                 (global_y >= 0 && global_y < inputRows &&
@@ -90,7 +74,35 @@ gpu_conv2d_multi_input(
     // Determine if this thread is an output thread or not.
     bool isOutputThread;
     u32 input_start_shift;
+    if (KERNEL_STEP_Y == 1 && KERNEL_STEP_X == 1)
     {
+        // All threads will help copy values into the shared memory. But not
+        // all threads will be required to calculate output values. Only
+        // threads that have all the following attributes will be required
+        // to calculate output values:
+        //   - be inside the effective block,
+        //   - be inside the input, and
+        //   - be aligned to the kernel step size.  (<-- which all are because we know the step size is 1 here)
+
+        isOutputThread = (isInsideInput &&
+                          threadIdx.x >= KERNEL_COLS/2 && threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2 &&
+                          threadIdx.y >= KERNEL_ROWS/2 && threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2);
+        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
+        input_start_shift = (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
+    }
+    else
+    {
+        // When the step size is not 1, a smaller percentage of threads
+        // will be output threads. This is not good because the warp utilization
+        // will go down (because the warp divergence will go up), thus we won't
+        // get much of a speedup over the case when the step sizes are 1.
+        // So, what we do in this case is shift down all the threads that should
+        // be calculating output values so that they're all together at
+        // the beginning of a thread block, which will group them better
+        // into warps-which-all-calculate-things vs warps-which-do-not,
+        // which will give less warp divergence, which will give us better
+        // warp utilization, which will make everything go faster on the GPU.
+
         u32 max_y = block_offset_y + effectiveBlockSizeY - 1;
         if (max_y >= inputRows)
             max_y = inputRows - 1;

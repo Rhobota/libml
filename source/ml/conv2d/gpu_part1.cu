@@ -27,7 +27,7 @@
  * code uses the fast templated versions of the function
  * instead of the fallback.
  */
-#define THROW_IF_FALLBACK_IMPL_NEEDED 0
+#define THROW_IF_FALLBACK_IMPL_NEEDED 1
 
 
 namespace ml
@@ -40,7 +40,7 @@ namespace gpu
 
 #if THROW_IF_FALLBACK_IMPL_NEEDED
 #define RUN_FALLBACK_IMPL \
-    throw eRuntimeError("Fallback impl of gpu_part1 needed, but we refuse to run it!");
+    throw eRuntimeError("The fallback (aka, slow) implementation is needed to convolve this input. But we've turned off the fallback implementation, so you'll need to turn it on or (preferably) modify your code to use one of the fast implementation paths.");
 #else
 #define RUN_FALLBACK_IMPL \
     gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
