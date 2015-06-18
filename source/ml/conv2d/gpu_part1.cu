@@ -35,13 +35,21 @@ void conv2d_multi_input(
     assert(kernelBiases);
     assert(outputPtr);
 
+    if (kernelRows != 1 && kernelRows != 3 && kernelRows != 5 && kernelRows != 7)
+        throw eInvalidArgument("Unsupported kernelRows: must be 1, 3, 5, or 7.");
+    if (kernelCols != 1 && kernelCols != 3 && kernelCols != 5 && kernelCols != 7)
+        throw eInvalidArgument("Unsupported kernelCols: must be 1, 3, 5, or 7.");
+
+    if (kernelStepY > 5)
+        throw eInvalidArgument("Unsupported kernelStepY: must be in [1,5].");
+    if (kernelStepX > 5)
+        throw eInvalidArgument("Unsupported kernelStepX: must be in [1,5].");
+
+    if (numKernels > MAX_KERNELS_SUPPORTED)
+        throw eInvalidArgument("Unsupported numKernels: you specified too many!");
+
     u32 kernelRadiusY = kernelRows / 2;
     u32 kernelRadiusX = kernelCols / 2;
-
-    dim3 blockSize;
-    blockSize.x = BLOCK_SIZE_X;
-    blockSize.y = BLOCK_SIZE_Y;
-    blockSize.z = 1;
 
     u32 effectiveBlockSizeY = BLOCK_SIZE_Y - 2*kernelRadiusY;  // Each block of threads will fill
     u32 effectiveBlockSizeX = BLOCK_SIZE_X - 2*kernelRadiusX;  // a smaller block of output, because we need
@@ -53,18 +61,15 @@ void conv2d_multi_input(
     gridSize.y = (inputRows-1) / effectiveBlockSizeY + 1;
     gridSize.z = inputCount;
 
-    u32 outputRows = (inputRows - 1) / kernelStepY + 1;
-    u32 outputCols = (inputCols - 1) / kernelStepX + 1;
-
-    if (kernelRows != 3 && kernelRows != 5 && kernelRows != 7)
-        throw eInvalidArgument("Unsupported kernelRows: must be 3, 5, or 7.");
-    if (kernelCols != 3 && kernelCols != 5 && kernelCols != 7)
-        throw eInvalidArgument("Unsupported kernelCols: must be 3, 5, or 7.");
+    dim3 blockSize;
+    blockSize.x = BLOCK_SIZE_X;
+    blockSize.y = BLOCK_SIZE_Y;
+    blockSize.z = 1;
 
     u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
 
-    if (numKernels > MAX_KERNELS_SUPPORTED)
-        throw eInvalidArgument("Unsupported numKernels -- too large!");
+    u32 outputRows = (inputRows - 1) / kernelStepY + 1;
+    u32 outputCols = (inputCols - 1) / kernelStepX + 1;
 
     gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>(
         inputComponents, kernelRows, kernelCols, numKernels,
