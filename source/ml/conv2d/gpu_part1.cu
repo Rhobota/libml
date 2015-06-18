@@ -27,7 +27,7 @@
  * code uses the fast templated versions of the function
  * instead of the fallback.
  */
-#define THROW_IF_FALLBACK_IMPL_NEEDED 1
+#define THROW_IF_FALLBACK_IMPL_NEEDED 0
 
 
 namespace ml
@@ -55,13 +55,6 @@ namespace gpu
 #define SWITCH_KERNEL_DIMS(inputComponents, kernelStepY, kernelStepX, numKernels) \
     switch ((kernelRows * 0x10) + kernelCols) \
     { \
-        case 0x11: \
-            gpu_conv2d_multi_input_templated<inputComponents, 1, 1, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
-            break; \
         case 0x33: \
             gpu_conv2d_multi_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                 inputPtr,  inputRows,   inputCols, \

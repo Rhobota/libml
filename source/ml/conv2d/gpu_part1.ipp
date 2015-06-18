@@ -74,7 +74,7 @@ gpu_conv2d_multi_input(
     // Determine if this thread is an output thread or not.
     bool isOutputThread;
     u32 input_start_shift;
-    if (KERNEL_STEP_Y == 1 && KERNEL_STEP_X == 1)
+    if (KERNEL_STEP_Y == 1 && KERNEL_STEP_X == 1 && KERNEL_ROWS <= 3 && KERNEL_COLS <= 3)
     {
         // All threads will help copy values into the shared memory. But not
         // all threads will be required to calculate output values. Only
@@ -83,6 +83,10 @@ gpu_conv2d_multi_input(
         //   - be inside the effective block,
         //   - be inside the input, and
         //   - be aligned to the kernel step size.  (<-- which all are because we know the step size is 1 here)
+        //
+        // The benefit of this branch is that the accesses to shared memory will be more coalesced.
+        // The drawback is that warp utilization will be less (although with a 3x3 kernel, it will be
+        // minimally less).
 
         isOutputThread = (isInsideInput &&
                           threadIdx.x >= KERNEL_COLS/2 && threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2 &&
@@ -102,6 +106,9 @@ gpu_conv2d_multi_input(
         // into warps-which-all-calculate-things vs warps-which-do-not,
         // which will give less warp divergence, which will give us better
         // warp utilization, which will make everything go faster on the GPU.
+        //
+        // The benefit of this branch is that warp utilization will be higher.
+        // The drawback is that access to shared memory will be less coalesced.
 
         u32 max_y = block_offset_y + effectiveBlockSizeY - 1;
         if (max_y >= inputRows)
