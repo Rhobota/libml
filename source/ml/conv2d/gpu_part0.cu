@@ -1,7 +1,6 @@
 #include <ml/conv2d/gpu.h>
 
-#define ENABLE_DEVICE_FUNCTIONS
-#include "../common_nn.ipp"
+#include "../cuda_stuff.ipp"
 
 
 namespace ml

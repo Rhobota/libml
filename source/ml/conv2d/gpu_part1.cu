@@ -1,7 +1,6 @@
 #include <ml/conv2d/gpu.h>
 
-#define ENABLE_DEVICE_FUNCTIONS
-#include "../common_nn.ipp"
+#include "../cuda_stuff.ipp"
 
 #define GPU_PART1_USE_TEMPLATE 0
 #include "gpu_part1.ipp"
@@ -43,12 +42,24 @@ namespace gpu
     throw eRuntimeError("The fallback (aka, slow) implementation is needed to convolve this input. But we've turned off the fallback implementation, so you'll need to turn it on or (preferably) modify your code to use one of the fast implementation paths.");
 #else
 #define RUN_FALLBACK_IMPL \
-    gpu_conv2d_multi_input_for_large_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
-        inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
-        inputPtr,  inputRows,   inputCols, \
-        kernelPtr, \
-        kernelBiases, scaleFactor, \
-        outputPtr, outputRows, outputCols);
+    if (canUseFastImpl) \
+    { \
+        gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
+            inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
+            inputPtr,  inputRows,   inputCols, \
+            kernelPtr, \
+            kernelBiases, scaleFactor, \
+            outputPtr, outputRows, outputCols); \
+    } \
+    else \
+    { \
+        gpu_conv2d_multi_input_for_large_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
+            inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
+            inputPtr,  inputRows,   inputCols, \
+            kernelPtr, \
+            kernelBiases, scaleFactor, \
+            outputPtr, outputRows, outputCols); \
+    }
 #endif
 
 
@@ -56,19 +67,45 @@ namespace gpu
     switch ((kernelRows * 0x10) + kernelCols) \
     { \
         case 0x33: \
-            gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
+        { \
+            if (canUseFastImpl) \
+            { \
+                gpu_conv2d_multi_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                    inputPtr,  inputRows,   inputCols, \
+                    kernelPtr, \
+                    kernelBiases, scaleFactor, \
+                    outputPtr, outputRows, outputCols); \
+            } \
+            else \
+            { \
+                gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                    inputPtr,  inputRows,   inputCols, \
+                    kernelPtr, \
+                    kernelBiases, scaleFactor, \
+                    outputPtr, outputRows, outputCols); \
+            } \
             break; \
+        } \
         case 0x55: \
-            gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                inputPtr,  inputRows,   inputCols, \
-                kernelPtr, \
-                kernelBiases, scaleFactor, \
-                outputPtr, outputRows, outputCols); \
+        { \
+            if (canUseFastImpl) \
+            { \
+                gpu_conv2d_multi_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                    inputPtr,  inputRows,   inputCols, \
+                    kernelPtr, \
+                    kernelBiases, scaleFactor, \
+                    outputPtr, outputRows, outputCols); \
+            } \
+            else \
+            { \
+                gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                    inputPtr,  inputRows,   inputCols, \
+                    kernelPtr, \
+                    kernelBiases, scaleFactor, \
+                    outputPtr, outputRows, outputCols); \
+            } \
             break; \
+        } \
         default: \
             RUN_FALLBACK_IMPL \
     } \
@@ -156,7 +193,13 @@ void conv2d_multi_input(
     blockSize.y = BLOCK_SIZE_Y;
     blockSize.z = 1;
 
-    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
+    bool canUseFastImpl = true;
+    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
+    if (sharedMemNeeded > SHARED_MEM_AVAIL_PER_BLOCK)
+    {
+        canUseFastImpl = false;
+        sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
+    }
 
     u32 outputRows = (inputRows - 1) / kernelStepY + 1;
     u32 outputCols = (inputCols - 1) / kernelStepX + 1;

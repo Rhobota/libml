@@ -1,7 +1,6 @@
 #include <ml/tLayeredLearnerGPU.h>
 
-#define ENABLE_DEVICE_FUNCTIONS
-#include "common_nn.ipp"
+#include "cuda_stuff.ipp"
 
 #include <cassert>
 #include <iostream>
