@@ -12,12 +12,44 @@
 #undef  GPU_PART1_USE_TEMPLATE
 
 
+/*
+ * If defined, this file will take a long time to compile, but
+ * will output very fast code. You should turn this on for
+ * production code, but turn it off to do quick test iterations.
+ */
+#define COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE 0
+
+
+/*
+ * If defined, this code will refuse to run the fallback
+ * implementation, which is a very slow implementation.
+ * This is nice to turn on if you want to be sure your
+ * code uses the fast templated versions of the function
+ * instead of the fallback.
+ */
+#define THROW_IF_FALLBACK_IMPL_NEEDED 0
+
+
 namespace ml
 {
 namespace conv2d
 {
 namespace gpu
 {
+
+
+#if THROW_IF_FALLBACK_IMPL_NEEDED
+#define RUN_FALLBACK_IMPL \
+    throw eRuntimeError("Fallback impl of gpu_part1 needed, but we refuse to run it!");
+#else
+#define RUN_FALLBACK_IMPL \
+    gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
+        inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
+        inputPtr,  inputRows,   inputCols, \
+        kernelPtr, \
+        kernelBiases, scaleFactor, \
+        outputPtr, outputRows, outputCols);
+#endif
 
 
 void conv2d_multi_input(
@@ -71,12 +103,11 @@ void conv2d_multi_input(
     u32 outputRows = (inputRows - 1) / kernelStepY + 1;
     u32 outputCols = (inputCols - 1) / kernelStepX + 1;
 
-    gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>(
-        inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels,
-        inputPtr,  inputRows,   inputCols,
-        kernelPtr,
-        kernelBiases, scaleFactor,
-        outputPtr, outputRows, outputCols);
+#if COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE
+    dasfasdfasdf;
+#else
+    RUN_FALLBACK_IMPL
+#endif
 
     cudaError_t errSync  = cudaGetLastError();
     if (errSync != cudaSuccess)
