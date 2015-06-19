@@ -10,7 +10,7 @@
 #include <cassert>
 
 
-#define SHARED_MEM_AVAIL_PER_BLOCK 49152
+#define SHARED_MEM_AVAIL_PER_SM 49152
 
 
 #define cuda_assert(expression) \

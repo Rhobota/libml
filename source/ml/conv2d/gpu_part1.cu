@@ -16,7 +16,7 @@
  * will output very fast code. You should turn this on for
  * production code, but turn it off to do quick test iterations.
  */
-#define COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE 0
+#define COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE 1
 
 
 /*
@@ -195,7 +195,7 @@ void conv2d_multi_input(
 
     bool canUseFastImpl = true;
     u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
-    if (sharedMemNeeded > SHARED_MEM_AVAIL_PER_BLOCK)
+    if (sharedMemNeeded * DESIRED_BLOCKS_PER_SM > SHARED_MEM_AVAIL_PER_SM)
     {
         canUseFastImpl = false;
         sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
