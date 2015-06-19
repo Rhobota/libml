@@ -20,6 +20,7 @@ namespace gpu
  */
 #define BLOCK_SIZE_Y 32
 #define BLOCK_SIZE_X 32
+#define DESIRED_BLOCKS_PER_SM 1
 
 
 /*
@@ -33,7 +34,7 @@ template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STE
 #endif
 __global__
 void
-__launch_bounds__(BLOCK_SIZE_Y*BLOCK_SIZE_X, 1)
+__launch_bounds__(BLOCK_SIZE_Y*BLOCK_SIZE_X, DESIRED_BLOCKS_PER_SM)
 #if GPU_PART1_USE_TEMPLATE
 gpu_conv2d_multi_input_templated(
 #else
@@ -91,8 +92,9 @@ gpu_conv2d_multi_input(
         isOutputThread = (global_y >= 0 && global_y < inputRows &&
                           global_x >= 0 && global_x < inputCols &&
                           threadIdx.x >= KERNEL_COLS/2 && threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2 &&
-                          threadIdx.y >= KERNEL_ROWS/2 && threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2);
-        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
+                          threadIdx.y >= KERNEL_ROWS/2 && threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2 &&
+                          (global_y % KERNEL_STEP_Y) == 0 && (global_x % KERNEL_STEP_X) == 0);
+        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y/KERNEL_STEP_Y * outputCols * NUM_KERNELS + global_x/KERNEL_STEP_X * NUM_KERNELS;
         input_start_shift = ((threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2)) * INPUT_COMPONENTS;
     }
     else
@@ -207,7 +209,7 @@ template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STE
 #endif
 __global__
 void
-__launch_bounds__(BLOCK_SIZE_Y*BLOCK_SIZE_X, 1)
+__launch_bounds__(BLOCK_SIZE_Y*BLOCK_SIZE_X, DESIRED_BLOCKS_PER_SM)
 #if GPU_PART1_USE_TEMPLATE
 gpu_conv2d_multi_input_for_large_input_templated(
 #else
@@ -264,8 +266,9 @@ gpu_conv2d_multi_input_for_large_input(
 
         isOutputThread = (isInsideInput &&
                           threadIdx.x >= KERNEL_COLS/2 && threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2 &&
-                          threadIdx.y >= KERNEL_ROWS/2 && threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2);
-        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
+                          threadIdx.y >= KERNEL_ROWS/2 && threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2 &&
+                          (global_y % KERNEL_STEP_Y) == 0 && (global_x % KERNEL_STEP_X) == 0);
+        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y/KERNEL_STEP_Y * outputCols * NUM_KERNELS + global_x/KERNEL_STEP_X * NUM_KERNELS;
         input_start_shift = (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
     }
     else
