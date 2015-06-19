@@ -124,24 +124,11 @@ namespace gpu
 #define SWITCH_NUM_KERNELS(inputComponents) \
     switch (numKernels) \
     { \
-        case 1: SWITCH_KERNEL_STEP(inputComponents, 1)  break; \
-        case 2: SWITCH_KERNEL_STEP(inputComponents, 2)  break; \
-        case 3: SWITCH_KERNEL_STEP(inputComponents, 3)  break; \
         case 4: SWITCH_KERNEL_STEP(inputComponents, 4)  break; \
-        case 5: SWITCH_KERNEL_STEP(inputComponents, 5)  break; \
-        case 6: SWITCH_KERNEL_STEP(inputComponents, 6)  break; \
-        case 7: SWITCH_KERNEL_STEP(inputComponents, 7)  break; \
         case 8: SWITCH_KERNEL_STEP(inputComponents, 8)  break; \
-        case 9: SWITCH_KERNEL_STEP(inputComponents, 9)  break; \
-        case 10: SWITCH_KERNEL_STEP(inputComponents, 10)  break; \
-        case 15: SWITCH_KERNEL_STEP(inputComponents, 15)  break; \
         case 16: SWITCH_KERNEL_STEP(inputComponents, 16)  break; \
-        case 20: SWITCH_KERNEL_STEP(inputComponents, 20)  break; \
-        case 25: SWITCH_KERNEL_STEP(inputComponents, 25)  break; \
         case 32: SWITCH_KERNEL_STEP(inputComponents, 32)  break; \
-        case 50: SWITCH_KERNEL_STEP(inputComponents, 50)  break; \
         case 64: SWITCH_KERNEL_STEP(inputComponents, 64)  break; \
-        case 100: SWITCH_KERNEL_STEP(inputComponents, 100)  break; \
         default: \
             RUN_FALLBACK_IMPL \
     } \
@@ -215,16 +202,9 @@ void conv2d_multi_input(
         case 6: SWITCH_NUM_KERNELS(6)  break;
         case 7: SWITCH_NUM_KERNELS(7)  break;
         case 8: SWITCH_NUM_KERNELS(8)  break;
-        case 9: SWITCH_NUM_KERNELS(9)  break;
-        case 10: SWITCH_NUM_KERNELS(10)  break;
-        case 15: SWITCH_NUM_KERNELS(15)  break;
         case 16: SWITCH_NUM_KERNELS(16)  break;
-        case 20: SWITCH_NUM_KERNELS(20)  break;
-        case 25: SWITCH_NUM_KERNELS(25)  break;
         case 32: SWITCH_NUM_KERNELS(32)  break;
-        case 50: SWITCH_NUM_KERNELS(50)  break;
         case 64: SWITCH_NUM_KERNELS(64)  break;
-        case 100: SWITCH_NUM_KERNELS(100)  break;
         default:
             RUN_FALLBACK_IMPL
     }
