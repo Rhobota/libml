@@ -93,7 +93,7 @@ gpu_conv2d_multi_input(
                           threadIdx.x >= KERNEL_COLS/2 && threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2 &&
                           threadIdx.y >= KERNEL_ROWS/2 && threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2);
         outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
-        input_start_shift = ((threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2) * INPUT_COMPONENTS);
+        input_start_shift = ((threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2)) * INPUT_COMPONENTS;
     }
     else
     {
