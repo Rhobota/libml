@@ -63,7 +63,7 @@ gpu_conv2d_multi_input(
 #if !GPU_PART1_USE_TEMPLATE
         u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
 #endif
-        const fml* inputPtr,  u32 inputRows,   u32 inputCols,  u32 inputsPerBlock,
+        const fml* inputPtr,  u32 inputRows,   u32 inputCols,  u32 inputsPerBlock,  u32 inputCount,
         const fml* kernelPtr,
         const fml* kernelBiases, fml scaleFactor,
               fml* outputPtr, u32 outputRows, u32 outputCols)
@@ -123,7 +123,7 @@ gpu_conv2d_multi_input(
     }
 
     // For every input that needs processing:
-    for (u32 inputIndex = 0; inputIndex < inputsPerBlock; inputIndex++)
+    for (u32 inputIndex = 0, inputIndex2 = blockIdx.z * inputsPerBlock; inputIndex < inputsPerBlock && inputIndex2 < inputCount; inputIndex++, inputIndex2++)
     {
         // Copy all the input of this block into shared memory.
         {
@@ -201,7 +201,7 @@ gpu_conv2d_multi_input_for_large_input(
 #if !GPU_PART1_USE_TEMPLATE
         u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
 #endif
-        const fml* inputPtr,  u32 inputRows,   u32 inputCols,  u32 inputsPerBlock,
+        const fml* inputPtr,  u32 inputRows,   u32 inputCols,  u32 inputsPerBlock,  u32 inputCount,
         const fml* kernelPtr,
         const fml* kernelBiases, fml scaleFactor,
               fml* outputPtr, u32 outputRows, u32 outputCols)
@@ -266,7 +266,7 @@ gpu_conv2d_multi_input_for_large_input(
 #else
     fml accumulators[MAX_KERNELS_SUPPORTED];
 #endif
-    for (u32 inputIndex = 0; inputIndex < inputsPerBlock; inputIndex++)
+    for (u32 inputIndex = 0, inputIndex2 = blockIdx.z * inputsPerBlock; inputIndex < inputsPerBlock && inputIndex2 < inputCount; inputIndex++, inputIndex2++)
     {
         #pragma unroll
         for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
