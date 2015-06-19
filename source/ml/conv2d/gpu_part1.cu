@@ -46,7 +46,7 @@ namespace gpu
     { \
         gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
             inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
-            inputPtr,  inputRows,   inputCols, \
+            inputPtr,  inputRows,   inputCols,  inputsPerBlock, \
             kernelPtr, \
             kernelBiases, scaleFactor, \
             outputPtr, outputRows, outputCols); \
@@ -55,7 +55,7 @@ namespace gpu
     { \
         gpu_conv2d_multi_input_for_large_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
             inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
-            inputPtr,  inputRows,   inputCols, \
+            inputPtr,  inputRows,   inputCols,  inputsPerBlock, \
             kernelPtr, \
             kernelBiases, scaleFactor, \
             outputPtr, outputRows, outputCols); \
@@ -71,7 +71,7 @@ namespace gpu
             if (canUseFastImpl) \
             { \
                 gpu_conv2d_multi_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                    inputPtr,  inputRows,   inputCols, \
+                    inputPtr,  inputRows,   inputCols,  inputsPerBlock, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
                     outputPtr, outputRows, outputCols); \
@@ -79,7 +79,7 @@ namespace gpu
             else \
             { \
                 gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                    inputPtr,  inputRows,   inputCols, \
+                    inputPtr,  inputRows,   inputCols,  inputsPerBlock, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
                     outputPtr, outputRows, outputCols); \
@@ -91,7 +91,7 @@ namespace gpu
             if (canUseFastImpl) \
             { \
                 gpu_conv2d_multi_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                    inputPtr,  inputRows,   inputCols, \
+                    inputPtr,  inputRows,   inputCols,  inputsPerBlock, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
                     outputPtr, outputRows, outputCols); \
@@ -99,7 +99,7 @@ namespace gpu
             else \
             { \
                 gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                    inputPtr,  inputRows,   inputCols, \
+                    inputPtr,  inputRows,   inputCols,  inputsPerBlock, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
                     outputPtr, outputRows, outputCols); \
@@ -162,6 +162,11 @@ void conv2d_multi_input(
     if (numKernels > MAX_KERNELS_SUPPORTED)
         throw eInvalidArgument("Unsupported numKernels: you specified too many!");
 
+    if ((inputCount % NUM_AVAIL_SM) != 0)
+        throw eInvalidArgument("Unsupported inputCount: must be a multiple of the number of available SMs");
+
+    u32 inputsPerBlock = inputCount / NUM_AVAIL_SM;
+
     u32 kernelRadiusY = kernelRows / 2;
     u32 kernelRadiusX = kernelCols / 2;
 
@@ -173,7 +178,7 @@ void conv2d_multi_input(
     dim3 gridSize;
     gridSize.x = (inputCols-1) / effectiveBlockSizeX + 1;
     gridSize.y = (inputRows-1) / effectiveBlockSizeY + 1;
-    gridSize.z = inputCount;
+    gridSize.z = NUM_AVAIL_SM;
 
     dim3 blockSize;
     blockSize.x = BLOCK_SIZE_X;
