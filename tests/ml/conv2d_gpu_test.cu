@@ -278,8 +278,8 @@ void backpropTest(const tTest& t)
         u32 kernelCols = 2*(rand() % 4) + 1;
         u32 numKernels = (rand() % 15) + 1;
 
-        u32 kernelStepY = (rand() % 5) + 1;
-        u32 kernelStepX = (rand() % 5) + 1;
+        u32 kernelStepY = 1;  // the GPU version of backprop() only supports step sizes of 1 for the kernel
+        u32 kernelStepX = 1;  // ...
 
         dout << "inputRows = " << inputRows << std::endl;
         dout << "inputCols = " << inputCols << std::endl;

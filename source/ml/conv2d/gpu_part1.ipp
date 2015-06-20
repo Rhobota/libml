@@ -49,6 +49,19 @@ namespace gpu
 #define MAX_KERNELS_SUPPORTED 100
 
 
+/*
+ * With just the flip of this switch you can convolve with the normal kernel (the default) or
+ * you can convolved with the flipped kernel (flipped horizontally and vertically).
+ */
+#if CONVOLVE_WITH_FLIPPED_KERNEL
+    #define CONVERT_KERNEL_ROW_INDEX(x) (KERNEL_ROWS-(x)-1)
+    #define CONVERT_KERNEL_COL_INDEX(x) (KERNEL_COLS-(x)-1)
+#else
+    #define CONVERT_KERNEL_ROW_INDEX(x) (x)
+    #define CONVERT_KERNEL_COL_INDEX(x) (x)
+#endif
+
+
 #if GPU_PART1_USE_TEMPLATE
 template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
 #endif
@@ -155,11 +168,11 @@ gpu_conv2d_multi_input(
                 const fml* input_start = input_shared + input_start_offset + inputComponentIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X;
                 for (u32 kernelRowIndex = 0; kernelRowIndex < KERNEL_ROWS; kernelRowIndex++)
                 {
-                    const fml* kernel_row = kernel_start + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS;
+                    const fml* kernel_row = kernel_start + CONVERT_KERNEL_ROW_INDEX(kernelRowIndex) * KERNEL_COLS * INPUT_COMPONENTS;
                     const fml* input_row = input_start + kernelRowIndex * BLOCK_SIZE_X;
                     for (u32 kernelColIndex = 0; kernelColIndex < KERNEL_COLS; kernelColIndex++)
                     {
-                        fml k = kernel_row[kernelColIndex * INPUT_COMPONENTS];
+                        fml k = kernel_row[CONVERT_KERNEL_COL_INDEX(kernelColIndex) * INPUT_COMPONENTS];
                         fml i = input_row[kernelColIndex];
                         result += k * i;
                     }
@@ -281,11 +294,11 @@ gpu_conv2d_multi_input_for_large_input(
                 const fml* kernel_start = kernel_shared + kernelIndex * KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS + inputComponentIndex;
                 for (u32 kernelRowIndex = 0; kernelRowIndex < KERNEL_ROWS; kernelRowIndex++)
                 {
-                    const fml* kernel_row = kernel_start + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS;
+                    const fml* kernel_row = kernel_start + CONVERT_KERNEL_ROW_INDEX(kernelRowIndex) * KERNEL_COLS * INPUT_COMPONENTS;
                     const fml* input_row = input_start + kernelRowIndex * BLOCK_SIZE_X;
                     for (u32 kernelColIndex = 0; kernelColIndex < KERNEL_COLS; kernelColIndex++)
                     {
-                        fml k = kernel_row[kernelColIndex * INPUT_COMPONENTS];
+                        fml k = kernel_row[CONVERT_KERNEL_COL_INDEX(kernelColIndex) * INPUT_COMPONENTS];
                         fml i = input_row[kernelColIndex];
                         result += k * i;
                     }
