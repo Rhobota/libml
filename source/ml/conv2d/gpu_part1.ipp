@@ -256,13 +256,13 @@ gpu_conv2d_multi_input_for_large_input(
     for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
     {
         // Copy this channel into the shared memory.
-        if (isInsideInput)
         {
-            input_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x] = inputPtr[inputComponentIndex];
-        }
-        else
-        {
-            input_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x] = FML(0.0);
+            fml value;
+            if (isInsideInput)
+                value = inputPtr[inputComponentIndex];
+            else
+                value = FML(0.0);
+            input_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x] = value;
         }
 
         // Don't move on until all threads have copied the values they are each responsible for.
