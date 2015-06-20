@@ -17,13 +17,6 @@
 #define SHARED_MEM_AVAIL_PER_SM 49152
 
 
-/*
- * The number of Streaming Multiprocessors (SMs) your GPU has.
- * This depends on what GPU you have installed!
- */
-#define NUM_AVAIL_SM 4
-
-
 #define cuda_assert(expression) \
     do { \
         cudaError_t err; \
