@@ -104,10 +104,16 @@ void tLayeredLearnerBase::printLearnerInfo(std::ostream& out) const
     out << std::setw(w) << "Process Type:";
     out << std::setw(w) << "Train Rule:";
     out << std::setw(w) << "Train Parameters:";
+    out << std::setw(w) << "Layer Parameters:";
+    out << std::setw(w) << "# Free Parameters:";
+    out << std::setw(w) << "# Connections:";
     out << std::setw(w) << "# Output Dimensions:";
     out << std::endl;
 
     out << std::setw(w) << "Input Layer:";
+    out << std::setw(w) << "-";
+    out << std::setw(w) << "-";
+    out << std::setw(w) << "-";
     out << std::setw(w) << "-";
     out << std::setw(w) << "-";
     out << std::setw(w) << "-";

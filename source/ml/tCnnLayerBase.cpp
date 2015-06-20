@@ -155,12 +155,27 @@ void tCnnLayerBase::printLayerInfo(std::ostream& out) const
         out << std::setw(w) << o.str();
     }
 
-    std::ostringstream o;
-    o << m_kernelRows << "x" << m_kernelCols
-      << " (" << m_kernelStepY << "x" << m_kernelStepX << ")"
-      << " => " << m_outputRows << "x" << m_outputCols << "x" << m_numKernels;
+    {
+        std::ostringstream o;
+        o << m_inputRows << "x" << m_inputCols << "x" << m_inputComponents << "i "    // i for "input-size"
+          << m_kernelRows << "x" << m_kernelCols << "k "                              // k for "kernel-size"
+          << m_kernelStepY << "x" << m_kernelStepX << "s "                            // s for "step-size"
+          << "*" << m_numKernels;
+        out << std::setw(w) << o.str();
+    }
 
-    out << std::setw(w) << o.str();
+    {
+        u32 numFreeParams = (m_kernelRows * m_kernelCols * m_inputComponents + 1) * m_numKernels;
+        u32 numConnections = numFreeParams * m_outputRows * m_outputCols;
+        out << std::setw(w) << numFreeParams;
+        out << std::setw(w) << numConnections;
+    }
+
+    {
+        std::ostringstream o;
+        o << m_outputRows << "x" << m_outputCols << "x" << m_numKernels << " = " << (m_outputRows * m_outputCols * m_numKernels);
+        out << std::setw(w) << o.str();
+    }
 
     out << std::endl;
 }

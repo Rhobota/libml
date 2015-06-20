@@ -135,6 +135,19 @@ void tAnnLayerBase::printLayerInfo(std::ostream& out) const
         out << std::setw(w) << o.str();
     }
 
+    {
+        std::ostringstream o;
+        o << m_numNeurons << " neurons";
+        out << std::setw(w) << o.str();
+    }
+
+    {
+        u32 numFreeParams = m_numInputDims * m_numNeurons + m_numNeurons;
+        u32 numConnections = numFreeParams;
+        out << std::setw(w) << numFreeParams;
+        out << std::setw(w) << numConnections;
+    }
+
     out << std::setw(w) << m_numNeurons;
 
     out << std::endl;
