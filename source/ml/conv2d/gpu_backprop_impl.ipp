@@ -30,7 +30,7 @@ backprop_in_one_pass(
 #endif
               fml* di_ptr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr,
-        const fml* kernelBiases, fml scaleFactor,
+        fml scaleFactor,
         const fml* dA_ptr, u32 outputRows, u32 outputCols)
 {
     // We use shared memory so that each global memory value only must be read once!
@@ -39,8 +39,7 @@ backprop_in_one_pass(
     // We will keep all the components of all the kernels in shared memory at the same time though!
     extern __shared__ fml memory_shared[];
     fml* kernel_shared = memory_shared + 0;
-    fml* bias_shared   = kernel_shared + KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;
-    fml* input_shared  = bias_shared + NUM_KERNELS;
+    fml* input_shared  = kernel_shared + KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;
 
     // Copy all the kernels into shared memory.
     {
@@ -48,11 +47,6 @@ backprop_in_one_pass(
         for (u32 copyIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
         {
             kernel_shared[copyIndex] = kernelPtr[copyIndex];
-        }
-        sizeToCopy = NUM_KERNELS;
-        for (u32 copyIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
-        {
-            bias_shared[copyIndex] = kernelBiases[copyIndex];
         }
     }
 
@@ -113,7 +107,7 @@ backprop_in_one_pass(
         for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
         {
             // The calculation.
-            fml result = bias_shared[kernelIndex];
+            fml result = FML(0.0);
             for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
             {
                 const fml* kernel_start = kernel_shared + kernelIndex * KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS + inputComponentIndex;
@@ -154,7 +148,7 @@ backprop_in_multiple_passes(
 #endif
               fml* di_ptr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr,
-        const fml* kernelBiases, fml scaleFactor,
+        fml scaleFactor,
         const fml* dA_ptr, u32 outputRows, u32 outputCols)
 {
     // We use shared memory so that each global memory value only must be read once!
@@ -163,8 +157,7 @@ backprop_in_multiple_passes(
     // We will keep all the components of all the kernels in shared memory at the same time though!
     extern __shared__ fml memory_shared[];
     fml* kernel_shared = memory_shared + 0;
-    fml* bias_shared   = kernel_shared + KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;
-    fml* input_shared  = bias_shared + NUM_KERNELS;
+    fml* input_shared  = kernel_shared + KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;
 
     // Copy all the kernels into shared memory.
     {
@@ -172,11 +165,6 @@ backprop_in_multiple_passes(
         for (u32 copyIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
         {
             kernel_shared[copyIndex] = kernelPtr[copyIndex];
-        }
-        sizeToCopy = NUM_KERNELS;
-        for (u32 copyIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x; copyIndex < sizeToCopy; copyIndex += BLOCK_SIZE_Y * BLOCK_SIZE_X)
-        {
-            bias_shared[copyIndex] = kernelBiases[copyIndex];
         }
     }
 
@@ -260,9 +248,9 @@ backprop_in_multiple_passes(
                 if (inputComponentIndex == 0)
                 {
                     if (INPUT_COMPONENTS == 1)
-                        dA_ptr[kernelIndex] = (result + bias_shared[kernelIndex]) * scaleFactor;
+                        dA_ptr[kernelIndex] = result * scaleFactor;
                     else
-                        accumulators[kernelIndex] = result + bias_shared[kernelIndex];
+                        accumulators[kernelIndex] = result;
                 }
                 else
                 {

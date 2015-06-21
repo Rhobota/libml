@@ -58,11 +58,11 @@ void conv2d_backprop_multi_input(
     blockSize.z = 1;
 
     bool canUseFastImpl = true;
-    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
+    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + kernelRows*kernelCols*inputComponents*numKernels) * sizeof(fml);
     if (sharedMemNeeded * DESIRED_BLOCKS_PER_SM > SHARED_MEM_AVAIL_PER_SM)
     {
         canUseFastImpl = false;
-        sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
+        sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels) * sizeof(fml);
     }
 
     u32 outputRows = (inputRows - 1) / kernelStepY + 1;

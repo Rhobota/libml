@@ -22,7 +22,7 @@
             inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
             di_ptr,  inputRows,   inputCols, \
             kernelPtr, \
-            kernelBiases, scaleFactor, \
+            scaleFactor, \
             dA_ptr, outputRows, outputCols); \
     } \
     else \
@@ -31,7 +31,7 @@
             inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
             di_ptr,  inputRows,   inputCols, \
             kernelPtr, \
-            kernelBiases, scaleFactor, \
+            scaleFactor, \
             dA_ptr, outputRows, outputCols); \
     }
 #endif
@@ -47,7 +47,7 @@
                 backprop_in_one_pass_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
-                    kernelBiases, scaleFactor, \
+                    scaleFactor, \
                     dA_ptr, outputRows, outputCols); \
             } \
             else \
@@ -55,7 +55,7 @@
                 backprop_in_multiple_passes_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
-                    kernelBiases, scaleFactor, \
+                    scaleFactor, \
                     dA_ptr, outputRows, outputCols); \
             } \
             break; \
@@ -67,7 +67,7 @@
                 backprop_in_one_pass_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
-                    kernelBiases, scaleFactor, \
+                    scaleFactor, \
                     dA_ptr, outputRows, outputCols); \
             } \
             else \
@@ -75,7 +75,7 @@
                 backprop_in_multiple_passes_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
-                    kernelBiases, scaleFactor, \
+                    scaleFactor, \
                     dA_ptr, outputRows, outputCols); \
             } \
             break; \
