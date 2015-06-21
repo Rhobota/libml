@@ -1,6 +1,7 @@
 #include <ml/conv2d/gpu.h>
 
-//#include "gpu_part2.ipp"
+#define CONVOLVE_WITH_FLIPPED_KERNEL 1
+#include "gpu_conv.ipp"
 
 
 namespace ml
@@ -20,7 +21,61 @@ void conv2d_backprop_multi_input(
         const fml* kernelBiases, fml scaleFactor,
         const fml* dA_ptr)
 {
-    // TODO
+    assert(di_ptr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
+    assert(kernelPtr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
+    assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
+    assert(kernelBiases);
+    assert(dA_ptr);
+
+    if (kernelRows != 1 && kernelRows != 3 && kernelRows != 5 && kernelRows != 7)
+        throw eInvalidArgument("Unsupported kernelRows: must be 1, 3, 5, or 7.");
+    if (kernelCols != 1 && kernelCols != 3 && kernelCols != 5 && kernelCols != 7)
+        throw eInvalidArgument("Unsupported kernelCols: must be 1, 3, 5, or 7.");
+
+    if (kernelStepY != 1)
+        throw eInvalidArgument("Unsupported kernelStepY: must be in 1.");
+    if (kernelStepX != 1)
+        throw eInvalidArgument("Unsupported kernelStepX: must be in 1.");
+
+    if (numKernels > MAX_KERNELS_SUPPORTED)
+        throw eInvalidArgument("Unsupported numKernels: you specified too many!");
+
+    u32 kernelRadiusY = kernelRows / 2;
+    u32 kernelRadiusX = kernelCols / 2;
+
+    u32 effectiveBlockSizeY = BLOCK_SIZE_Y - 2*kernelRadiusY;  // Each block of threads will fill
+    u32 effectiveBlockSizeX = BLOCK_SIZE_X - 2*kernelRadiusX;  // a smaller block of output, because we need
+                                                               // an "apron" so that our kernel doesn't fall of
+                                                               // the side and into no-where-land.
+
+    dim3 gridSize;
+    gridSize.x = (inputCols-1) / effectiveBlockSizeX + 1;
+    gridSize.y = (inputRows-1) / effectiveBlockSizeY + 1;
+    gridSize.z = inputCount;
+
+    dim3 blockSize;
+    blockSize.x = BLOCK_SIZE_X;
+    blockSize.y = BLOCK_SIZE_Y;
+    blockSize.z = 1;
+
+    bool canUseFastImpl = true;
+    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
+    if (sharedMemNeeded * DESIRED_BLOCKS_PER_SM > SHARED_MEM_AVAIL_PER_SM)
+    {
+        canUseFastImpl = false;
+        sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
+    }
+
+    u32 outputRows = (inputRows - 1) / kernelStepY + 1;
+    u32 outputCols = (inputCols - 1) / kernelStepX + 1;
+
+    const fml* inputPtr = dA_ptr;
+    fml* outputPtr = di_ptr;
+    RUN_CONV2D_GPU_FUNTION
+
+    cudaError_t errSync  = cudaGetLastError();
+    if (errSync != cudaSuccess)
+        throw eRuntimeError(std::string("CUDA launch error: ") + cudaGetErrorString(errSync));
 }
 
 

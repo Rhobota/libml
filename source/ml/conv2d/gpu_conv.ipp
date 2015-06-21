@@ -3,7 +3,7 @@
  * will output very fast code. You should turn this on for
  * production code, but turn it off to do quick test iterations.
  */
-#define COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE 1
+#define COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE 0
 
 /*
  * If defined, this code will refuse to run the fallback

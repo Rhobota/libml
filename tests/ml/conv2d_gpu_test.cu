@@ -483,9 +483,9 @@ int main()
 
     srand(time(0));
 
-    tTest("conv2d() gpu test", convolveTest);
+    //tTest("conv2d() gpu test", convolveTest);
 
-    //tTest("conv2d_backprop() gpu test", backpropTest);
+    tTest("conv2d_backprop() gpu test", backpropTest);
 
     //tTest("conv2d_accumError() gpu test", accumErrorTest);
 
