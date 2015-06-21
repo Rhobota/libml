@@ -36,8 +36,8 @@ void conv2d_backprop_multi_input(
     if (kernelStepX != 1)
         throw eInvalidArgument("Unsupported kernelStepX: must be in 1.");
 
-    if (numKernels > MAX_KERNELS_SUPPORTED)
-        throw eInvalidArgument("Unsupported numKernels: you specified too many!");
+    if (inputComponents > MAX_INPUT_COMPONENTS_SUPPORTED)
+        throw eInvalidArgument("Unsupported inputComponents: you specified too many!");
 
     u32 kernelRadiusY = kernelRows / 2;
     u32 kernelRadiusX = kernelCols / 2;

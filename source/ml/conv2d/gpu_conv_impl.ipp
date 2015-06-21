@@ -35,8 +35,8 @@ convolve_in_one_pass(
 {
     // We use shared memory so that each global memory value only must be read once!
     // Makes everything much much faster.
-    // We will keep only one component of the input block in shared memory at a time.
-    // We will keep all the components of all the kernels in shared memory at the same time though!
+    // We will keep all component of the input block in shared memory at the same time.
+    // And we will keep all the components of all the kernels in shared memory at the same time!
     extern __shared__ fml memory_shared[];
     fml* kernel_shared = memory_shared + 0;
     fml* bias_shared   = kernel_shared + KERNEL_ROWS  * KERNEL_COLS   * INPUT_COMPONENTS * NUM_KERNELS;

@@ -47,7 +47,8 @@
 
 
 /*
- * This def is effective only when using the non-templated version of the function below.
+ * These defs are effective only when using the non-templated version of the CUDA functions.
  */
 #define MAX_KERNELS_SUPPORTED 100
+#define MAX_INPUT_COMPONENTS_SUPPORTED 100
 
