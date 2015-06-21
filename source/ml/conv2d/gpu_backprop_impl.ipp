@@ -31,7 +31,7 @@ backprop_in_one_pass(
               fml* di_ptr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr,
         fml scaleFactor,
-        const fml* dA_ptr, u32 outputRows, u32 outputCols)
+        const fml* dA_ptr)
 {
     // We use shared memory so that each global memory value only must be read once!
     // Makes everything much much faster.
@@ -61,15 +61,15 @@ backprop_in_one_pass(
             u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
             i32 rowHere = ((i32)block_offset_y) - KERNEL_ROWS/2 + threadIdx.y;
             i32 colHere = ((i32)block_offset_x) - KERNEL_COLS/2 + threadIdx.x;
-            di_ptr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + rowHere * inputCols * INPUT_COMPONENTS + colHere * INPUT_COMPONENTS;
-            for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
+            dA_ptr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + rowHere * inputCols * NUM_KERNELS + colHere * NUM_KERNELS;
+            for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
             {
                 fml value;
                 if ((rowHere < 0) | (rowHere >= inputRows) | (colHere < 0) | (colHere >= inputCols))
                     value = FML(0.0);
                 else
-                    value = di_ptr[inputComponentIndex];
-                input_shared[linearThreadIndex + inputComponentIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X] = value;
+                    value = dA_ptr[kernelIndex];
+                input_shared[linearThreadIndex + kernelIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X] = value;
             }
         }
 
@@ -82,13 +82,13 @@ backprop_in_one_pass(
             // all threads will be required to calculate output values. Only
             // threads that have all the following attributes will be required
             // to calculate output values:
-            //   - be inside the effective block,
-            //   - be inside the input, and
+            //   - be inside the effective block, and
+            //   - be inside the input.
             isOutputThread = ((global_y >= 0) & (global_y < inputRows) &
                               (global_x >= 0) & (global_x < inputCols) &
                               (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
                               (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
-            dA_ptr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
+            di_ptr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
             input_start_offset = (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
         }
     }
@@ -102,21 +102,21 @@ backprop_in_one_pass(
     // values into shared memory.
     if (isOutputThread)
     {
-        for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
+        for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
         {
             // The calculation.
             fml result = FML(0.0);
-            for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
+            for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
             {
                 const fml* kernel_start = kernel_shared + kernelIndex * KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS + inputComponentIndex;
-                const fml* input_start = input_shared + input_start_offset + inputComponentIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X;
+                const fml* input_start = input_shared + input_start_offset + kernelIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X;
                 for (u32 kernelRowIndex = 0; kernelRowIndex < KERNEL_ROWS; kernelRowIndex++)
                 {
-                    const fml* kernel_row = kernel_start + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS;
+                    const fml* kernel_row = kernel_start + (KERNEL_ROWS-kernelRowIndex-1) * KERNEL_COLS * INPUT_COMPONENTS;
                     const fml* input_row = input_start + kernelRowIndex * BLOCK_SIZE_X;
                     for (u32 kernelColIndex = 0; kernelColIndex < KERNEL_COLS; kernelColIndex++)
                     {
-                        fml k = kernel_row[kernelColIndex * INPUT_COMPONENTS];
+                        fml k = kernel_row[(KERNEL_COLS-kernelColIndex-1) * INPUT_COMPONENTS];
                         fml i = input_row[kernelColIndex];
                         result += k * i;
                     }
@@ -124,7 +124,7 @@ backprop_in_one_pass(
             }
 
             // The storage.
-            dA_ptr[kernelIndex] = result * scaleFactor;
+            di_ptr[inputComponentIndex] = result * scaleFactor;
         }
     }
 }
@@ -147,8 +147,9 @@ backprop_in_multiple_passes(
               fml* di_ptr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr,
         fml scaleFactor,
-        const fml* dA_ptr, u32 outputRows, u32 outputCols)
+        const fml* dA_ptr)
 {
+#if 0
     // We use shared memory so that each global memory value only must be read once!
     // Makes everything much much faster.
     // We will keep only one component of the input block in shared memory at a time.
@@ -178,7 +179,7 @@ backprop_in_multiple_passes(
         isInsideInput =
                     ((global_y >= 0) & (global_y < inputRows) &
                      (global_x >= 0) & (global_x < inputCols));
-        di_ptr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
+        dA_ptr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
 
         // Determine if this thread is an output thread or not.
         //
@@ -186,12 +187,12 @@ backprop_in_multiple_passes(
         // all threads will be required to calculate output values. Only
         // threads that have all the following attributes will be required
         // to calculate output values:
-        //   - be inside the effective block,
-        //   - be inside the input, and
+        //   - be inside the effective block, and
+        //   - be inside the input.
         isOutputThread = (isInsideInput &
                           (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
                           (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
-        dA_ptr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
+        di_ptr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + global_y * inputCols * NUM_KERNELS + global_x * NUM_KERNELS;
         input_start = input_shared + (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
     }
 
@@ -208,7 +209,7 @@ backprop_in_multiple_passes(
         {
             fml value;
             if (isInsideInput)
-                value = di_ptr[inputComponentIndex];
+                value = dA_ptr[inputComponentIndex];
             else
                 value = FML(0.0);
             input_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x] = value;
@@ -244,7 +245,7 @@ backprop_in_multiple_passes(
                 if (inputComponentIndex == 0)
                 {
                     if (INPUT_COMPONENTS == 1)
-                        dA_ptr[kernelIndex] = result * scaleFactor;
+                        di_ptr[kernelIndex] = result * scaleFactor;
                     else
                         accumulators[kernelIndex] = result;
                 }
@@ -253,7 +254,7 @@ backprop_in_multiple_passes(
                     if (inputComponentIndex+1 < INPUT_COMPONENTS)
                         accumulators[kernelIndex] += result;
                     else
-                        dA_ptr[kernelIndex] = (accumulators[kernelIndex] + result) * scaleFactor;
+                        di_ptr[kernelIndex] = (accumulators[kernelIndex] + result) * scaleFactor;
                 }
             }
         }
@@ -262,6 +263,7 @@ backprop_in_multiple_passes(
         // with the calculation above (which uses the current shared memory values).
         __syncthreads();
     }
+#endif
 }
 
 

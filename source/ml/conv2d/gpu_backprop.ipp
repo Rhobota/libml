@@ -23,7 +23,7 @@
             di_ptr,  inputRows,   inputCols, \
             kernelPtr, \
             scaleFactor, \
-            dA_ptr, outputRows, outputCols); \
+            dA_ptr); \
     } \
     else \
     { \
@@ -32,7 +32,7 @@
             di_ptr,  inputRows,   inputCols, \
             kernelPtr, \
             scaleFactor, \
-            dA_ptr, outputRows, outputCols); \
+            dA_ptr); \
     }
 #endif
 
@@ -48,7 +48,7 @@
                     di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
                     scaleFactor, \
-                    dA_ptr, outputRows, outputCols); \
+                    dA_ptr); \
             } \
             else \
             { \
@@ -56,7 +56,7 @@
                     di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
                     scaleFactor, \
-                    dA_ptr, outputRows, outputCols); \
+                    dA_ptr); \
             } \
             break; \
         } \
@@ -68,7 +68,7 @@
                     di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
                     scaleFactor, \
-                    dA_ptr, outputRows, outputCols); \
+                    dA_ptr); \
             } \
             else \
             { \
@@ -76,7 +76,7 @@
                     di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
                     scaleFactor, \
-                    dA_ptr, outputRows, outputCols); \
+                    dA_ptr); \
             } \
             break; \
         } \

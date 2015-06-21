@@ -28,6 +28,7 @@ void conv2d_multi_input_with_memcpy(
     s_cudaCopyHostToDevice(inputPtr_gpu, inputPtr, inputCount * inputStride);
     s_cudaCopyHostToDevice(kernelPtr_gpu, kernelPtr, kernelRows * kernelCols * inputComponents * numKernels);
     s_cudaCopyHostToDevice(kernelBiases_gpu, kernelBiases, numKernels);
+    s_cudaCopyHostToDevice(outputPtr_gpu, outputPtr, inputCount * outputStride);
 
     conv2d_multi_input(
         inputCount,  inputStride,  outputStride,
@@ -65,6 +66,7 @@ void conv2d_backprop_multi_input_with_memcpy(
     s_cudaCopyHostToDevice(kernelPtr_gpu, kernelPtr, kernelRows * kernelCols * inputComponents * numKernels);
     s_cudaCopyHostToDevice(kernelBiases_gpu, kernelBiases, numKernels);
     s_cudaCopyHostToDevice(dA_ptr_gpu, dA_ptr, inputCount * outputStride);
+    s_cudaCopyHostToDevice(di_ptr_gpu, di_ptr, inputCount * inputStride);
 
     conv2d_backprop_multi_input(
         inputCount,  inputStride,  outputStride,
@@ -101,6 +103,8 @@ void conv2d_accumError_multi_input_with_memcpy(
 
     s_cudaCopyHostToDevice(inputPtr_gpu, inputPtr, inputCount * inputStride);
     s_cudaCopyHostToDevice(dA_ptr_gpu, dA_ptr, inputCount * outputStride);
+    s_cudaCopyHostToDevice(dk_ptr_gpu, dk_ptr, kernelRows * kernelCols * inputComponents * numKernels);
+    s_cudaCopyHostToDevice(db_ptr_gpu, db_ptr, numKernels);
 
     conv2d_accumError_multi_input(
         inputCount,  inputStride,  outputStride,
