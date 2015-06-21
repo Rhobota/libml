@@ -1,7 +1,6 @@
 #include <ml/conv2d/gpu.h>
 
-#define CONVOLVE_WITH_FLIPPED_KERNEL 1
-#include "gpu_conv.ipp"
+#include "gpu_backprop.ipp"
 
 
 namespace ml
@@ -69,9 +68,7 @@ void conv2d_backprop_multi_input(
     u32 outputRows = (inputRows - 1) / kernelStepY + 1;
     u32 outputCols = (inputCols - 1) / kernelStepX + 1;
 
-    const fml* inputPtr = dA_ptr;
-    fml* outputPtr = di_ptr;
-    RUN_CONV2D_GPU_FUNTION
+    RUN_CONV2D_BACKPROP_GPU_FUNTION
 
     cudaError_t errSync  = cudaGetLastError();
     if (errSync != cudaSuccess)

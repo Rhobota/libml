@@ -5,6 +5,7 @@
  */
 #define COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE 0
 
+
 /*
  * If defined, this code will refuse to run the fallback
  * implementation, which is a very slow implementation.
@@ -16,25 +17,38 @@
 
 
 /*
- * With just the flip of this switch you can convolve with the normal kernel (the default) or
- * you can convolved with the flipped kernel (flipped horizontally and vertically).
+ * The execution config to use for these CUDA functions.
+ * Choosing the right values for these is very important.
  *
- * The idea here is that if we convolve with the flipped kernel, that is like backprop. This
- * is a little bit of a hack but it's totally worth it because it keeps from having a lot of
- * duplicate code, and this way we can make improvements to the CUDA convolve function and get
- * rewards in both the convolve speed and the backprop speed.
+ * A block size that is too big will decrease the number
+ * of registers each thread has access to, which will force
+ * it to use local memory, which will slow it down.
+ *
+ * A block size that is too small will cause redundant work
+ * to be performed because each block copies an apron of
+ * the input into shared memory. You don't want to copy that
+ * apron more than you have to.
+ *
+ * The number of threads in a block should be a multiple of
+ * 32 (aka, the warp size of every CUDA device right now).
+ *
+ * Increasing DESIRED_BLOCKS_PER_SM will increase the amount
+ * of concurrency you get, but will decrease the number of registers
+ * each thread gets, again causing each thread to use more local memory
+ * and slowing it down.
+ *
+ * All that said, the following seems to be a happy medium for
+ * my GTX 550 Ti GPU.
  */
-#if CONVOLVE_WITH_FLIPPED_KERNEL
-    #define CONVERT_KERNEL_ROW_INDEX(x) (KERNEL_ROWS-(x)-1)
-    #define CONVERT_KERNEL_COL_INDEX(x) (KERNEL_COLS-(x)-1)
-    #define convolve_in_one_pass                  backprop_in_one_pass
-    #define convolve_in_one_pass_templated        backprop_in_one_pass_templated
-    #define convolve_in_multiple_passes           backprop_in_multiple_passes
-    #define convolve_in_multiple_passes_templated backprop_in_multiple_passes_templated
-#else
-    #define CONVERT_KERNEL_ROW_INDEX(x) (x)
-    #define CONVERT_KERNEL_COL_INDEX(x) (x)
-#endif
+#define BLOCK_SIZE_Y 16
+#define BLOCK_SIZE_X 32
+#define DESIRED_BLOCKS_PER_SM 2
+
+
+/*
+ * This def is effective only when using the non-templated version of the function below.
+ */
+#define MAX_KERNELS_SUPPORTED 100
 
 
 #include "../cuda_stuff.ipp"

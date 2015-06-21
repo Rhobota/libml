@@ -14,41 +14,6 @@ namespace gpu
 {
 
 
-/*
- * The execution config to use for these CUDA functions.
- * Choosing the right values for these is very important.
- *
- * A block size that is too big will decrease the number
- * of registers each thread has access to, which will force
- * it to use local memory, which will slow it down.
- *
- * A block size that is too small will cause redundant work
- * to be performed because each block copies an apron of
- * the input into shared memory. You don't want to copy that
- * apron more than you have to.
- *
- * The number of threads in a block should be a multiple of
- * 32 (aka, the warp size of every CUDA device right now).
- *
- * Increasing DESIRED_BLOCKS_PER_SM will increase the amount
- * of concurrency you get, but will decrease the number of registers
- * each thread gets, again causing each thread to use more local memory
- * and slowing it down.
- *
- * All that said, the following seems to be a happy medium for
- * my GTX 550 Ti GPU.
- */
-#define BLOCK_SIZE_Y 16
-#define BLOCK_SIZE_X 32
-#define DESIRED_BLOCKS_PER_SM 2
-
-
-/*
- * This def is effective only when using the non-templated version of the function below.
- */
-#define MAX_KERNELS_SUPPORTED 100
-
-
 #if GPU_CONV2D_USE_TEMPLATE
 template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
 #endif
@@ -155,11 +120,11 @@ convolve_in_one_pass(
                 const fml* input_start = input_shared + input_start_offset + inputComponentIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X;
                 for (u32 kernelRowIndex = 0; kernelRowIndex < KERNEL_ROWS; kernelRowIndex++)
                 {
-                    const fml* kernel_row = kernel_start + CONVERT_KERNEL_ROW_INDEX(kernelRowIndex) * KERNEL_COLS * INPUT_COMPONENTS;
+                    const fml* kernel_row = kernel_start + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS;
                     const fml* input_row = input_start + kernelRowIndex * BLOCK_SIZE_X;
                     for (u32 kernelColIndex = 0; kernelColIndex < KERNEL_COLS; kernelColIndex++)
                     {
-                        fml k = kernel_row[CONVERT_KERNEL_COL_INDEX(kernelColIndex) * INPUT_COMPONENTS];
+                        fml k = kernel_row[kernelColIndex * INPUT_COMPONENTS];
                         fml i = input_row[kernelColIndex];
                         result += k * i;
                     }
@@ -281,11 +246,11 @@ convolve_in_multiple_passes(
                 const fml* kernel_start = kernel_shared + kernelIndex * KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS + inputComponentIndex;
                 for (u32 kernelRowIndex = 0; kernelRowIndex < KERNEL_ROWS; kernelRowIndex++)
                 {
-                    const fml* kernel_row = kernel_start + CONVERT_KERNEL_ROW_INDEX(kernelRowIndex) * KERNEL_COLS * INPUT_COMPONENTS;
+                    const fml* kernel_row = kernel_start + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS;
                     const fml* input_row = input_start + kernelRowIndex * BLOCK_SIZE_X;
                     for (u32 kernelColIndex = 0; kernelColIndex < KERNEL_COLS; kernelColIndex++)
                     {
-                        fml k = kernel_row[CONVERT_KERNEL_COL_INDEX(kernelColIndex) * INPUT_COMPONENTS];
+                        fml k = kernel_row[kernelColIndex * INPUT_COMPONENTS];
                         fml i = input_row[kernelColIndex];
                         result += k * i;
                     }
