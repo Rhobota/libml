@@ -15,7 +15,7 @@ namespace gpu
 
 
 #if GPU_BACKPROP_USE_TEMPLATE
-template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
+template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS>
 #endif
 __global__
 void
@@ -26,7 +26,7 @@ backprop_in_one_pass_templated(
 backprop_in_one_pass(
 #endif
 #if !GPU_BACKPROP_USE_TEMPLATE
-        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
+        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS,
 #endif
               fml* di_ptr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr,
@@ -84,13 +84,11 @@ backprop_in_one_pass(
             // to calculate output values:
             //   - be inside the effective block,
             //   - be inside the input, and
-            //   - be aligned to the kernel step size.  (<-- which all are because we know the step size is 1 here)
             isOutputThread = ((global_y >= 0) & (global_y < inputRows) &
                               (global_x >= 0) & (global_x < inputCols) &
                               (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
-                              (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2) &
-                              ((global_y % KERNEL_STEP_Y) == 0) & ((global_x % KERNEL_STEP_X) == 0));
-            dA_ptr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y/KERNEL_STEP_Y * outputCols * NUM_KERNELS + global_x/KERNEL_STEP_X * NUM_KERNELS;
+                              (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
+            dA_ptr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
             input_start_offset = (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
         }
     }
@@ -101,7 +99,7 @@ backprop_in_one_pass(
 
     // Do the convolution.
     // Not all threads have work here, because some threads exist only to copy the apron
-    // values into shared memory, and some threads are not aligned to the kernel step size.
+    // values into shared memory.
     if (isOutputThread)
     {
         for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
@@ -133,7 +131,7 @@ backprop_in_one_pass(
 
 
 #if GPU_BACKPROP_USE_TEMPLATE
-template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
+template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS>
 #endif
 __global__
 void
@@ -144,7 +142,7 @@ backprop_in_multiple_passes_templated(
 backprop_in_multiple_passes(
 #endif
 #if !GPU_BACKPROP_USE_TEMPLATE
-        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
+        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS,
 #endif
               fml* di_ptr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr,
@@ -190,12 +188,10 @@ backprop_in_multiple_passes(
         // to calculate output values:
         //   - be inside the effective block,
         //   - be inside the input, and
-        //   - be aligned to the kernel step size.  (<-- which all are because we know the step size is 1 here)
         isOutputThread = (isInsideInput &
                           (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
-                          (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2) &
-                          ((global_y % KERNEL_STEP_Y) == 0) & ((global_x % KERNEL_STEP_X) == 0));
-        dA_ptr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y/KERNEL_STEP_Y * outputCols * NUM_KERNELS + global_x/KERNEL_STEP_X * NUM_KERNELS;
+                          (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
+        dA_ptr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y * outputCols * NUM_KERNELS + global_x * NUM_KERNELS;
         input_start = input_shared + (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
     }
 
@@ -224,7 +220,7 @@ backprop_in_multiple_passes(
 
         // Do the convolution of this channel, and add it to the accumulator.
         // Not all threads have work here, because some threads exist only to copy the apron
-        // values into shared memory, and some threads are not aligned to the kernel step size.
+        // values into shared memory.
         if (isOutputThread)
         {
             for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)

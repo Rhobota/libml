@@ -89,7 +89,6 @@
     switch ((kernelStepY * 0x10) + kernelStepX) \
     { \
         case 0x11: SWITCH_KERNEL_DIMS(inputComponents, 1, 1, numKernels)  break; \
-        case 0x22: SWITCH_KERNEL_DIMS(inputComponents, 2, 2, numKernels)  break; \
         default: \
             RUN_FALLBACK_IMPL \
     } \

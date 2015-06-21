@@ -90,7 +90,7 @@ convolve_in_one_pass(
             // to calculate output values:
             //   - be inside the effective block,
             //   - be inside the input, and
-            //   - be aligned to the kernel step size.  (<-- which all are because we know the step size is 1 here)
+            //   - be aligned to the kernel step size.
             isOutputThread = ((global_y >= 0) & (global_y < inputRows) &
                               (global_x >= 0) & (global_x < inputCols) &
                               (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
@@ -202,7 +202,7 @@ convolve_in_multiple_passes(
         // to calculate output values:
         //   - be inside the effective block,
         //   - be inside the input, and
-        //   - be aligned to the kernel step size.  (<-- which all are because we know the step size is 1 here)
+        //   - be aligned to the kernel step size.
         isOutputThread = (isInsideInput &
                           (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
                           (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2) &
