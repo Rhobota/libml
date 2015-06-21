@@ -11,7 +11,7 @@
  * If defined, this code will refuse to run the fallback
  * implementation, which is a very slow implementation.
  * This is nice to turn on if you want to be sure your
- * code uses the fast templated versions of the function
+ * code uses the fast templated versions of the functions
  * instead of the fallback.
  */
 #define THROW_IF_FALLBACK_IMPL_NEEDED 0

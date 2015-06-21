@@ -44,7 +44,7 @@ void conv2d_multi_input(
 
     u32 effectiveBlockSizeY = BLOCK_SIZE_Y - 2*kernelRadiusY;  // Each block of threads will fill
     u32 effectiveBlockSizeX = BLOCK_SIZE_X - 2*kernelRadiusX;  // a smaller block of output, because we need
-                                                               // an "apron" so that our kernel doesn't fall of
+                                                               // an "apron" so that our kernel doesn't fall off
                                                                // the side and into no-where-land.
 
     dim3 gridSize;
