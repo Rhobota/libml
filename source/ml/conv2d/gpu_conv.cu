@@ -31,10 +31,10 @@ void conv2d_multi_input(
     if (kernelCols != 1 && kernelCols != 3 && kernelCols != 5 && kernelCols != 7)
         throw eInvalidArgument("Unsupported kernelCols: must be 1, 3, 5, or 7.");
 
-    if (kernelStepY > 5)
-        throw eInvalidArgument("Unsupported kernelStepY: must be in [1,5].");
-    if (kernelStepX > 5)
-        throw eInvalidArgument("Unsupported kernelStepX: must be in [1,5].");
+    if (kernelStepY != 1)
+        throw eInvalidArgument("Unsupported kernelStepY: must be in 1.");
+    if (kernelStepX != 1)
+        throw eInvalidArgument("Unsupported kernelStepX: must be in 1.");
 
     if (numKernels > MAX_KERNELS_SUPPORTED)
         throw eInvalidArgument("Unsupported numKernels: you specified too many!");
@@ -64,9 +64,6 @@ void conv2d_multi_input(
         canUseFastImpl = false;
         sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
     }
-
-    u32 outputRows = (inputRows - 1) / kernelStepY + 1;
-    u32 outputCols = (inputCols - 1) / kernelStepX + 1;
 
     RUN_CONV2D_GPU_FUNTION
 

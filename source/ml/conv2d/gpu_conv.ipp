@@ -19,44 +19,44 @@
     if (canUseFastImpl) \
     { \
         convolve_in_one_pass<<<gridSize, blockSize, sharedMemNeeded>>>( \
-            inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
+            inputComponents, kernelRows, kernelCols, numKernels, \
             inputPtr,  inputRows,   inputCols, \
             kernelPtr, \
             kernelBiases, scaleFactor, \
-            outputPtr, outputRows, outputCols); \
+            outputPtr); \
     } \
     else \
     { \
         convolve_in_multiple_passes<<<gridSize, blockSize, sharedMemNeeded>>>( \
-            inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
+            inputComponents, kernelRows, kernelCols, numKernels, \
             inputPtr,  inputRows,   inputCols, \
             kernelPtr, \
             kernelBiases, scaleFactor, \
-            outputPtr, outputRows, outputCols); \
+            outputPtr); \
     }
 #endif
 
 
-#define SWITCH_KERNEL_DIMS(inputComponents, kernelStepY, kernelStepX, numKernels) \
+#define SWITCH_KERNEL_DIMS(inputComponents, numKernels) \
     switch ((kernelRows * 0x10) + kernelCols) \
     { \
         case 0x33: \
         { \
             if (canUseFastImpl) \
             { \
-                convolve_in_one_pass_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                convolve_in_one_pass_templated<inputComponents, 3, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     inputPtr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
-                    outputPtr, outputRows, outputCols); \
+                    outputPtr); \
             } \
             else \
             { \
-                convolve_in_multiple_passes_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                convolve_in_multiple_passes_templated<inputComponents, 3, 3, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     inputPtr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
-                    outputPtr, outputRows, outputCols); \
+                    outputPtr); \
             } \
             break; \
         } \
@@ -64,31 +64,22 @@
         { \
             if (canUseFastImpl) \
             { \
-                convolve_in_one_pass_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                convolve_in_one_pass_templated<inputComponents, 5, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     inputPtr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
-                    outputPtr, outputRows, outputCols); \
+                    outputPtr); \
             } \
             else \
             { \
-                convolve_in_multiple_passes_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                convolve_in_multiple_passes_templated<inputComponents, 5, 5, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     inputPtr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
-                    outputPtr, outputRows, outputCols); \
+                    outputPtr); \
             } \
             break; \
         } \
-        default: \
-            RUN_FALLBACK_IMPL \
-    } \
-
-
-#define SWITCH_KERNEL_STEP(inputComponents, numKernels) \
-    switch ((kernelStepY * 0x10) + kernelStepX) \
-    { \
-        case 0x11: SWITCH_KERNEL_DIMS(inputComponents, 1, 1, numKernels)  break; \
         default: \
             RUN_FALLBACK_IMPL \
     } \
@@ -97,11 +88,11 @@
 #define SWITCH_NUM_KERNELS(inputComponents) \
     switch (numKernels) \
     { \
-        case 4: SWITCH_KERNEL_STEP(inputComponents, 4)  break; \
-        case 8: SWITCH_KERNEL_STEP(inputComponents, 8)  break; \
-        case 16: SWITCH_KERNEL_STEP(inputComponents, 16)  break; \
-        case 32: SWITCH_KERNEL_STEP(inputComponents, 32)  break; \
-        case 64: SWITCH_KERNEL_STEP(inputComponents, 64)  break; \
+        case 4: SWITCH_KERNEL_DIMS(inputComponents, 4)  break; \
+        case 8: SWITCH_KERNEL_DIMS(inputComponents, 8)  break; \
+        case 16: SWITCH_KERNEL_DIMS(inputComponents, 16)  break; \
+        case 32: SWITCH_KERNEL_DIMS(inputComponents, 32)  break; \
+        case 64: SWITCH_KERNEL_DIMS(inputComponents, 64)  break; \
         default: \
             RUN_FALLBACK_IMPL \
     } \

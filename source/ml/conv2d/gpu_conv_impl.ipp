@@ -15,7 +15,7 @@ namespace gpu
 
 
 #if GPU_CONV2D_USE_TEMPLATE
-template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
+template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS>
 #endif
 __global__
 void
@@ -26,12 +26,12 @@ convolve_in_one_pass_templated(
 convolve_in_one_pass(
 #endif
 #if !GPU_CONV2D_USE_TEMPLATE
-        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
+        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS,
 #endif
         const fml* inputPtr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr,
         const fml* kernelBiases, fml scaleFactor,
-              fml* outputPtr, u32 outputRows, u32 outputCols)
+              fml* outputPtr)
 {
     // We use shared memory so that each global memory value only must be read once!
     // Makes everything much much faster.
@@ -94,9 +94,8 @@ convolve_in_one_pass(
             isOutputThread = ((global_y >= 0) & (global_y < inputRows) &
                               (global_x >= 0) & (global_x < inputCols) &
                               (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
-                              (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2) &
-                              ((global_y % KERNEL_STEP_Y) == 0) & ((global_x % KERNEL_STEP_X) == 0));
-            outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y/KERNEL_STEP_Y * outputCols * NUM_KERNELS + global_x/KERNEL_STEP_X * NUM_KERNELS;
+                              (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
+            outputPtr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + global_y * inputCols * NUM_KERNELS + global_x * NUM_KERNELS;
             input_start_offset = (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
         }
     }
@@ -139,7 +138,7 @@ convolve_in_one_pass(
 
 
 #if GPU_CONV2D_USE_TEMPLATE
-template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
+template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS>
 #endif
 __global__
 void
@@ -150,12 +149,12 @@ convolve_in_multiple_passes_templated(
 convolve_in_multiple_passes(
 #endif
 #if !GPU_CONV2D_USE_TEMPLATE
-        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
+        u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 NUM_KERNELS,
 #endif
         const fml* inputPtr,  u32 inputRows,   u32 inputCols,
         const fml* kernelPtr,
         const fml* kernelBiases, fml scaleFactor,
-              fml* outputPtr, u32 outputRows, u32 outputCols)
+              fml* outputPtr)
 {
     // We use shared memory so that each global memory value only must be read once!
     // Makes everything much much faster.
@@ -205,9 +204,8 @@ convolve_in_multiple_passes(
         //   - be aligned to the kernel step size.
         isOutputThread = (isInsideInput &
                           (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
-                          (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2) &
-                          ((global_y % KERNEL_STEP_Y) == 0) & ((global_x % KERNEL_STEP_X) == 0));
-        outputPtr += blockIdx.z * outputRows * outputCols * NUM_KERNELS + global_y/KERNEL_STEP_Y * outputCols * NUM_KERNELS + global_x/KERNEL_STEP_X * NUM_KERNELS;
+                          (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
+        outputPtr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + global_y * inputCols * NUM_KERNELS + global_x * NUM_KERNELS;
         input_start = input_shared + (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
     }
 
