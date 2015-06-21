@@ -2,37 +2,37 @@
 
 #include "../cuda_stuff.ipp"
 
-#define GPU_CONV2D_USE_TEMPLATE 0
-#include "gpu_conv_impl.ipp"
-#undef  GPU_CONV2D_USE_TEMPLATE
+#define GPU_BACKPROP_USE_TEMPLATE 0
+#include "gpu_backprop_impl.ipp"
+#undef  GPU_BACKPROP_USE_TEMPLATE
 
-#define GPU_CONV2D_USE_TEMPLATE 1
-#include "gpu_conv_impl.ipp"
-#undef  GPU_CONV2D_USE_TEMPLATE
+#define GPU_BACKPROP_USE_TEMPLATE 1
+#include "gpu_backprop_impl.ipp"
+#undef  GPU_BACKPROP_USE_TEMPLATE
 
 
 #if THROW_IF_FALLBACK_IMPL_NEEDED
 #define RUN_FALLBACK_IMPL \
-    throw eRuntimeError("The fallback (aka, slow) implementation is needed to convolve this input. But we've turned off the fallback implementation, so you'll need to turn it on or (preferably) modify your code to use one of the fast implementation paths.");
+    throw eRuntimeError("The fallback (aka, slow) implementation is needed to backprop this input. But we've turned off the fallback implementation, so you'll need to turn it on or (preferably) modify your code to use one of the fast implementation paths.");
 #else
 #define RUN_FALLBACK_IMPL \
     if (canUseFastImpl) \
     { \
-        convolve_in_one_pass<<<gridSize, blockSize, sharedMemNeeded>>>( \
+        backprop_in_one_pass<<<gridSize, blockSize, sharedMemNeeded>>>( \
             inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
-            inputPtr,  inputRows,   inputCols, \
+            di_ptr,  inputRows,   inputCols, \
             kernelPtr, \
             kernelBiases, scaleFactor, \
-            outputPtr, outputRows, outputCols); \
+            dA_ptr, outputRows, outputCols); \
     } \
     else \
     { \
-        convolve_in_multiple_passes<<<gridSize, blockSize, sharedMemNeeded>>>( \
+        backprop_in_multiple_passes<<<gridSize, blockSize, sharedMemNeeded>>>( \
             inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
-            inputPtr,  inputRows,   inputCols, \
+            di_ptr,  inputRows,   inputCols, \
             kernelPtr, \
             kernelBiases, scaleFactor, \
-            outputPtr, outputRows, outputCols); \
+            dA_ptr, outputRows, outputCols); \
     }
 #endif
 
@@ -44,19 +44,19 @@
         { \
             if (canUseFastImpl) \
             { \
-                convolve_in_one_pass_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                    inputPtr,  inputRows,   inputCols, \
+                backprop_in_one_pass_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                    di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
-                    outputPtr, outputRows, outputCols); \
+                    dA_ptr, outputRows, outputCols); \
             } \
             else \
             { \
-                convolve_in_multiple_passes_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                    inputPtr,  inputRows,   inputCols, \
+                backprop_in_multiple_passes_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                    di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
-                    outputPtr, outputRows, outputCols); \
+                    dA_ptr, outputRows, outputCols); \
             } \
             break; \
         } \
@@ -64,19 +64,19 @@
         { \
             if (canUseFastImpl) \
             { \
-                convolve_in_one_pass_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                    inputPtr,  inputRows,   inputCols, \
+                backprop_in_one_pass_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                    di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
-                    outputPtr, outputRows, outputCols); \
+                    dA_ptr, outputRows, outputCols); \
             } \
             else \
             { \
-                convolve_in_multiple_passes_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
-                    inputPtr,  inputRows,   inputCols, \
+                backprop_in_multiple_passes_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                    di_ptr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
-                    outputPtr, outputRows, outputCols); \
+                    dA_ptr, outputRows, outputCols); \
             } \
             break; \
         } \
@@ -109,7 +109,7 @@
 
 
 #if COMPILE_A_BUNCH_OF_TEMPLATES_TO_MAKE_FAST_CODE
-#define RUN_CONV2D_GPU_FUNTION \
+#define RUN_CONV2D_BACKPROP_GPU_FUNTION \
     switch (inputComponents) \
     { \
         case 1: SWITCH_NUM_KERNELS(1)  break; \
@@ -127,7 +127,7 @@
             RUN_FALLBACK_IMPL \
     }
 #else
-#define RUN_CONV2D_GPU_FUNTION \
+#define RUN_CONV2D_BACKPROP_GPU_FUNTION \
     RUN_FALLBACK_IMPL
 #endif
 
