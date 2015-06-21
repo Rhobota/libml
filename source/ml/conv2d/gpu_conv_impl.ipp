@@ -49,31 +49,18 @@ namespace gpu
 #define MAX_KERNELS_SUPPORTED 100
 
 
-/*
- * With just the flip of this switch you can convolve with the normal kernel (the default) or
- * you can convolved with the flipped kernel (flipped horizontally and vertically).
- */
-#if CONVOLVE_WITH_FLIPPED_KERNEL
-    #define CONVERT_KERNEL_ROW_INDEX(x) (KERNEL_ROWS-(x)-1)
-    #define CONVERT_KERNEL_COL_INDEX(x) (KERNEL_COLS-(x)-1)
-#else
-    #define CONVERT_KERNEL_ROW_INDEX(x) (x)
-    #define CONVERT_KERNEL_COL_INDEX(x) (x)
-#endif
-
-
-#if GPU_PART1_USE_TEMPLATE
+#if GPU_CONV2D_USE_TEMPLATE
 template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
 #endif
 __global__
 void
 __launch_bounds__(BLOCK_SIZE_Y*BLOCK_SIZE_X, DESIRED_BLOCKS_PER_SM)
-#if GPU_PART1_USE_TEMPLATE
-gpu_conv2d_multi_input_templated(
+#if GPU_CONV2D_USE_TEMPLATE
+convolve_in_one_pass_templated(
 #else
-gpu_conv2d_multi_input(
+convolve_in_one_pass(
 #endif
-#if !GPU_PART1_USE_TEMPLATE
+#if !GPU_CONV2D_USE_TEMPLATE
         u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
 #endif
         const fml* inputPtr,  u32 inputRows,   u32 inputCols,
@@ -186,18 +173,18 @@ gpu_conv2d_multi_input(
 }
 
 
-#if GPU_PART1_USE_TEMPLATE
+#if GPU_CONV2D_USE_TEMPLATE
 template <u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS>
 #endif
 __global__
 void
 __launch_bounds__(BLOCK_SIZE_Y*BLOCK_SIZE_X, DESIRED_BLOCKS_PER_SM)
-#if GPU_PART1_USE_TEMPLATE
-gpu_conv2d_multi_input_for_large_input_templated(
+#if GPU_CONV2D_USE_TEMPLATE
+convolve_in_multiple_passes_templated(
 #else
-gpu_conv2d_multi_input_for_large_input(
+convolve_in_multiple_passes(
 #endif
-#if !GPU_PART1_USE_TEMPLATE
+#if !GPU_CONV2D_USE_TEMPLATE
         u32 INPUT_COMPONENTS, u32 KERNEL_ROWS, u32 KERNEL_COLS, u32 KERNEL_STEP_Y, u32 KERNEL_STEP_X, u32 NUM_KERNELS,
 #endif
         const fml* inputPtr,  u32 inputRows,   u32 inputCols,
@@ -260,7 +247,7 @@ gpu_conv2d_multi_input_for_large_input(
     }
 
     // For each component of the input, we will process it independently.
-#if GPU_PART1_USE_TEMPLATE
+#if GPU_CONV2D_USE_TEMPLATE
     fml accumulators[NUM_KERNELS];
 #else
     fml accumulators[MAX_KERNELS_SUPPORTED];

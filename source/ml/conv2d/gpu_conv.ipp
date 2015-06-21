@@ -15,15 +15,37 @@
 #define THROW_IF_FALLBACK_IMPL_NEEDED 0
 
 
+/*
+ * With just the flip of this switch you can convolve with the normal kernel (the default) or
+ * you can convolved with the flipped kernel (flipped horizontally and vertically).
+ *
+ * The idea here is that if we convolve with the flipped kernel, that is like backprop. This
+ * is a little bit of a hack but it's totally worth it because it keeps from having a lot of
+ * duplicate code, and this way we can make improvements to the CUDA convolve function and get
+ * rewards in both the convolve speed and the backprop speed.
+ */
+#if CONVOLVE_WITH_FLIPPED_KERNEL
+    #define CONVERT_KERNEL_ROW_INDEX(x) (KERNEL_ROWS-(x)-1)
+    #define CONVERT_KERNEL_COL_INDEX(x) (KERNEL_COLS-(x)-1)
+    #define convolve_in_one_pass                  backprop_in_one_pass
+    #define convolve_in_one_pass_templated        backprop_in_one_pass_templated
+    #define convolve_in_multiple_passes           backprop_in_multiple_passes
+    #define convolve_in_multiple_passes_templated backprop_in_multiple_passes_templated
+#else
+    #define CONVERT_KERNEL_ROW_INDEX(x) (x)
+    #define CONVERT_KERNEL_COL_INDEX(x) (x)
+#endif
+
+
 #include "../cuda_stuff.ipp"
 
-#define GPU_PART1_USE_TEMPLATE 0
+#define GPU_CONV2D_USE_TEMPLATE 0
 #include "gpu_conv_impl.ipp"
-#undef  GPU_PART1_USE_TEMPLATE
+#undef  GPU_CONV2D_USE_TEMPLATE
 
-#define GPU_PART1_USE_TEMPLATE 1
+#define GPU_CONV2D_USE_TEMPLATE 1
 #include "gpu_conv_impl.ipp"
-#undef  GPU_PART1_USE_TEMPLATE
+#undef  GPU_CONV2D_USE_TEMPLATE
 
 
 #if THROW_IF_FALLBACK_IMPL_NEEDED
@@ -33,7 +55,7 @@
 #define RUN_FALLBACK_IMPL \
     if (canUseFastImpl) \
     { \
-        gpu_conv2d_multi_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
+        convolve_in_one_pass<<<gridSize, blockSize, sharedMemNeeded>>>( \
             inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
             inputPtr,  inputRows,   inputCols, \
             kernelPtr, \
@@ -42,7 +64,7 @@
     } \
     else \
     { \
-        gpu_conv2d_multi_input_for_large_input<<<gridSize, blockSize, sharedMemNeeded>>>( \
+        convolve_in_multiple_passes<<<gridSize, blockSize, sharedMemNeeded>>>( \
             inputComponents, kernelRows, kernelCols, kernelStepY, kernelStepX, numKernels, \
             inputPtr,  inputRows,   inputCols, \
             kernelPtr, \
@@ -59,7 +81,7 @@
         { \
             if (canUseFastImpl) \
             { \
-                gpu_conv2d_multi_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                convolve_in_one_pass_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     inputPtr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
@@ -67,7 +89,7 @@
             } \
             else \
             { \
-                gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                convolve_in_multiple_passes_templated<inputComponents, 3, 3, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     inputPtr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
@@ -79,7 +101,7 @@
         { \
             if (canUseFastImpl) \
             { \
-                gpu_conv2d_multi_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                convolve_in_one_pass_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     inputPtr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
@@ -87,7 +109,7 @@
             } \
             else \
             { \
-                gpu_conv2d_multi_input_for_large_input_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
+                convolve_in_multiple_passes_templated<inputComponents, 5, 5, kernelStepY, kernelStepX, numKernels><<<gridSize, blockSize, sharedMemNeeded>>>( \
                     inputPtr,  inputRows,   inputCols, \
                     kernelPtr, \
                     kernelBiases, scaleFactor, \
