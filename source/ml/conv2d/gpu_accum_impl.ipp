@@ -224,14 +224,14 @@ accum_in_multiple_passes(
     // For each component of the input, we will process it independently.
     for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
     {
-        // Copy this channel into the shared memory.
+        // Copy this channel (aka, component) into the shared memory.
         {
             fml value;
-            if (isInsideInput)
-                value = inputPtr[inputComponentIndex];
-            else
+            if (!isInsideInput)
                 value = FML(0.0);
-            input_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x] = value;
+            else
+                value = inputPtr[inputComponentIndex];
+            input_shared[linearThreadIndex] = value;
         }
 
         // Don't move on until all threads have copied the values they are each responsible for.
@@ -270,10 +270,6 @@ accum_in_multiple_passes(
                 }
             }
         }
-
-        // Don't loop back up and start messing with shared memory again until all threads are finished
-        // with the calculation above (which uses the current shared memory values).
-        __syncthreads();
     }
 }
 
