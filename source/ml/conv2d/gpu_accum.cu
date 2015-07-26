@@ -20,9 +20,6 @@ void conv2d_accumError_multi_input(
               fml* db_ptr, fml scaleFactor,
         const fml* dA_ptr)
 {
-    // TODO
-    // Don't forget to set dk_ptr and db_ptr vectors to zero before you begin.
-
     assert(inputPtr && inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(dk_ptr && (kernelRows % 2) == 1 && (kernelCols % 2) == 1);
     assert(kernelStepY > 0 && kernelStepX > 0 && numKernels > 0);
@@ -67,6 +64,11 @@ void conv2d_accumError_multi_input(
         canUseFastImpl = false;
         sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
     }
+
+    thrust::device_ptr<fml> dk(dk_ptr);
+    thrust::device_ptr<fml> db(db_ptr);
+    thrust::fill(dk, dk+kernelRows*kernelCols*inputComponents*numKernels, FML(0.0));
+    thrust::fill(db, db+numKernels,                                       FML(0.0));
 
     RUN_CONV2D_ACCUM_GPU_FUNTION
 
