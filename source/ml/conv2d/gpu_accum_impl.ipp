@@ -5,7 +5,7 @@
  * for that instead.
  */
 
-#include "../cub/cub.cuh"
+#include "../Cub/cub/cub.cuh"
 
 
 namespace ml
