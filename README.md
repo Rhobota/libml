@@ -39,3 +39,12 @@ compilation time much longer. You can turn on/off this templatization (e.g. it's
 useful to turn it off while developing and testing the code); for details see
 the file: source/ml/conv2d/gpu_common.ipp
 
+Also, see source/ml/conv2d/gpu_common.ipp and source/ml/cuda_stuff.ipp, as they
+both have some constants that you may need to edit for your particular GPU.
+
+At this time, multi-GPU is not implemented internally within this library.
+However, you can certainly call cudaSetDevice() in your application code
+followed by calls into this library to make use of multiple GPUs on the
+application side of things. (There are no calls to cudaSetDevice() inside
+this library, so calls to this library will not mess up such an endeavour.)
+
