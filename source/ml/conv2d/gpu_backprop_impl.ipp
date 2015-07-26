@@ -55,17 +55,17 @@ backprop_in_one_pass(
     {
         u32 block_offset_y = blockIdx.y * (BLOCK_SIZE_Y-KERNEL_ROWS+1);
         u32 block_offset_x = blockIdx.x * (BLOCK_SIZE_X-KERNEL_COLS+1);
+        i32 global_y = block_offset_y + threadIdx.y;  global_y -= KERNEL_ROWS/2;
+        i32 global_x = block_offset_x + threadIdx.x;  global_x -= KERNEL_COLS/2;
 
         // Copy all the input of this block into shared memory.
         {
             u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
-            i32 rowHere = ((i32)block_offset_y) - KERNEL_ROWS/2 + threadIdx.y;
-            i32 colHere = ((i32)block_offset_x) - KERNEL_COLS/2 + threadIdx.x;
-            dA_ptr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + rowHere * inputCols * NUM_KERNELS + colHere * NUM_KERNELS;
+            dA_ptr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + global_y * inputCols * NUM_KERNELS + global_x * NUM_KERNELS;
             for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
             {
                 fml value;
-                if ((rowHere < 0) | (rowHere >= inputRows) | (colHere < 0) | (colHere >= inputCols))
+                if ((global_y < 0) | (global_y >= inputRows) | (global_x < 0) | (global_x >= inputCols))
                     value = FML(0.0);
                 else
                     value = dA_ptr[kernelIndex];
@@ -75,9 +75,6 @@ backprop_in_one_pass(
 
         // Determine if this thread is an output thread or not.
         {
-            i32 global_y = block_offset_y + threadIdx.y;  global_y -= KERNEL_ROWS/2;
-            i32 global_x = block_offset_x + threadIdx.x;  global_x -= KERNEL_COLS/2;
-
             // All threads will help copy values into the shared memory. But not
             // all threads will be required to calculate output values. Only
             // threads that have all the following attributes will be required

@@ -36,9 +36,6 @@ void conv2d_accumError_multi_input(
     if (kernelStepX != 1)
         throw eInvalidArgument("Unsupported kernelStepX: must be in 1.");
 
-    if (numKernels > MAX_KERNELS_SUPPORTED)
-        throw eInvalidArgument("Unsupported numKernels: you specified too many!");
-
     u32 kernelRadiusY = kernelRows / 2;
     u32 kernelRadiusX = kernelCols / 2;
 
@@ -58,9 +55,10 @@ void conv2d_accumError_multi_input(
     blockSize.z = 1;
 
     bool canUseFastImpl = true;
-    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
+    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + BLOCK_SIZE_Y*BLOCK_SIZE_X) * sizeof(fml);
     if (sharedMemNeeded * DESIRED_BLOCKS_PER_SM > SHARED_MEM_AVAIL_PER_SM)
     {
+        throw eNotImplemented();
         canUseFastImpl = false;
         sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
     }
