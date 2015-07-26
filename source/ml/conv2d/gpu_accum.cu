@@ -59,7 +59,7 @@ void conv2d_accumError_multi_input(
 
     bool canUseFastImpl = true;
     u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents) * sizeof(fml);
-    if (sharedMemNeeded * DESIRED_BLOCKS_PER_SM > SHARED_MEM_AVAIL_PER_SM)
+    if (sharedMemNeeded * DESIRED_BLOCKS_PER_SM > SHARED_MEM_AVAIL_PER_SM)   // <-- This condition isn't entirely accurate for the accum CUDA functions (btw, it IS for the others, i.e. conv and backprop), because it doesn't take the BlockReduce shared memory into account.
     {
         canUseFastImpl = false;
         sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X) * sizeof(fml);
