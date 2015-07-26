@@ -55,10 +55,10 @@ void conv2d_accumError_multi_input(
     blockSize.z = 1;
 
     bool canUseFastImpl = true;
-    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + BLOCK_SIZE_Y*BLOCK_SIZE_X) * sizeof(fml);
+    u32 sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X*inputComponents + BLOCK_SIZE_Y*BLOCK_SIZE_X + BLOCK_SIZE_Y*BLOCK_SIZE_X) * sizeof(fml);
     if (sharedMemNeeded * DESIRED_BLOCKS_PER_SM > SHARED_MEM_AVAIL_PER_SM)
     {
-        throw eNotImplemented();
+        throw eNotImplemented("Need to do this...");
         canUseFastImpl = false;
         sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X + kernelRows*kernelCols*inputComponents*numKernels + numKernels) * sizeof(fml);
     }
