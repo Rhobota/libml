@@ -403,7 +403,7 @@ void accumErrorTest(
         {
             fml a = dk1[r*kernelCols*inputComponents + c];
             fml b = dk2[r*kernelCols*inputComponents + c];
-            if (fabs(a - b) > 0.00000001)
+            if (fabs(a - b) / fabs(a) > 0.0001)
             {
                 std::cerr << "NOT EQUAL! " << a << " != " << b << std::endl;
                 t.fail();
@@ -414,7 +414,7 @@ void accumErrorTest(
     {
         fml a = db1[i];
         fml b = db2[i];
-        if (fabs(a - b) > 0.00000001)
+        if (fabs(a - b) / fabs(a) > 0.0001)
         {
             std::cerr << "NOT EQUAL! " << a << " != " << b << std::endl;
             t.fail();

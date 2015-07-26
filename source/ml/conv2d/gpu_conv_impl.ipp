@@ -59,10 +59,9 @@ convolve_in_one_pass(
     bool isOutputThread;
     u32 input_start_offset;
     {
-        u32 block_offset_y = blockIdx.y * (BLOCK_SIZE_Y-KERNEL_ROWS+1);
-        u32 block_offset_x = blockIdx.x * (BLOCK_SIZE_X-KERNEL_COLS+1);
-        i32 global_y = block_offset_y + threadIdx.y;  global_y -= KERNEL_ROWS/2;
-        i32 global_x = block_offset_x + threadIdx.x;  global_x -= KERNEL_COLS/2;
+        i32 global_y = blockIdx.y * (BLOCK_SIZE_Y-KERNEL_ROWS+1) + threadIdx.y;  global_y -= KERNEL_ROWS/2;
+        i32 global_x = blockIdx.x * (BLOCK_SIZE_X-KERNEL_COLS+1) + threadIdx.x;  global_x -= KERNEL_COLS/2;
+        bool isInsideInput = (global_y >= 0) & (global_y < inputRows) & (global_x >= 0) & (global_x < inputCols);
 
         // Copy all the input of this block into shared memory.
         {
@@ -71,7 +70,7 @@ convolve_in_one_pass(
             for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
             {
                 fml value;
-                if ((global_y < 0) | (global_y >= inputRows) | (global_x < 0) | (global_x >= inputCols))
+                if (!isInsideInput)
                     value = FML(0.0);
                 else
                     value = inputPtr[inputComponentIndex];
@@ -87,8 +86,7 @@ convolve_in_one_pass(
             // to calculate output values:
             //   - be inside the effective block, and
             //   - be inside the input.
-            isOutputThread = ((global_y >= 0) & (global_y < inputRows) &
-                              (global_x >= 0) & (global_x < inputCols) &
+            isOutputThread = (isInsideInput &
                               (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
                               (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
             outputPtr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + global_y * inputCols * NUM_KERNELS + global_x * NUM_KERNELS;
