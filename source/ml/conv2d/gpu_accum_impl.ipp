@@ -42,43 +42,30 @@ accum_in_one_pass(
     fml* dA_shared = input_shared + BLOCK_SIZE_Y*BLOCK_SIZE_X*INPUT_COMPONENTS;
 
     // Useful to have:
-    bool isOutputThread;
+    bool isInsideInput;
     u32 input_start_offset;
     {
         u32 block_offset_y = blockIdx.y * (BLOCK_SIZE_Y-KERNEL_ROWS+1);
         u32 block_offset_x = blockIdx.x * (BLOCK_SIZE_X-KERNEL_COLS+1);
         i32 global_y = block_offset_y + threadIdx.y;  global_y -= KERNEL_ROWS/2;
         i32 global_x = block_offset_x + threadIdx.x;  global_x -= KERNEL_COLS/2;
+        isInsideInput = (global_y >= 0) & (global_y < inputRows) & (global_x >= 0) & (global_x < inputCols);
+        inputPtr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
+        dA_ptr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + global_y * inputCols * NUM_KERNELS + global_x * NUM_KERNELS;
+        input_start_offset = (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
 
         // Copy all the input of this block into shared memory.
         {
             u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
-            inputPtr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
             for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
             {
                 fml value;
-                if ((global_y < 0) | (global_y >= inputRows) | (global_x < 0) | (global_x >= inputCols))
+                if (!isInsideInput)
                     value = FML(0.0);
                 else
                     value = inputPtr[inputComponentIndex];
                 input_shared[linearThreadIndex + inputComponentIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X] = value;
             }
-        }
-
-        // Determine if this thread is an output thread or not.
-        {
-            // All threads will help copy values into the shared memory. But not
-            // all threads will be required to calculate output values. Only
-            // threads that have all the following attributes will be required
-            // to calculate output values:
-            //   - be inside the effective block, and
-            //   - be inside the input.
-            isOutputThread = ((global_y >= 0) & (global_y < inputRows) &
-                              (global_x >= 0) & (global_x < inputCols) &
-                              (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
-                              (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
-            dA_ptr += blockIdx.z * inputRows * inputCols * NUM_KERNELS + global_y * inputCols * NUM_KERNELS + global_x * NUM_KERNELS;
-            input_start_offset = (threadIdx.y - KERNEL_ROWS/2) * BLOCK_SIZE_X + (threadIdx.x - KERNEL_COLS/2);
         }
     }
 
@@ -94,10 +81,10 @@ accum_in_one_pass(
         // Populate this component of the dA block:
         {
             fml value;
-            if (isOutputThread)
-                value = dA_ptr[kernelIndex];
-            else
+            if (!isInsideInput)
                 value = FML(0.0);
+            else
+                value = dA_ptr[kernelIndex];
             dA_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x] = value;
         }
 
