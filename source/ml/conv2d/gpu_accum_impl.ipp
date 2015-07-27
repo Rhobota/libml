@@ -41,7 +41,7 @@ accum_in_one_pass(
     // And we will also allocate some shared memory that is needed by cub::BlockReduce.
     extern __shared__ fml memory_shared[];
     fml* input_shared = memory_shared + 0;
-    fml* dA_shared    = input_shared + BLOCK_SIZE_Y*BLOCK_SIZE_X*INPUT_COMPONENTS;
+    fml* dA_shared    = input_shared + BLOCK_SIZE_Y*(BLOCK_SIZE_X+KERNEL_COLS)*INPUT_COMPONENTS;
 
     // Useful to have:
     u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
@@ -62,7 +62,7 @@ accum_in_one_pass(
                     value = FML(0.0);
                 else
                     value = inputPtr[inputComponentIndex];
-                input_shared[threadIdx.y * BLOCK_SIZE_X + threadIdx.x + inputComponentIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X] = value;
+                input_shared[threadIdx.y * (BLOCK_SIZE_X+KERNEL_COLS) + threadIdx.x + inputComponentIndex * BLOCK_SIZE_Y * (BLOCK_SIZE_X+KERNEL_COLS)] = value;
             }
         }
 
@@ -102,13 +102,13 @@ accum_in_one_pass(
             u32 kernelRowIndex = (thing % (KERNEL_ROWS*KERNEL_COLS)) / KERNEL_COLS;
             u32 kernelColIndex = (thing % (KERNEL_ROWS*KERNEL_COLS)) % KERNEL_COLS;
             fml dk = FML(0.0);
-            const fml* input_start = input_shared + inputComponentIndex * BLOCK_SIZE_Y * BLOCK_SIZE_X + kernelRowIndex * BLOCK_SIZE_X + kernelColIndex;
+            const fml* input_start = input_shared + inputComponentIndex * BLOCK_SIZE_Y * (BLOCK_SIZE_X+KERNEL_COLS) + kernelRowIndex * (BLOCK_SIZE_X+KERNEL_COLS) + kernelColIndex;
             const fml* dA_start = dA_shared + (KERNEL_ROWS/2) * BLOCK_SIZE_X + KERNEL_COLS/2;
             for (u32 blockRowIndex = 0; blockRowIndex < BLOCK_SIZE_Y-KERNEL_ROWS+1; blockRowIndex++)
             {
                 for (u32 blockColIndex = 0; blockColIndex < BLOCK_SIZE_X-KERNEL_COLS+1; blockColIndex++)
                 {
-                    dk += input_start[blockRowIndex*BLOCK_SIZE_X+blockColIndex] * dA_start[blockRowIndex*BLOCK_SIZE_X+blockColIndex];
+                    dk += input_start[blockRowIndex*(BLOCK_SIZE_X+KERNEL_COLS)+blockColIndex] * dA_start[blockRowIndex*BLOCK_SIZE_X+blockColIndex];
                 }
             }
             fml* dk_here = dk_ptr + kernelIndex * KERNEL_ROWS * KERNEL_COLS * INPUT_COMPONENTS + kernelRowIndex * KERNEL_COLS * INPUT_COMPONENTS + kernelColIndex * INPUT_COMPONENTS + inputComponentIndex;
