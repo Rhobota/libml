@@ -17,6 +17,13 @@
 #define SHARED_MEM_AVAIL_PER_SM 49152
 
 
+/*
+ * The size of a warp on your GPU. Currently, all GPUs have this warp size,
+ * but things could change in the future.
+ */
+#define WARP_SIZE 32
+
+
 #define cuda_assert(expression) \
     do { \
         cudaError_t err; \
