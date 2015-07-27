@@ -41,7 +41,7 @@ accum_in_one_pass(
     // And we will also allocate some shared memory that is needed by cub::BlockReduce.
     extern __shared__ fml memory_shared[];
     fml* input_shared  = memory_shared + 0;
-    typedef cub::BlockReduce<fml, BLOCK_SIZE_X, cub::BLOCK_REDUCE_WARP_REDUCTIONS, BLOCK_SIZE_Y> BlockReduce;
+    typedef cub::BlockReduce<fml, BLOCK_SIZE_X, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCK_SIZE_Y> BlockReduce;  // Also try: BLOCK_REDUCE_WARP_REDUCTIONS
     __shared__ typename BlockReduce::TempStorage blockreduce_temp_storage;
 
     // Useful to have:
@@ -163,7 +163,7 @@ accum_in_multiple_passes(
     // And we will also allocate some shared memory that is needed by cub::BlockReduce.
     extern __shared__ fml memory_shared[];
     fml* input_shared  = memory_shared + 0;
-    typedef cub::BlockReduce<fml, BLOCK_SIZE_X, cub::BLOCK_REDUCE_WARP_REDUCTIONS, BLOCK_SIZE_Y> BlockReduce;
+    typedef cub::BlockReduce<fml, BLOCK_SIZE_X, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCK_SIZE_Y> BlockReduce;  // Also try: BLOCK_REDUCE_WARP_REDUCTIONS
     __shared__ typename BlockReduce::TempStorage blockreduce_temp_storage;
 
     // Useful things to have:
