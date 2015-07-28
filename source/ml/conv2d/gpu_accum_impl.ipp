@@ -5,8 +5,6 @@
  * for that instead.
  */
 
-#include "../Cub/cub/cub.cuh"
-
 
 /*
  * If you change BLOCK_SIZE_X or BLOCK_SIZE_Y or WARP_SIZE, then

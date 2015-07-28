@@ -36,9 +36,6 @@ void conv2d_accumError_multi_input(
     if (kernelStepX != 1)
         throw eInvalidArgument("Unsupported kernelStepX: must be in 1.");
 
-    if (numKernels > MAX_KERNELS_SUPPORTED)
-        throw eInvalidArgument("Unsupported numKernels: you specified too many!");
-
     u32 kernelRadiusY = kernelRows / 2;
     u32 kernelRadiusX = kernelCols / 2;
 
