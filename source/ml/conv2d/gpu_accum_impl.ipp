@@ -72,14 +72,7 @@ accum_in_one_pass(
             }
         }
 
-        // Determine if this thread is an output thread or not.
-        //
-        // All threads will help copy values into the shared memory. But not
-        // all threads will be required to calculate output values. Only
-        // threads that have all the following attributes will be required
-        // to calculate output values:
-        //   - be inside the effective block, and
-        //   - be inside the input.
+        // Determine if this thread is (was?) an output thread or not.
         isOutputThread = (isInsideInput &
                           (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
                           (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
@@ -181,14 +174,7 @@ accum_in_multiple_passes(
         isInsideInput = (global_y >= 0) & (global_y < inputRows) & (global_x >= 0) & (global_x < inputCols);
         inputPtr += blockIdx.z * inputRows * inputCols * INPUT_COMPONENTS + global_y * inputCols * INPUT_COMPONENTS + global_x * INPUT_COMPONENTS;
 
-        // Determine if this thread is an output thread or not.
-        //
-        // All threads will help copy values into the shared memory. But not
-        // all threads will be required to calculate output values. Only
-        // threads that have all the following attributes will be required
-        // to calculate output values:
-        //   - be inside the effective block, and
-        //   - be inside the input.
+        // Determine if this thread is (was?) an output thread or not.
         isOutputThread = (isInsideInput &
                           (threadIdx.x >= KERNEL_COLS/2) & (threadIdx.x < BLOCK_SIZE_X-KERNEL_COLS/2) &
                           (threadIdx.y >= KERNEL_ROWS/2) & (threadIdx.y < BLOCK_SIZE_Y-KERNEL_ROWS/2));
@@ -196,6 +182,7 @@ accum_in_multiple_passes(
     }
 
     // Calculate, reduce, and store the value of db and of every dk.
+    // (This will take several passes through the input, but only one pass through the dA...)
     u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
     for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
     {
