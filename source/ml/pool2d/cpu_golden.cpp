@@ -17,6 +17,11 @@ void s_pool2d(
                               u32 poolRows,  u32 poolCols,
               fml* outputPtr)
 {
+    assert(inputPtr);
+    assert(inputRows > 0 && inputCols > 0 && inputComponents > 0);
+    assert(poolRows > 0 && poolCols > 0);
+    assert(outputPtr);
+
     u32 outRows = inputRows / poolRows;
     u32 outCols = inputCols / poolCols;
 
