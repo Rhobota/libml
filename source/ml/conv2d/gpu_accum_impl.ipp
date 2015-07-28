@@ -47,20 +47,18 @@ accum_in_one_pass(
 {
     // We use shared memory so that each global memory value only must be read once!
     // Makes everything much much faster.
-    // We will keep all component of the input block in shared memory at the same time.
-    // And we will also allocate some shared memory that is needed by cub::BlockReduce.
+    // We will keep all components of the input block in shared memory at the same time.
+    // And we will also keep ONE component of the dA block in shared memory at a time.
     extern __shared__ fml memory_shared[];
-    fml* input_shared = memory_shared + 0;
-    fml* dA_shared    = input_shared + (BLOCK_SIZE_Y*(BLOCK_SIZE_X+KERNEL_COLS)+INPUT_COALESCED_EXTRA_PADDING+KERNEL_ROWS*KERNEL_COLS)*INPUT_COMPONENTS;  // <-- note the weird dimensions; be sure to index it properly!
+    fml* input_shared = memory_shared + 0;  // <--v-- note the weird dimensions on input_shared; this is so that shared memory access is coalesced; be sure to index this array properly!
+    fml* dA_shared    = input_shared + (BLOCK_SIZE_Y*(BLOCK_SIZE_X+KERNEL_COLS)+INPUT_COALESCED_EXTRA_PADDING+KERNEL_ROWS*KERNEL_COLS)*INPUT_COMPONENTS;
 
     // Useful to have:
-    u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
-    bool isInsideInput;
     bool isOutputThread;
     {
         i32 global_y = blockIdx.y * (BLOCK_SIZE_Y-KERNEL_ROWS+1) + threadIdx.y;  global_y -= KERNEL_ROWS/2;
         i32 global_x = blockIdx.x * (BLOCK_SIZE_X-KERNEL_COLS+1) + threadIdx.x;  global_x -= KERNEL_COLS/2;
-        isInsideInput = (global_y >= 0) & (global_y < inputRows) & (global_x >= 0) & (global_x < inputCols);
+        bool isInsideInput = (global_y >= 0) & (global_y < inputRows) & (global_x >= 0) & (global_x < inputCols);
 
         // Copy all the input of this block into shared memory.
         {
@@ -91,6 +89,7 @@ accum_in_one_pass(
     }
 
     // Calculate, reduce, and store the value of db and of every dk.
+    u32 linearThreadIndex = threadIdx.y * BLOCK_SIZE_X + threadIdx.x;
     for (u32 kernelIndex = 0; kernelIndex < NUM_KERNELS; kernelIndex++)
     {
         // Copy our dA into shared memory.
@@ -104,16 +103,16 @@ accum_in_one_pass(
         }
         __syncthreads();
 
-        // For every dk:
+        // For every dk of this kernel, calculate it and store it.
+        const fml* dA_start = dA_shared + (KERNEL_ROWS/2) * BLOCK_SIZE_X + KERNEL_COLS/2;
         u32 numThingsToCalculate = KERNEL_ROWS*KERNEL_COLS*INPUT_COMPONENTS;
         for (u32 thing = linearThreadIndex; thing < numThingsToCalculate; thing += BLOCK_SIZE_Y*BLOCK_SIZE_X)
         {
             u32 inputComponentIndex = thing / (KERNEL_ROWS*KERNEL_COLS);
             u32 kernelRowIndex = (thing % (KERNEL_ROWS*KERNEL_COLS)) / KERNEL_COLS;
             u32 kernelColIndex = (thing % (KERNEL_ROWS*KERNEL_COLS)) % KERNEL_COLS;
-            fml dk = FML(0.0);
             const fml* input_start = input_shared + inputComponentIndex * (BLOCK_SIZE_Y*(BLOCK_SIZE_X+KERNEL_COLS)+INPUT_COALESCED_EXTRA_PADDING+KERNEL_ROWS*KERNEL_COLS) + kernelRowIndex * (BLOCK_SIZE_X+KERNEL_COLS) + kernelColIndex;
-            const fml* dA_start = dA_shared + (KERNEL_ROWS/2) * BLOCK_SIZE_X + KERNEL_COLS/2;
+            fml dk = FML(0.0);
             for (u32 blockRowIndex = 0; blockRowIndex < BLOCK_SIZE_Y-KERNEL_ROWS+1; blockRowIndex++)
             {
                 for (u32 blockColIndex = 0; blockColIndex < BLOCK_SIZE_X-KERNEL_COLS+1; blockColIndex++)
