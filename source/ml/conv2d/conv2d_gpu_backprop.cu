@@ -1,6 +1,6 @@
 #include <ml/conv2d/gpu.h>
 
-#include "gpu_backprop.ipp"
+#include "conv2d_gpu_backprop.ipp"
 
 
 namespace ml

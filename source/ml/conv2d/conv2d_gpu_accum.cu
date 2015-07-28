@@ -1,6 +1,6 @@
 #include <ml/conv2d/gpu.h>
 
-#include "gpu_accum.ipp"
+#include "conv2d_gpu_accum.ipp"
 
 
 namespace ml

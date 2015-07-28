@@ -1,13 +1,13 @@
-#include "gpu_common.ipp"
+#include "conv2d_gpu_common.ipp"
 
 #include "../cuda_stuff.ipp"
 
 #define GPU_CONV2D_USE_TEMPLATE 0
-#include "gpu_conv_impl.ipp"
+#include "conv2d_gpu_conv_impl.ipp"
 #undef  GPU_CONV2D_USE_TEMPLATE
 
 #define GPU_CONV2D_USE_TEMPLATE 1
-#include "gpu_conv_impl.ipp"
+#include "conv2d_gpu_conv_impl.ipp"
 #undef  GPU_CONV2D_USE_TEMPLATE
 
 

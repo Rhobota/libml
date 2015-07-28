@@ -1,13 +1,13 @@
-#include "gpu_common.ipp"
+#include "conv2d_gpu_common.ipp"
 
 #include "../cuda_stuff.ipp"
 
 #define GPU_ACCUM_USE_TEMPLATE 0
-#include "gpu_accum_impl.ipp"
+#include "conv2d_gpu_accum_impl.ipp"
 #undef  GPU_ACCUM_USE_TEMPLATE
 
 #define GPU_ACCUM_USE_TEMPLATE 1
-#include "gpu_accum_impl.ipp"
+#include "conv2d_gpu_accum_impl.ipp"
 #undef  GPU_ACCUM_USE_TEMPLATE
 
 
