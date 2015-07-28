@@ -155,6 +155,17 @@ accum_in_multiple_passes(
               fml* db_ptr, fml scaleFactor,
         const fml* dA_ptr)
 {
+    /*
+     * This function could be made better by reading as much input as there is room for,
+     * instead of the current behavior of reading just one component (i.e. channel) of the
+     * input at a time. This would give two wins:
+     *   - We'd loop through the input less times (i.e. less memory bandwidth would be needed),
+     *     and
+     *   - the warp utilization of the inner-most loops would go up, since more threads
+     *     would have work to perform (right now only KERNEL_ROWS*KERNEL_COLS threads
+     *     have work to do in those loops, which is likely less than the warp size).
+     */
+
     // We use shared memory so that each global memory value only must be read once!
     // Makes everything much much faster.
     // We will keep ONE components of the input block in shared memory at a time.
@@ -196,7 +207,8 @@ accum_in_multiple_passes(
             dA_shared[linearThreadIndex] = dA;
         }
 
-        // For every input channel...
+        // For every dk of this kernel, calculate it and store it.
+        // We'll have to read input channel-by-channel because we can't hold all the input in memory at the same time.
         for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
         {
             // Copy this channel into shared memory.
@@ -210,7 +222,7 @@ accum_in_multiple_passes(
             }
             __syncthreads();
 
-            // For every dk of this kernel (for this channel), calculate it and store it.
+            // For every dk of this kernel (of this channel), calculate it and store it.
             const fml* dA_start = dA_shared + (KERNEL_ROWS/2) * BLOCK_SIZE_X + KERNEL_COLS/2;
             u32 numThingsToCalculate = KERNEL_ROWS*KERNEL_COLS;
             for (u32 thing = linearThreadIndex; thing < numThingsToCalculate; thing += BLOCK_SIZE_Y*BLOCK_SIZE_X)
