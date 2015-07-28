@@ -65,7 +65,7 @@ void conv2d_accumError_multi_input(
     if (sharedMemNeeded * DESIRED_BLOCKS_PER_SM > SHARED_MEM_AVAIL_PER_SM)
     {
         canUseFastImpl = false;
-        sharedMemNeeded = (BLOCK_SIZE_Y*BLOCK_SIZE_X) * sizeof(fml);
+        sharedMemNeeded = (BLOCK_SIZE_Y*sharedMemInputWidth + BLOCK_SIZE_Y*BLOCK_SIZE_X) * sizeof(fml);
     }
 
     thrust::device_ptr<fml> dk(dk_ptr);
