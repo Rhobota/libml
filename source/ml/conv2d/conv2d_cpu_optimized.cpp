@@ -1,5 +1,6 @@
 #include <ml/conv2d/cpu_optimized.h>
 
+#define NDEBUG 1
 #include "../Eigen.h"
 
 
