@@ -99,10 +99,10 @@ void pool2dTest(const tTest& t)
 {
     for (int i = 0; i < kTestIterations; i++)
     {
-        u32 inputRows = (rand() % 15) + 1;
-        u32 inputCols = (rand() % 15) + 1;
-        u32 inputComponents = (rand() % 3) + 1;
-        u32 numInputs = (rand() % 5) + 1;
+        u32 inputRows = (rand() % 100) + 1;
+        u32 inputCols = (rand() % 100) + 1;
+        u32 inputComponents = (rand() % 15) + 1;
+        u32 numInputs = (rand() % 10) + 1;
 
         u32 poolRows = 2*(rand() % 4) + 1;
         u32 poolCols = 2*(rand() % 4) + 1;
@@ -222,10 +222,10 @@ void un_pool2dTest(const tTest& t)
 {
     for (int i = 0; i < kTestIterations; i++)
     {
-        u32 inputRows = (rand() % 15) + 1;
-        u32 inputCols = (rand() % 15) + 1;
-        u32 inputComponents = (rand() % 3) + 1;
-        u32 numInputs = (rand() % 5) + 1;
+        u32 inputRows = (rand() % 100) + 1;
+        u32 inputCols = (rand() % 100) + 1;
+        u32 inputComponents = (rand() % 15) + 1;
+        u32 numInputs = (rand() % 10) + 1;
 
         u32 poolRows = 2*(rand() % 4) + 1;
         u32 poolCols = 2*(rand() % 4) + 1;
