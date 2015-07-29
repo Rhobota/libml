@@ -55,6 +55,9 @@ void s_un_pool2d(
     assert(srcPtr);
     assert(destPtr);
 
+    MapRowMajor dest(destPtr, inputRows, inputCols*inputComponents);
+    dest.setZero();
+
     u32 outRows = inputRows / poolRows;
     u32 outCols = inputCols / poolCols;
 
