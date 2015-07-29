@@ -3,6 +3,20 @@
 #include "../cuda_stuff.ipp"
 
 
+#define BLOCK_SIZE_Y 16
+#define BLOCK_SIZE_X 32
+#define DESIRED_BLOCKS_PER_SM 2
+
+
+#define GPU_POOL2D_USE_TEMPLATE 0
+#include "pool2d_gpu_pool_impl.ipp"
+#undef  GPU_POOL2D_USE_TEMPLATE
+
+#define GPU_POOL2D_USE_TEMPLATE 1
+#include "pool2d_gpu_pool_impl.ipp"
+#undef  GPU_POOL2D_USE_TEMPLATE
+
+
 namespace ml
 {
 namespace pool2d
