@@ -39,11 +39,11 @@ pool2d(
     u32 global_y = blockIdx.y*BLOCK_SIZE_Y + threadIdx.y;
     u32 global_x = blockIdx.x*BLOCK_SIZE_X + threadIdx.x;
     bool isInsideInput = (global_y < inputRows) & (global_x < inputCols);
-    inputPtr += global_y*inputCols*INPUT_COMPONENTS + global_x*INPUT_COMPONENTS;
     bool isOutputThread =
             ((global_y % POOL_ROWS) == 0)         & ((global_x % POOL_COLS) == 0)          &
             ((global_y + POOL_ROWS) <= inputRows) & ((global_x + POOL_COLS) <= inputCols);
-    outputPtr += (global_y/POOL_ROWS)*(inputCols/POOL_ROWS)*INPUT_COMPONENTS + (global_x/POOL_COLS)*INPUT_COMPONENTS;
+    inputPtr += blockIdx.z*inputRows*inputCols*INPUT_COMPONENTS + global_y*inputCols*INPUT_COMPONENTS + global_x*INPUT_COMPONENTS;
+    outputPtr += blockIdx.z*(inputRows/POOL_ROWS)*(inputCols/POOL_COLS)*INPUT_COMPONENTS + (global_y/POOL_ROWS)*(inputCols/POOL_COLS)*INPUT_COMPONENTS + (global_x/POOL_COLS)*INPUT_COMPONENTS;
 
     for (u32 inputComponentIndex = 0; inputComponentIndex < INPUT_COMPONENTS; inputComponentIndex++)
     {
@@ -68,6 +68,8 @@ pool2d(
 
             outputPtr[inputComponentIndex] = value;
         }
+
+        __syncthreads();
     }
 }
 
