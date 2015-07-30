@@ -72,7 +72,7 @@ void pool2d_multi_input(
     assert(inputPtr);
     assert(inputRows > 0 && inputCols > 0 && inputComponents > 0);
     assert(poolRows > 0 && poolCols > 0);
-    assert(outputPtr);
+    assert(outputPtr || (inputRows/poolRows == 0 || inputCols/poolCols == 0));
 
     if (poolRows != 2 || poolCols != 2)
         throw eInvalidArgument("The poolRows and poolCols must each be 2 when using the GPU implementation.");
