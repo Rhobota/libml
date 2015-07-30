@@ -8,6 +8,8 @@ namespace gpu
 
 #if GPU_POOL2D_USE_TEMPLATE
 template <u32 INPUT_COMPONENTS, u32 POOL_ROWS, u32 POOL_COLS>
+#else
+template <u32 POOL_ROWS, u32 POOL_COLS>
 #endif
 __global__
 void
@@ -18,7 +20,7 @@ pool2d_templated(
 pool2d(
 #endif
 #if !GPU_POOL2D_USE_TEMPLATE
-        u32 INPUT_COMPONENTS, u32 POOL_ROWS, u32 POOL_COLS,
+        u32 INPUT_COMPONENTS,
 #endif
         const fml* inputPtr,  u32 inputRows,  u32 inputCols,
               fml* outputPtr)
