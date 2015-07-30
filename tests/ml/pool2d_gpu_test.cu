@@ -27,7 +27,7 @@ void pool2dTest(
 {
     fml* input = new fml[inputRows*inputCols*inputComponents*numInputs];
     for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
-        input[i] = rand() % 100;
+        input[i] = ((fml)(rand())) * ((fml)(rand())) * ((fml)(rand()));
 
     u32 outputRows = inputRows / poolRows;
     u32 outputCols = inputCols / poolCols;
@@ -140,9 +140,20 @@ void un_pool2dTest(
         u32 poolRows,
         u32 poolCols)
 {
+    /*
+     * Note: There is a chance this test will fail even if your code is correct.
+     * The reason is that if two inputs in the same pooling region are equal,
+     * then it is equally correct to choose either one as the maximum. Therefore,
+     * in the un_pooling step, you can't know where to store the src value when there
+     * are two or more input values that are both maximum.
+     * To help this problem, we're using really large random input values so that
+     * it's very unlikely there will be two input values in the same region which are
+     * both maximum.
+     */
+
     fml* input = new fml[inputRows*inputCols*inputComponents*numInputs];
     for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
-        input[i] = rand() % 100;
+        input[i] = ((fml)(rand())) * ((fml)(rand())) * ((fml)(rand()));
 
     fml* dest1 = new fml[inputRows*inputCols*inputComponents*numInputs];
     for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
@@ -259,7 +270,7 @@ int main()
     srand(time(0));
 
     tTest("pool2d() gpu test", pool2dTest);
-    tTest("un_pool2d() gpu test", un_pool2dTest);
+    tTest("un_pool2d() gpu test", un_pool2dTest);  // <-- if this fails, see the comment in un_pool2dTest above
 
     return 0;
 }

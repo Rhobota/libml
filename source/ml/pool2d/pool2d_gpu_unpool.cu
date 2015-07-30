@@ -84,6 +84,9 @@ void un_pool2d_multi_input(
     blockSize.y = BLOCK_SIZE_Y;
     blockSize.z = 1;
 
+    thrust::device_ptr<fml> dest(destPtr);
+    thrust::fill(dest, dest+inputRows*inputCols*inputComponents*inputCount, FML(0.0));
+
     RUN_UNPOOL_GPU_FUNCTION
 
     cudaError_t errSync  = cudaGetLastError();
