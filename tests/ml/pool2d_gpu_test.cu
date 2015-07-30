@@ -104,8 +104,8 @@ void pool2dTest(const tTest& t)
         u32 inputComponents = (rand() % 15) + 1;
         u32 numInputs = (rand() % 10) + 1;
 
-        u32 poolRows = 2*(rand() % 4) + 1;
-        u32 poolCols = 2*(rand() % 4) + 1;
+        u32 poolRows = 2;  // <-- with the current GPU implementation, you can only pool 2x2
+        u32 poolCols = 2;
 
         dout << "inputRows = " << inputRows << std::endl;
         dout << "inputCols = " << inputCols << std::endl;
@@ -227,8 +227,8 @@ void un_pool2dTest(const tTest& t)
         u32 inputComponents = (rand() % 15) + 1;
         u32 numInputs = (rand() % 10) + 1;
 
-        u32 poolRows = 2*(rand() % 4) + 1;
-        u32 poolCols = 2*(rand() % 4) + 1;
+        u32 poolRows = 2;  // <-- with the current GPU implementation, you can only pool 2x2
+        u32 poolCols = 2;
 
         dout << "inputRows = " << inputRows << std::endl;
         dout << "inputCols = " << inputCols << std::endl;
