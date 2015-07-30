@@ -27,7 +27,7 @@ void pool2dTest(
 {
     fml* input = new fml[inputRows*inputCols*inputComponents*numInputs];
     for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
-        input[i] = ((fml)(rand())) * ((fml)(rand())) * ((fml)(rand()));
+        input[i] = ((fml)(rand()+1)) * ((fml)(rand()+1));
 
     u32 outputRows = inputRows / poolRows;
     u32 outputCols = inputCols / poolCols;
@@ -153,7 +153,7 @@ void un_pool2dTest(
 
     fml* input = new fml[inputRows*inputCols*inputComponents*numInputs];
     for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
-        input[i] = ((fml)(rand())) * ((fml)(rand())) * ((fml)(rand()));
+        input[i] = ((fml)(rand()+1)) * ((fml)(rand()+1));
 
     fml* dest1 = new fml[inputRows*inputCols*inputComponents*numInputs];
     for (u32 i = 0; i < inputRows*inputCols*inputComponents*numInputs; i++)
@@ -233,10 +233,10 @@ void un_pool2dTest(const tTest& t)
 {
     for (int i = 0; i < kTestIterations; i++)
     {
-        u32 inputRows = (rand() % 100) + 1;
-        u32 inputCols = (rand() % 100) + 1;
-        u32 inputComponents = (rand() % 15) + 1;
-        u32 numInputs = (rand() % 10) + 1;
+        u32 inputRows = (rand() % 40) + 1;
+        u32 inputCols = (rand() % 40) + 1;
+        u32 inputComponents = (rand() % 4) + 1;
+        u32 numInputs = (rand() % 4) + 1;
 
         u32 poolRows = 2;  // <-- with the current GPU implementation, you can only pool 2x2
         u32 poolCols = 2;
