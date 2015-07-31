@@ -2,7 +2,7 @@
 #define __ml_tPoolingLayerBase_h__
 
 
-#include <ml/common.h>
+#include <ml/iLayer.h>
 
 
 namespace ml
