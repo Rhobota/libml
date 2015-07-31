@@ -1,4 +1,5 @@
 #include <ml/tPoolingLayerCPU.h>
+#include <ml/pool2d/cpu_optimized.h>
 
 #include <cassert>
 #include <iomanip>
@@ -59,7 +60,11 @@ void tPoolingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     }
     m_curCount = count;
 
-    // TODO
+    pool2d::cpu_optimized::pool2d_multi_input(
+            count,
+            input,  m_inputRows,  m_inputCols,  m_inputComponents,
+                    m_poolRows,  m_poolCols,
+            m_a);
 }
 
 const fml* tPoolingLayerCPU::getOutput(u32& numOutputDims, u32& count) const
@@ -97,7 +102,12 @@ void tPoolingLayerCPU::takeOutputErrorGradients(
 
     if (calculateInputErrorGradients)
     {
-        // TODO
+        pool2d::cpu_optimized::un_pool2d_multi_input(
+                inputCount,
+                input,  m_inputRows,  m_inputCols,  m_inputComponents,
+                        m_poolRows,  m_poolCols,
+                outputErrorGradients,
+                m_prev_da);
     }
 }
 
