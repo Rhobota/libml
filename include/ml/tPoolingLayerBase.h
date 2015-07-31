@@ -20,7 +20,7 @@ class tPoolingLayerBase : public iLayer, public bNonCopyable
          * really. You probably don't need any more reduction than that from
          * one layer, especially a simple layer like this one.
          */
-        tPoolingLayerBase(u32 poolRows = 2, u32 poolCols = 2);
+        tPoolingLayerBase(u32 inputRows, u32 inputCols, u32 poolRows = 2, u32 poolCols = 2);
 
         /**
          * D'tor.

@@ -16,7 +16,12 @@ class tPoolingLayerCPU : public tPoolingLayerBase
         /**
          * See tPoolingLayerBase::tPoolingLayerBase().
          */
-        tPoolingLayerCPU();
+        tPoolingLayerCPU(u32 inputRows, u32 inputCols);
+
+        /**
+         * See tPoolingLayerBase::tPoolingLayerBase().
+         */
+        tPoolingLayerCPU(u32 inputRows, u32 inputCols, u32 poolRows, u32 poolCols);
 
         /**
          * D'tor.
