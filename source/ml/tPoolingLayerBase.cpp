@@ -9,9 +9,11 @@ namespace ml
 {
 
 
-tPoolingLayerBase::tPoolingLayerBase(u32 inputRows, u32 inputCols, u32 poolRows, u32 poolCols)
+tPoolingLayerBase::tPoolingLayerBase(u32 inputRows, u32 inputCols, u32 inputComponents,
+                                     u32 poolRows, u32 poolCols)
     : m_inputRows(inputRows),
       m_inputCols(inputCols),
+      m_inputComponents(inputComponents),
       m_poolRows(poolRows),
       m_poolCols(poolCols),
       m_curCount(0),
@@ -61,7 +63,7 @@ void tPoolingLayerBase::printLayerInfo(std::ostream& out) const
 
     {
         std::ostringstream o;
-        o << (m_inputRows/m_poolRows) << "x" << (m_inputCols/m_poolCols);
+        o << (m_inputRows/m_poolRows) << "x" << (m_inputCols/m_poolCols) << "x" << m_inputComponents;
         out << std::setw(w) << o.str();
     }
 
@@ -81,6 +83,7 @@ void tPoolingLayerBase::pack(iWritable* out) const
 {
     rho::pack(out, m_inputRows);
     rho::pack(out, m_inputCols);
+    rho::pack(out, m_inputComponents);
     rho::pack(out, m_poolRows);
     rho::pack(out, m_poolCols);
 }
@@ -89,6 +92,7 @@ void tPoolingLayerBase::unpack(iReadable* in)
 {
     rho::unpack(in, m_inputRows);
     rho::unpack(in, m_inputCols);
+    rho::unpack(in, m_inputComponents);
     rho::unpack(in, m_poolRows);
     rho::unpack(in, m_poolCols);
     m_curCount = 0;

@@ -9,15 +9,17 @@ namespace ml
 {
 
 
-tPoolingLayerCPU::tPoolingLayerCPU(u32 inputRows, u32 inputCols)
-    : tPoolingLayerBase(inputRows, inputCols),
+tPoolingLayerCPU::tPoolingLayerCPU(u32 inputRows, u32 inputCols, u32 inputComponents)
+    : tPoolingLayerBase(inputRows, inputCols, inputComponents),
       m_a(NULL),
       m_prev_da(NULL)
 {
 }
 
-tPoolingLayerCPU::tPoolingLayerCPU(u32 inputRows, u32 inputCols, u32 poolRows, u32 poolCols)
-    : tPoolingLayerBase(inputRows, inputCols, poolRows, poolCols),
+tPoolingLayerCPU::tPoolingLayerCPU(u32 inputRows, u32 inputCols, u32 inputComponents,
+                                   u32 poolRows, u32 poolCols)
+    : tPoolingLayerBase(inputRows, inputCols, inputComponents,
+                        poolRows, poolCols),
       m_a(NULL),
       m_prev_da(NULL)
 {
