@@ -85,7 +85,7 @@ void tPoolingLayerCPU::takeOutputErrorGradients(
     if (inputCount != m_curCount)
         throw eInvalidArgument("Unexpected inputCount");
 
-    if (m_curCount == 0 || !m_A || !m_prev_da)
+    if (m_curCount == 0 || !m_a || !m_prev_da)
         throw eRuntimeError("What gives?");
 
     if (calculateInputErrorGradients)

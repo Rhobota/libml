@@ -16,6 +16,11 @@ class tPoolingLayerGPU : public tPoolingLayerBase
         /**
          * See tPoolingLayerBase::tPoolingLayerBase().
          */
+        tPoolingLayerGPU();
+
+        /**
+         * See tPoolingLayerBase::tPoolingLayerBase().
+         */
         tPoolingLayerGPU(u32 inputRows, u32 inputCols, u32 inputComponents);
 
         /**

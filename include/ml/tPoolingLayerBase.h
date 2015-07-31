@@ -14,6 +14,12 @@ class tPoolingLayerBase : public iLayer, public bNonCopyable
     public:
 
         /**
+         * Constructs an uninitialized pooling layer. You should call
+         * unpack() after using this c'tor.
+         */
+        tPoolingLayerBase();
+
+        /**
          * Constructs a pooling layer. Yay! Right now only MAX-pooling is
          * implemented. I'd recommend doing 2x2 pooling, because that already
          * cuts down the dimensionality by a factor of 4, which is quite a lot
