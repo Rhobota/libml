@@ -9,6 +9,13 @@ namespace ml
 {
 
 
+tPoolingLayerCPU::tPoolingLayerCPU()
+    : tPoolingLayerBase(),
+      m_a(NULL),
+      m_prev_da(NULL)
+{
+}
+
 tPoolingLayerCPU::tPoolingLayerCPU(u32 inputRows, u32 inputCols, u32 inputComponents)
     : tPoolingLayerBase(inputRows, inputCols, inputComponents),
       m_a(NULL),

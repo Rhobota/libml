@@ -9,6 +9,17 @@ namespace ml
 {
 
 
+tPoolingLayerBase::tPoolingLayerBase()
+    : m_inputRows(0),
+      m_inputCols(0),
+      m_inputComponents(0),
+      m_poolRows(0),
+      m_poolCols(0),
+      m_curCount(0),
+      m_maxCount(0)
+{
+}
+
 tPoolingLayerBase::tPoolingLayerBase(u32 inputRows, u32 inputCols, u32 inputComponents,
                                      u32 poolRows, u32 poolCols)
     : m_inputRows(inputRows),
