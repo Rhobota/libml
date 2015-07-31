@@ -1426,6 +1426,7 @@ void tLoggingWrapper::didFinishTraining(iLearner* learner,
             default:
                 throw eLogicError("Unknown performance attribute");
         }
+        m_logfile << "Trained for a total " << epochsCompleted << " epochs; training lasted " << trainingTimeInSeconds << " seconds." << std::endl << std::endl;
         m_logfile << "Training Set CM (fold=" << foldIndex+1 << '/' << numFolds << "):" << std::endl;
         print(matchingTrainCM(), m_logfile);
         m_logfile << "Test Set CM (fold=" << foldIndex+1 << '/' << numFolds << "):" << std::endl;

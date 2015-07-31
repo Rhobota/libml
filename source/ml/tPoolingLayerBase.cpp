@@ -37,20 +37,20 @@ tPoolingLayerBase::~tPoolingLayerBase()
     // Nothing needed here...
 }
 
-fml tPoolingLayerBase::calculateError(const tIO& output, const tIO& target)
+fml tPoolingLayerBase::calculateError(const tIO& output, const tIO    & target)
 {
-    throw eImpossiblePath();
+        throw eImpossiblePath();
 }
 
-fml tPoolingLayerBase::calculateError(const std::vector<tIO>& outputs,
+fml tPoolingLayerBase::calculateError    (const std::vector<tIO>& outputs,
                                       const std::vector<tIO>& targets)
 {
     throw eImpossiblePath();
-}
+    }
 
-void tPoolingLayerBase::reset()
+void tPoolingLayerBase    ::reset()
 {
-    // Nothing needed here...
+        // Nothing needed here    ...
 }
 
 void tPoolingLayerBase::printLayerInfo(std::ostream& out) const
@@ -68,13 +68,13 @@ void tPoolingLayerBase::printLayerInfo(std::ostream& out) const
         out << std::setw(w) << o.str();
     }
 
-    out << std::setw(w) << 0;
-
-    out << std::setw(w) << 0;
+    out << std::setw(w) << '-';
+    out << std::setw(w) << '-';
 
     {
         std::ostringstream o;
-        o << (m_inputRows/m_poolRows) << "x" << (m_inputCols/m_poolCols) << "x" << m_inputComponents;
+        o << (m_inputRows/m_poolRows) << "x" << (m_inputCols/m_poolCols) << "x" << m_inputComponents
+          << " = " << ((m_inputRows/m_poolRows)*(m_inputCols/m_poolCols)*m_inputComponents);
         out << std::setw(w) << o.str();
     }
 
@@ -85,7 +85,7 @@ std::string tPoolingLayerBase::layerInfoString() const
 {
     std::ostringstream o;
 
-    o << "pool" << m_poolRows << "x" << m_poolCols;
+    o << m_poolRows << "x" << m_poolCols << "p";
 
     return o.str();
 }
