@@ -1,10 +1,6 @@
 #include <ml/tPoolingLayerCPU.h>
 #include <ml/pool2d/cpu_optimized.h>
 
-#include <cassert>
-#include <iomanip>
-#include <sstream>
-
 
 namespace ml
 {
@@ -35,8 +31,8 @@ tPoolingLayerCPU::tPoolingLayerCPU(u32 inputRows, u32 inputCols, u32 inputCompon
 
 tPoolingLayerCPU::~tPoolingLayerCPU()
 {
-    delete [] m_a;
-    delete [] m_prev_da;
+    delete [] m_a;          m_a = NULL;
+    delete [] m_prev_da;    m_prev_da = NULL;
 }
 
 void tPoolingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
@@ -52,8 +48,8 @@ void tPoolingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 
     if (count > m_maxCount)
     {
-        delete [] m_a;
-        delete [] m_prev_da;
+        delete [] m_a;          m_a = NULL;
+        delete [] m_prev_da;    m_prev_da = NULL;
         m_a       = new fml[(m_inputRows/m_poolRows) * (m_inputCols/m_poolCols) * m_inputComponents * count];
         m_prev_da = new fml[ m_inputRows             * m_inputCols              * m_inputComponents * count];
         m_maxCount = count;
