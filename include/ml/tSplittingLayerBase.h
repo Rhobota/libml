@@ -72,14 +72,14 @@ class tSplittingLayerBase : public iLayer, public bNonCopyable
             u32 numInputDims;
             u32 numOutputDims;
             fml* inputPtr;
-            fml* inputErrorPtr;
+            fml* outputErrorPtr;
             tLayerRecord()
             {
                 layer = NULL;
                 numInputDims = 0;
                 numOutputDims = 0;
                 inputPtr = NULL;
-                inputErrorPtr = NULL;
+                outputErrorPtr = NULL;
             }
             tLayerRecord(iLayer* l, u32 i, u32 o)
             {
@@ -87,7 +87,7 @@ class tSplittingLayerBase : public iLayer, public bNonCopyable
                 numInputDims = i;
                 numOutputDims = o;
                 inputPtr = NULL;
-                inputErrorPtr = NULL;
+                outputErrorPtr = NULL;
             }
         };
 
