@@ -163,30 +163,30 @@ void tSplittingLayerCPU::takeOutputErrorGradients(
     if (sum != m_numOutputDims)
         throw eRuntimeError("The sub-layers' output dims don't add up to this layer's output dims.");
 
-    if (calculateInputErrorGradients)
+    for (u32 c = 0; c < inputCount; c++)
     {
-        for (u32 c = 0; c < inputCount; c++)
-        {
-            for (size_t i = 0; i < m_layerRecords.size(); i++)
-            {
-                tLayerRecord& rec = m_layerRecords[i];
-                u32 d = rec.numOutputDims;
-                fml* layerOut = rec.outputErrorPtr + c * d;
-                for (u32 j = 0; j < d; j++)
-                {
-                    *layerOut++ = *outputErrorGradients++;
-                }
-            }
-        }
-
         for (size_t i = 0; i < m_layerRecords.size(); i++)
         {
             tLayerRecord& rec = m_layerRecords[i];
-            rec.layer->takeOutputErrorGradients(rec.outputErrorPtr, rec.numOutputDims, outputCount,
-                                                rec.inputPtr, rec.numInputDims, inputCount,
-                                                calculateInputErrorGradients);
+            u32 d = rec.numOutputDims;
+            fml* layerOut = rec.outputErrorPtr + c * d;
+            for (u32 j = 0; j < d; j++)
+            {
+                *layerOut++ = *outputErrorGradients++;
+            }
         }
+    }
 
+    for (size_t i = 0; i < m_layerRecords.size(); i++)
+    {
+        tLayerRecord& rec = m_layerRecords[i];
+        rec.layer->takeOutputErrorGradients(rec.outputErrorPtr, rec.numOutputDims, outputCount,
+                                            rec.inputPtr, rec.numInputDims, inputCount,
+                                            calculateInputErrorGradients);
+    }
+
+    if (calculateInputErrorGradients)
+    {
         fml* inError = m_prev_da;
         for (u32 c = 0; c < inputCount; c++)
         {

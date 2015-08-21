@@ -1,4 +1,4 @@
-#include <ml/tSplittingLayerCPU.h>
+#include <ml/tSplittingLayerGPU.h>
 
 #include "cuda_stuff.ipp"
 
@@ -7,21 +7,68 @@ namespace ml
 {
 
 
-tSplittingLayerCPU::tSplittingLayerCPU()
+class tSublayerFillerFunc
+{
+    public:
+
+        tSublayerFillerFunc(const fml* input, u32 outerDims, u32 innerDims)
+            : m_input(input), m_outerDims(outerDims), m_innerDims(innerDims)
+        { }
+
+        __host__ __device__
+        fml operator()(const ssize_t& index)
+        {
+            size_t count = index / m_innerDims;
+            size_t offset = index % m_innerDims;
+            return m_input[count*m_outerDims + offset];
+        }
+
+    private:
+
+        const fml* m_input;
+        u32 m_outerDims;
+        u32 m_innerDims;
+};
+
+
+class tConvertIndexFunc : public thrust::unary_function<size_t, size_t>
+{
+    public:
+
+        tConvertIndexFunc(u32 outerDims, u32 innerDims)
+            : m_outerDims(outerDims), m_innerDims(innerDims)
+        { }
+
+        __host__ __device__
+        size_t operator()(size_t index)
+        {
+            size_t count = index / m_innerDims;
+            size_t offset = index % m_innerDims;
+            return count*m_outerDims + offset;
+        }
+
+    private:
+
+        u32 m_outerDims;
+        u32 m_innerDims;
+};
+
+
+tSplittingLayerGPU::tSplittingLayerGPU()
     : tSplittingLayerBase(),
       m_gpu_a(NULL),
       m_gpu_prev_da(NULL)
 {
 }
 
-tSplittingLayerCPU::tSplittingLayerCPU(u32 numInputDims, u32 numOutputDims)
+tSplittingLayerGPU::tSplittingLayerGPU(u32 numInputDims, u32 numOutputDims)
     : tSplittingLayerBase(numInputDims, numOutputDims),
       m_gpu_a(NULL),
       m_gpu_prev_da(NULL)
 {
 }
 
-tSplittingLayerCPU::~tSplittingLayerCPU()
+tSplittingLayerGPU::~tSplittingLayerGPU()
 {
     s_cudaFree(m_gpu_a);
     s_cudaFree(m_gpu_prev_da);
@@ -38,7 +85,7 @@ tSplittingLayerCPU::~tSplittingLayerCPU()
     m_layerRecords.clear();
 }
 
-void tSplittingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tSplittingLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
 {
     if (!input)
         throw eInvalidArgument("input may not be null!");
@@ -79,18 +126,13 @@ void tSplittingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count
     }
     m_curCount = count;
 
-    for (u32 c = 0; c < count; c++)
+    for (size_t i = 0; i < m_layerRecords.size(); i++)
     {
-        for (size_t i = 0; i < m_layerRecords.size(); i++)
-        {
-            tLayerRecord& rec = m_layerRecords[i];
-            u32 d = rec.numInputDims;
-            fml* layerIn = rec.inputPtr + c * d;
-            for (u32 j = 0; j < d; j++)
-            {
-                *layerIn++ = *input++;
-            }
-        }
+        tLayerRecord& rec = m_layerRecords[i];
+        thrust::device_ptr<fml> layerIn(rec.inputPtr);
+        tSublayerFillerFunc func(input, numInputDims, rec.numInputDims);
+        thrust::tabulate(layerIn, layerIn + rec.numInputDims * count, func);
+        input += rec.numInputDims;
     }
 
     for (size_t i = 0; i < m_layerRecords.size(); i++)
@@ -99,35 +141,33 @@ void tSplittingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count
         rec.layer->takeInput(rec.inputPtr, rec.numInputDims, count);
     }
 
-    fml* output = m_gpu_a;
-    for (u32 c = 0; c < count; c++)
+    thrust::device_ptr<fml> output(m_gpu_a);
+    for (size_t i = 0; i < m_layerRecords.size(); i++)
     {
-        for (size_t i = 0; i < m_layerRecords.size(); i++)
-        {
-            tLayerRecord& rec = m_layerRecords[i];
-            u32 d = rec.numOutputDims;
-            u32 d2 = 0, c2 = 0;
-            const fml* layerOut = rec.layer->getOutput(d2, c2) + c * d;
-            if (d2 != d)
-                throw eRuntimeError("Unexpected numOutputDims from sublayer.");
-            if (c2 != count)
-                throw eRuntimeError("Unexpected count from sublayer.");
-            for (u32 j = 0; j < d; j++)
-            {
-                 *output++ = *layerOut++;
-            }
-        }
+        tLayerRecord& rec = m_layerRecords[i];
+        u32 d = rec.numOutputDims;
+        u32 d2 = 0, c2 = 0;
+        thrust::device_ptr<const fml> layerOut(rec.layer->getOutput(d2, c2));
+        if (d2 != d)
+            throw eRuntimeError("Unexpected numOutputDims from sublayer.");
+        if (c2 != count)
+            throw eRuntimeError("Unexpected count from sublayer.");
+        thrust::scatter(layerOut, layerOut + d * count,
+                        thrust::make_transform_iterator(thrust::make_counting_iterator((size_t)0),
+                                                        tConvertIndexFunc(m_numOutputDims, d)),
+                        output);
+        output += d;
     }
 }
 
-const fml* tSplittingLayerCPU::getOutput(u32& numOutputDims, u32& count) const
+const fml* tSplittingLayerGPU::getOutput(u32& numOutputDims, u32& count) const
 {
     numOutputDims = m_numOutputDims;
     count = m_curCount;
     return m_gpu_a;
 }
 
-void tSplittingLayerCPU::takeOutputErrorGradients(
+void tSplittingLayerGPU::takeOutputErrorGradients(
                   const fml* outputErrorGradients, u32 numOutputDims, u32 outputCount,
                   const fml* input, u32 numInputDims, u32 inputCount,
                   bool calculateInputErrorGradients)
@@ -165,53 +205,46 @@ void tSplittingLayerCPU::takeOutputErrorGradients(
     if (sum != m_numOutputDims)
         throw eRuntimeError("The sub-layers' output dims don't add up to this layer's output dims.");
 
+    for (size_t i = 0; i < m_layerRecords.size(); i++)
+    {
+        tLayerRecord& rec = m_layerRecords[i];
+        thrust::device_ptr<fml> layerOut(rec.outputErrorPtr);
+        tSublayerFillerFunc func(outputErrorGradients, numOutputDims, rec.numOutputDims);
+        thrust::tabulate(layerOut, layerOut + rec.numOutputDims * inputCount, func);
+        outputErrorGradients += rec.numOutputDims;
+    }
+
+    for (size_t i = 0; i < m_layerRecords.size(); i++)
+    {
+        tLayerRecord& rec = m_layerRecords[i];
+        rec.layer->takeOutputErrorGradients(rec.outputErrorPtr, rec.numOutputDims, outputCount,
+                                            rec.inputPtr, rec.numInputDims, inputCount,
+                                            calculateInputErrorGradients);
+    }
+
     if (calculateInputErrorGradients)
     {
-        for (u32 c = 0; c < inputCount; c++)
-        {
-            for (size_t i = 0; i < m_layerRecords.size(); i++)
-            {
-                tLayerRecord& rec = m_layerRecords[i];
-                u32 d = rec.numOutputDims;
-                fml* layerOut = rec.outputErrorPtr + c * d;
-                for (u32 j = 0; j < d; j++)
-                {
-                    *layerOut++ = *outputErrorGradients++;
-                }
-            }
-        }
-
+        thrust::device_ptr<fml> inError(m_gpu_prev_da);
         for (size_t i = 0; i < m_layerRecords.size(); i++)
         {
             tLayerRecord& rec = m_layerRecords[i];
-            rec.layer->takeOutputErrorGradients(rec.outputErrorPtr, rec.numOutputDims, outputCount,
-                                                rec.inputPtr, rec.numInputDims, inputCount,
-                                                calculateInputErrorGradients);
-        }
-
-        fml* inError = m_gpu_prev_da;
-        for (u32 c = 0; c < inputCount; c++)
-        {
-            for (size_t i = 0; i < m_layerRecords.size(); i++)
-            {
-                tLayerRecord& rec = m_layerRecords[i];
-                u32 d = rec.numInputDims;
-                u32 d2 = 0, c2 = 0;
-                const fml* layerInError = rec.layer->getInputErrorGradients(d2, c2) + c * d;
-                if (d2 != d)
-                    throw eRuntimeError("Unexpected numInputDims from sublayer.");
-                if (c2 != inputCount)
-                    throw eRuntimeError("Unexpected inputCount from sublayer.");
-                for (u32 j = 0; j < d; j++)
-                {
-                     *inError++ = *layerInError++;
-                }
-            }
+            u32 d = rec.numInputDims;
+            u32 d2 = 0, c2 = 0;
+            thrust::device_ptr<const fml> layerInError(rec.layer->getInputErrorGradients(d2, c2));
+            if (d2 != d)
+                throw eRuntimeError("Unexpected numInputDims from sublayer.");
+            if (c2 != inputCount)
+                throw eRuntimeError("Unexpected inputCount from sublayer.");
+            thrust::scatter(layerInError, layerInError + d * inputCount,
+                            thrust::make_transform_iterator(thrust::make_counting_iterator((size_t)0),
+                                                            tConvertIndexFunc(m_numInputDims, d)),
+                            inError);
+            inError += d;
         }
     }
 }
 
-const fml* tSplittingLayerCPU::getInputErrorGradients(u32& numInputDims, u32& count) const
+const fml* tSplittingLayerGPU::getInputErrorGradients(u32& numInputDims, u32& count) const
 {
     numInputDims = m_numInputDims;
     count = m_curCount;
@@ -221,15 +254,15 @@ const fml* tSplittingLayerCPU::getInputErrorGradients(u32& numInputDims, u32& co
 static
 iLayer* s_newLayerFunc(iReadable* in)
 {
-    tSplittingLayerCPU* layer = new tSplittingLayerCPU();
+    tSplittingLayerGPU* layer = new tSplittingLayerGPU();
     layer->unpack(in);
     return layer;
 }
 
-static u32 layerId = 832192;
+static u32 layerId = 832193;
 static bool didRegister = iLayer::registerLayerFuncWithHeaderId(s_newLayerFunc, layerId);
 
-u32 tSplittingLayerCPU::headerId() const
+u32 tSplittingLayerGPU::headerId() const
 {
     if (!didRegister)
         throw eRuntimeError("Registering my layer id didn't work!");
