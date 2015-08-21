@@ -37,20 +37,20 @@ tPoolingLayerBase::~tPoolingLayerBase()
     // Nothing needed here...
 }
 
-fml tPoolingLayerBase::calculateError(const tIO& output, const tIO    & target)
+fml tPoolingLayerBase::calculateError(const tIO& output, const tIO& target)
 {
-        throw eImpossiblePath();
+    throw eImpossiblePath();
 }
 
-fml tPoolingLayerBase::calculateError    (const std::vector<tIO>& outputs,
+fml tPoolingLayerBase::calculateError(const std::vector<tIO>& outputs,
                                       const std::vector<tIO>& targets)
 {
     throw eImpossiblePath();
-    }
+}
 
-void tPoolingLayerBase    ::reset()
+void tPoolingLayerBase::reset()
 {
-        // Nothing needed here    ...
+    // Nothing needed here...
 }
 
 void tPoolingLayerBase::printLayerInfo(std::ostream& out) const
