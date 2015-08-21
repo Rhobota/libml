@@ -32,6 +32,8 @@ tSplittingLayerCPU::~tSplittingLayerCPU()
         rec.inputPtr = NULL;
         s_cudaFree(rec.outputErrorPtr);
         rec.outputErrorPtr = NULL;
+        delete rec.layer;
+        rec.layer = NULL;
     }
     m_layerRecords.clear();
 }

@@ -30,6 +30,8 @@ tSplittingLayerCPU::~tSplittingLayerCPU()
         rec.inputPtr = NULL;
         delete [] rec.outputErrorPtr;
         rec.outputErrorPtr = NULL;
+        delete rec.layer;
+        rec.layer = NULL;
     }
     m_layerRecords.clear();
 }

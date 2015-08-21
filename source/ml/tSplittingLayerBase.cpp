@@ -37,6 +37,12 @@ tSplittingLayerBase::~tSplittingLayerBase()
 
 void tSplittingLayerBase::addLayer(iLayer* layer, u32 numInputDims, u32 numOutputDims)
 {
+    if (!layer)
+        throw eInvalidArgument("The layer must not be NULL.");
+    if (numInputDims == 0)
+        throw eInvalidArgument("numInputDims must be positive.");
+    if (numOutputDims == 0)
+        throw eInvalidArgument("numOutputDims must be positive.");
     m_layerRecords.push_back(tLayerRecord(layer, numInputDims, numOutputDims));
 }
 
@@ -85,10 +91,7 @@ void tSplittingLayerBase::printLayerInfo(std::ostream& out) const
     for (size_t i = 0; i < m_layerRecords.size(); i++)
     {
         iLayer* layer = m_layerRecords[i].layer;
-        if (layer)
-            layer->printLayerInfo(out);
-        else
-            out << "NULL layer" << std::endl;
+        layer->printLayerInfo(out);
     }
 }
 
