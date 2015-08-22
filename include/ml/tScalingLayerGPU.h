@@ -47,6 +47,21 @@ class tScalingLayerGPU : public tScalingLayerBase
         u32 headerId() const;
 
 
+        ///////////////////////////////////////////////////////////////////////
+        // The iLayer interface:   (partial re-implementation)
+        ///////////////////////////////////////////////////////////////////////
+
+        void reset();
+
+
+        ///////////////////////////////////////////////////////////////////////
+        // The iPackable interface:   (fully re-implemented)
+        ///////////////////////////////////////////////////////////////////////
+
+        void pack(iWritable* out) const;
+        void unpack(iReadable* in);
+
+
     private:
 
         fml* m_gpu_output;

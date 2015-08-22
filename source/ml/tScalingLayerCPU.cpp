@@ -138,5 +138,40 @@ u32 tScalingLayerCPU::headerId() const
     return layerId;
 }
 
+void tScalingLayerCPU::reset()
+{
+    // Always call the superclass impl no matter what.
+    tScalingLayerBase::reset();
+
+    //
+    // And if this subclass has its own things that need reseting, do it here.
+    //
+}
+
+void tScalingLayerCPU::pack(iWritable* out) const
+{
+    // Always call the superclass impl no matter what.
+    tScalingLayerBase::pack(out);
+
+    //
+    // Then, if this layer has its own things that need packed, do it here.
+    //
+}
+
+void tScalingLayerCPU::unpack(iReadable* in)
+{
+    // Always call the superclass impl no matter what.
+    tScalingLayerBase::unpack(in);
+
+    //
+    // Then, if this layer packed its own things, unpack them here.
+    //
+
+    //
+    // Also, if there are other fields that need to be invalidated due to
+    // unpacking other values, invalidate/reset everything here.
+    //
+}
+
 
 }   // namespace ml
