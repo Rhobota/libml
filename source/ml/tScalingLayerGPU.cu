@@ -7,6 +7,26 @@ namespace ml
 {
 
 
+class tScalarMultFunc
+{
+    public:
+
+        tScalarMultFunc(fml scaleFactor)
+            : m_scaleFactor(scaleFactor)
+        { }
+
+        __host__ __device__
+        fml operator()(fml val)
+        {
+            return val * m_scaleFactor;
+        }
+
+    private:
+
+        fml m_scaleFactor;
+};
+
+
 tScalingLayerGPU::tScalingLayerGPU()
     : tScalingLayerBase(),
       m_gpu_output(NULL),
@@ -52,13 +72,10 @@ void tScalingLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     // the given input to calculate this layer's output.
     if (m_numInputDims != m_numOutputDims)
         throw eInvalidArgument("Oops. It makes no sense for this kind of layer to have different input and output dimensionality.");
-    for (u32 i = 0; i < count; i++)
-    {
-        for (u32 j = 0; j < numInputDims; j++)
-        {
-            m_gpu_output[i*numInputDims + j] = input[i*numInputDims + j] * m_scaleFactor;
-        }
-    }
+    thrust::device_ptr<const fml> inputItr(input);
+    thrust::device_ptr<      fml> outputItr(m_gpu_output);
+    tScalarMultFunc func(m_scaleFactor);
+    thrust::transform(inputItr, inputItr + numInputDims*count, outputItr, func);
 }
 
 const fml* tScalingLayerGPU::getOutput(u32& numOutputDims, u32& count) const
@@ -105,13 +122,10 @@ void tScalingLayerGPU::takeOutputErrorGradients(
     {
         if (m_numInputDims != m_numOutputDims)
             throw eInvalidArgument("Oops. It makes no sense for this kind of layer to have different input and output dimensionality.");
-        for (u32 i = 0; i < inputCount; i++)
-        {
-            for (u32 j = 0; j < numInputDims; j++)
-            {
-                m_gpu_inputErrorGradients[i*numInputDims + j] = outputErrorGradients[i*numInputDims + j] * m_scaleFactor;
-            }
-        }
+        thrust::device_ptr<const fml> inputItr(outputErrorGradients);
+        thrust::device_ptr<      fml> outputItr(m_gpu_inputErrorGradients);
+        tScalarMultFunc func(m_scaleFactor);
+        thrust::transform(inputItr, inputItr + numInputDims*inputCount, outputItr, func);
     }
 }
 
