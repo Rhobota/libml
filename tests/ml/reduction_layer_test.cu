@@ -1,4 +1,5 @@
 #include <ml/tReductionLayerCPU.h>
+#include <ml/tReductionLayerGPU.h>
 #include <ml/tWrappedGPULayer.h>
 
 #include <rho/tTest.h>
@@ -112,7 +113,7 @@ void testGPU(const tTest& t)
     u32 numInputDims = (rand() % 20) + 1;
     u32 numOutputDims = 1;
     ml::tWrappedGPULayer layer(numInputDims, numOutputDims,
-            new ml::tReductionLayerCPU(numInputDims, numOutputDims));
+            new ml::tReductionLayerGPU(numInputDims, numOutputDims));
     test(t, numInputDims, numOutputDims, &layer);
 }
 
