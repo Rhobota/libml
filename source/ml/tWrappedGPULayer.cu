@@ -139,6 +139,10 @@ void tWrappedGPULayer::takeOutputErrorGradients(
         throw eRuntimeError("What gives?");
 
     s_cudaCopyHostToDevice(m_gpu_outputErrorGradients, outputErrorGradients, numOutputDims*outputCount);
+    m_wrappedLayer->takeOutputErrorGradients(
+            m_gpu_outputErrorGradients, numOutputDims, outputCount,
+            m_gpu_input, numInputDims, inputCount,
+            calculateInputErrorGradients);
 
     u32 retNumInputDims = 0, retCount = 0;
     const fml* gpu_inputErrorGradients = m_wrappedLayer->getInputErrorGradients(retNumInputDims, retCount);
