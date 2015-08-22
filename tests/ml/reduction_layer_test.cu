@@ -1,4 +1,5 @@
 #include <ml/tReductionLayerCPU.h>
+#include <ml/tWrappedGPULayer.h>
 
 #include <rho/tTest.h>
 #include <rho/tCrashReporter.h>
@@ -14,12 +15,8 @@ static const int kTestIterations = 100;
 static const int kTestInnerIterations = 100;
 
 
-void test(const tTest& t)
+void test(const tTest& t, u32 numInputDims, u32 numOutputDims, ml::iLayer* layer)
 {
-    u32 numInputDims = (rand() % 20) + 1;
-    u32 numOutputDims = 1;
-    ml::tReductionLayerCPU layer(numInputDims, numOutputDims);
-
     for (int iter = 0; iter < kTestInnerIterations; iter++)
     {
         u32 count = (rand() % 10) + 1;
@@ -42,10 +39,10 @@ void test(const tTest& t)
                 correctOutput[c] = sum;
             }
 
-            layer.takeInput(input, numInputDims, count);
+            layer->takeInput(input, numInputDims, count);
 
             u32 retNumOutputDims = 0, retCount = 0;
-            const fml* output = layer.getOutput(retNumOutputDims, retCount);
+            const fml* output = layer->getOutput(retNumOutputDims, retCount);
             t.assert(retNumOutputDims == numOutputDims);
             t.assert(retCount == count);
 
@@ -71,12 +68,12 @@ void test(const tTest& t)
                 for (u32 i = 0; i < numInputDims; i++)
                     correctInError[c*numInputDims + i] = outError[c];
 
-            layer.takeOutputErrorGradients(outError, numOutputDims, count,
-                                           input, numInputDims, count,
-                                           true);
+            layer->takeOutputErrorGradients(outError, numOutputDims, count,
+                                            input, numInputDims, count,
+                                            true);
 
             u32 retNumInputDims = 0, retCount = 0;
-            const fml* inError = layer.getInputErrorGradients(retNumInputDims, retCount);
+            const fml* inError = layer->getInputErrorGradients(retNumInputDims, retCount);
             t.assert(retNumInputDims == numInputDims);
             t.assert(retCount == count);
 
@@ -101,13 +98,33 @@ void test(const tTest& t)
 }
 
 
+void testCPU(const tTest& t)
+{
+    u32 numInputDims = (rand() % 20) + 1;
+    u32 numOutputDims = 1;
+    ml::tReductionLayerCPU layer(numInputDims, numOutputDims);
+    test(t, numInputDims, numOutputDims, &layer);
+}
+
+
+void testGPU(const tTest& t)
+{
+    u32 numInputDims = (rand() % 20) + 1;
+    u32 numOutputDims = 1;
+    ml::tWrappedGPULayer layer(numInputDims, numOutputDims,
+            new ml::tReductionLayerCPU(numInputDims, numOutputDims));
+    test(t, numInputDims, numOutputDims, &layer);
+}
+
+
 int main()
 {
     tCrashReporter::init();
 
     srand(time(0));
 
-    tTest("reduction layer test", test, kTestIterations);
+    tTest("reduction layer cpu test", testCPU, kTestIterations);
+    tTest("reduction layer gpu test", testGPU, kTestIterations);
 
     return 0;
 }
