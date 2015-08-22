@@ -91,7 +91,6 @@ void test(const tTest& t)
                     }
                 }
             }
-
         }
 
         delete [] correctInError;
