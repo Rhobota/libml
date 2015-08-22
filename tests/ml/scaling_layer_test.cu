@@ -1,4 +1,6 @@
 #include <ml/tScalingLayerCPU.h>
+#include <ml/tScalingLayerGPU.h>
+#include <ml/tWrappedGPULayer.h>
 
 #include <rho/tTest.h>
 #include <rho/tCrashReporter.h>
@@ -14,13 +16,8 @@ static const int kTestIterations = 100;
 static const int kTestInnerIterations = 100;
 
 
-void test(const tTest& t)
+void test(const tTest& t, u32 numInputDims, u32 numOutputDims, fml scaleFactor, ml::iLayer* layer)
 {
-    u32 numInputDims = (rand() % 20) + 1;
-    u32 numOutputDims = numInputDims;
-    fml scaleFactor = rand() % 100;
-    ml::tScalingLayerCPU layer(numInputDims, numOutputDims, scaleFactor);
-
     for (int iter = 0; iter < kTestInnerIterations; iter++)
     {
         u32 count = (rand() % 10) + 1;
@@ -39,10 +36,10 @@ void test(const tTest& t)
                 for (u32 o = 0; o < numOutputDims; o++)
                     correctOutput[c*numOutputDims + o] = input[c*numOutputDims + o] * scaleFactor;
 
-            layer.takeInput(input, numInputDims, count);
+            layer->takeInput(input, numInputDims, count);
 
             u32 retNumOutputDims = 0, retCount = 0;
-            const fml* output = layer.getOutput(retNumOutputDims, retCount);
+            const fml* output = layer->getOutput(retNumOutputDims, retCount);
             t.assert(retNumOutputDims == numOutputDims);
             t.assert(retCount == count);
 
@@ -69,12 +66,12 @@ void test(const tTest& t)
                 for (u32 i = 0; i < numInputDims; i++)
                     correctInError[c*numInputDims + i] = outError[c*numInputDims + i] * scaleFactor;
 
-            layer.takeOutputErrorGradients(outError, numOutputDims, count,
-                                           input, numInputDims, count,
-                                           true);
+            layer->takeOutputErrorGradients(outError, numOutputDims, count,
+                                            input, numInputDims, count,
+                                            true);
 
             u32 retNumInputDims = 0, retCount = 0;
-            const fml* inError = layer.getInputErrorGradients(retNumInputDims, retCount);
+            const fml* inError = layer->getInputErrorGradients(retNumInputDims, retCount);
             t.assert(retNumInputDims == numInputDims);
             t.assert(retCount == count);
 
@@ -99,13 +96,35 @@ void test(const tTest& t)
 }
 
 
+void testCPU(const tTest& t)
+{
+    u32 numInputDims = (rand() % 20) + 1;
+    u32 numOutputDims = numInputDims;
+    fml scaleFactor = rand() % 100;
+    ml::tScalingLayerCPU layer(numInputDims, numOutputDims, scaleFactor);
+    test(t, numInputDims, numOutputDims, scaleFactor, &layer);
+}
+
+
+void testGPU(const tTest& t)
+{
+    u32 numInputDims = (rand() % 20) + 1;
+    u32 numOutputDims = numInputDims;
+    fml scaleFactor = rand() % 100;
+    ml::tWrappedGPULayer layer(numInputDims, numOutputDims,
+        new ml::tScalingLayerGPU(numInputDims, numOutputDims, scaleFactor));
+    test(t, numInputDims, numOutputDims, scaleFactor, &layer);
+}
+
+
 int main()
 {
     tCrashReporter::init();
 
     srand(time(0));
 
-    tTest("scaling layer test", test, kTestIterations);
+    tTest("scaling layer cpu test", testCPU, kTestIterations);
+    tTest("scaling layer gpu test", testGPU, kTestIterations);
 
     return 0;
 }
