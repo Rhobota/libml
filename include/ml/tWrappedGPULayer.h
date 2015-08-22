@@ -81,6 +81,12 @@ class tWrappedGPULayer : public iLayer, public bNonCopyable
 
         u32 m_curCount;
         u32 m_maxCount;
+
+        fml* m_gpu_input;
+        fml* m_output;
+
+        fml* m_gpu_outputErrorGradients;
+        fml* m_inputErrorGradients;
 };
 
 
