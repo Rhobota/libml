@@ -29,7 +29,7 @@ tSplittingLayerBase::tSplittingLayerBase(u32 numInputDims, u32 numOutputDims)
 
 tSplittingLayerBase::~tSplittingLayerBase()
 {
-    if (m_layerRecords.size() == 0)
+    if (m_layerRecords.size() > 0)
     {
         throw eLogicError("The subclass should have cleaned this up!");
     }
@@ -119,7 +119,7 @@ void tSplittingLayerBase::pack(iWritable* out) const
 
 void tSplittingLayerBase::unpack(iReadable* in)
 {
-    if (m_layerRecords.size() == 0)
+    if (m_layerRecords.size() > 0)
     {
         throw eLogicError("The subclass should have cleaned this up!");
     }
