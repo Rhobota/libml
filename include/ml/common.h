@@ -609,6 +609,58 @@ class tBestRememberingWrapper : public iEZTrainObserver
 };
 
 
+class tLoggingWrapper : public tBestRememberingWrapper
+{
+    public:
+
+        /**
+         * This class provides a wrapper around another iEZTrainObserver
+         * to decorate it with logging ability. Note that this class
+         * extends tBestRememberingWrapper, so if you need the functionality
+         * of tBestRememberingWrapper you do not need to add it to the
+         * decoration chain yourself because it comes free when you use this
+         * class.
+         *
+         * Learner performance is logged every epoch to a human-readable log
+         * file and to a simplified data log file. Every log file produced by
+         * this class is prefixed with the 'fileprefix' string specified
+         * to the constructor.
+         *
+         * Every 'logInterval' number of epochs, the learner itself is
+         * serialized to a file.
+         */
+        tLoggingWrapper(u32 logInterval,
+                        iEZTrainObserver* wrappedObserver = NULL,
+                        std::string fileprefix=std::string());
+
+        ~tLoggingWrapper();
+
+    public:
+
+        // iTrainObserver interface:
+        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
+
+        // iEZTrainObserver interface:
+        bool didFinishEpoch(iLearner* learner,
+                            u32 epochsCompleted,
+                            f64 epochTrainTimeInSeconds,
+                            f64 trainingSetPerformance,
+                            f64 testSetPerformance,
+                            bool positivePerformanceIsGood);
+        void didFinishTraining(iLearner* learner,
+                               u32 epochsCompleted,
+                               f64 trainingTimeInSeconds);
+
+    private:
+
+        const u32 m_logInterval;
+        std::string m_fileprefix;
+
+        std::ofstream m_logfile;
+        std::ofstream m_datafile;
+};
+
+
 }    // namespace ml
 
 
