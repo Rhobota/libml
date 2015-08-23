@@ -825,14 +825,10 @@ void visualize(iLearner* learner, const tIO& example,
 }
 
 
-static
-u32  s_ezTrain(iLearner* learner,       std::vector< tIO >& trainInputs,
-                                        std::vector< tIO >& trainTargets,
-                                  const std::vector< tIO >& testInputs,
-                                  const std::vector< tIO >& testTargets,
-                                  u32 batchSize,
-                                  iEZTrainObserver* trainObserver,
-                                  u32 foldIndex, u32 numFolds)
+u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
+                                iInputTargetGenerator* testSetGenerator,
+                                u32 batchSize,
+                                iEZTrainObserver* trainObserver)
 {
     if (trainInputs.size() != trainTargets.size())
         throw eInvalidArgument("The number of training inputs does not match the number of training targets.");
@@ -912,116 +908,6 @@ u32  s_ezTrain(iLearner* learner,       std::vector< tIO >& trainInputs,
             }
         }
     }
-}
-
-u32  ezTrain(iLearner* learner,       std::vector< tIO >& trainInputs,
-                                      std::vector< tIO >& trainTargets,
-                                const std::vector< tIO >& testInputs,
-                                const std::vector< tIO >& testTargets,
-                                u32 batchSize,
-                                iEZTrainObserver* trainObserver)
-{
-    return s_ezTrain(learner,
-                     trainInputs, trainTargets,
-                     testInputs, testTargets,
-                     batchSize,
-                     trainObserver,
-                     0, 1);
-}
-
-u32  ezTrain(iLearner* learner, const std::vector< tIO >& allInputs,
-                                const std::vector< tIO >& allTargets,
-                                u32 batchSize, u32 numFolds,
-                                iEZTrainObserver* trainObserver)
-{
-    if (allInputs.size() != allTargets.size())
-        throw eInvalidArgument("The number of input and target vectors must be the same!");
-    if (allInputs.size() == 0)
-        throw eInvalidArgument("There must be at least one example.");
-    if (numFolds == 0)
-        throw eInvalidArgument("Zero folds makes no sense.");
-    if (numFolds == 1)
-        throw eInvalidArgument("One fold makes no sense.");
-
-    f64 frac = 1.0 / numFolds;
-
-    u32 accumEpochs = 0;
-
-    for (u32 i = 0; i < numFolds; i++)
-    {
-        if (i > 0)
-            learner->reset();
-
-        // Calculate the range of the test set.
-        u32 start = (u32) round((f64)allInputs.size() * frac*i);
-        u32 end   = (u32) round((f64)allInputs.size() * frac*(i+1));
-
-        // Build the training and test inputs.
-        std::vector< tIO > trainInputs = allInputs;
-        trainInputs.erase(trainInputs.begin()+start, trainInputs.begin()+end);
-        std::vector< tIO > testInputs(allInputs.begin()+start, allInputs.begin()+end);
-
-        // Build the training and test targets.
-        std::vector< tIO > trainTargets = allTargets;
-        trainTargets.erase(trainTargets.begin()+start, trainTargets.begin()+end);
-        std::vector< tIO > testTargets(allTargets.begin()+start, allTargets.begin()+end);
-
-        // Train!
-        accumEpochs += s_ezTrain(learner,
-                                 trainInputs, trainTargets,
-                                 testInputs, testTargets,
-                                 batchSize,
-                                 trainObserver,
-                                 i, numFolds);
-    }
-
-    return accumEpochs;
-}
-
-u32  ezTrain(iLearner* learner, const std::vector< tIO >& allInputs,
-                                const std::vector< tIO >& allTargets,
-                                u32 batchSize, std::vector<u32> foldSplitPoints,
-                                iEZTrainObserver* trainObserver)
-{
-    if (allInputs.size() != allTargets.size())
-        throw eInvalidArgument("The number of input and target vectors must be the same!");
-    if (allInputs.size() == 0)
-        throw eInvalidArgument("There must be at least one example.");
-    u32 numFolds = (u32)foldSplitPoints.size() + 1;
-    if (numFolds == 1)
-        throw eInvalidArgument("One fold makes no sense.");
-
-    u32 accumEpochs = 0;
-
-    for (u32 i = 0; i < numFolds; i++)
-    {
-        if (i > 0)
-            learner->reset();
-
-        // Calculate the range of the test set.
-        u32 start = (i == 0) ? 0 : foldSplitPoints[i-1];
-        u32 end   = (i == numFolds-1) ? (u32)allInputs.size() : foldSplitPoints[i];
-
-        // Build the training and test inputs.
-        std::vector< tIO > trainInputs = allInputs;
-        trainInputs.erase(trainInputs.begin()+start, trainInputs.begin()+end);
-        std::vector< tIO > testInputs(allInputs.begin()+start, allInputs.begin()+end);
-
-        // Build the training and test targets.
-        std::vector< tIO > trainTargets = allTargets;
-        trainTargets.erase(trainTargets.begin()+start, trainTargets.begin()+end);
-        std::vector< tIO > testTargets(allTargets.begin()+start, allTargets.begin()+end);
-
-        // Train!
-        accumEpochs += s_ezTrain(learner,
-                                 trainInputs, trainTargets,
-                                 testInputs, testTargets,
-                                 batchSize,
-                                 trainObserver,
-                                 i, numFolds);
-    }
-
-    return accumEpochs;
 }
 
 

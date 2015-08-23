@@ -395,7 +395,7 @@ class iEZTrainObserver : public iTrainObserver
     public:
 
         /**
-         * This method is called by both ezTrain() functions below after
+         * This method is called by the ezTrain() function below after
          * a full epoch of training has been done on the given learner.
          * It should return true if all is well and training should continue.
          * It should return false if the training process should halt. This
@@ -405,28 +405,16 @@ class iEZTrainObserver : public iTrainObserver
          */
         virtual bool didFinishEpoch(iLearner* learner,
                                     u32 epochsCompleted,
-                                    u32 foldIndex, u32 numFolds,
-                                    const std::vector< tIO >& trainInputs,
-                                    const std::vector< tIO >& trainTargets,
-                                    const std::vector< tIO >& trainOutputs,
-                                    const tConfusionMatrix& trainCM,
-                                    const std::vector< tIO >& testInputs,
-                                    const std::vector< tIO >& testTargets,
-                                    const std::vector< tIO >& testOutputs,
-                                    const tConfusionMatrix& testCM,
-                                    f64 epochTrainTimeInSeconds) = 0;
+                                    f64 epochTrainTimeInSeconds,
+                                    f64 trainingSetPerformance,
+                                    f64 testSetPerformance) = 0;
 
         /**
          * This method is called after training completes, meaning that
-         * didFinishEpoch() will not be called anymore for this foldIndex.
+         * didFinishEpoch() will not be called anymore.
          */
         virtual void didFinishTraining(iLearner* learner,
                                        u32 epochsCompleted,
-                                       u32 foldIndex, u32 numFolds,
-                                       const std::vector< tIO >& trainInputs,
-                                       const std::vector< tIO >& trainTargets,
-                                       const std::vector< tIO >& testInputs,
-                                       const std::vector< tIO >& testTargets,
                                        f64 trainingTimeInSeconds) = 0;
 };
 
@@ -437,80 +425,18 @@ class iEZTrainObserver : public iTrainObserver
  * function above to train the learner on each epoch. This
  * function takes a train observer which it notifies (if not
  * null) after each epoch with the most recent training results.
- * This function will always pass foldIndex=0 and numFolds=1 to
- * the train observer. This function will not return until the
- * observer indicates that training can halt.
+ * This function will not return until the observer indicates
+ * that training can halt.
  *
  * This function returns the number of epochs of training which
  * were completed.
  *
- * This function is intended to replace calling train() in most
- * application where straight-forward training is needed.
+ * This function is intended to replace calling train() over-and-
+ * over in most application where straight-forward training is needed.
  */
-u32  ezTrain(iLearner* learner,       std::vector< tIO >& trainInputs,
-                                      std::vector< tIO >& trainTargets,
-                                const std::vector< tIO >& testInputs,
-                                const std::vector< tIO >& testTargets,
+u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
+                                iInputTargetGenerator* testSetGenerator,
                                 u32 batchSize,
-                                iEZTrainObserver* trainObserver = NULL);
-
-/**
- * This function is a lot like the ezTrain() function above,
- * but this function is used when you do not have a dedicated
- * testing set, meaning you need to do something like ten-fold
- * cross-validation.
- *
- * This function behaves exactly like ezTrain() above, but it
- * trains the learner fresh over-and-over with a different test
- * set (aka "hold-out set") on each iteration. You should use
- * the train observer to accumulate the hold-out error after
- * each fold iteration so that you have a complete idea of the
- * learner's generalization error.
- *
- * This function sets foldIndex and numFolds appropriately to the
- * train observer. It will always set numFolds to the observer
- * equal to numFolds passed into this function, and it will set
- * foldIndex equal to the index of the current fold (zero-indexed).
- *
- * This function returns the number of epochs of training which
- * were completed (accumulated over all the training folds).
- *
- * Like the above ezTrain() function, this function is intended to
- * replace calling train() in most application where straight-forward
- * x-fold cross-validation training is needed.
- */
-u32  ezTrain(iLearner* learner, const std::vector< tIO >& allInputs,
-                                const std::vector< tIO >& allTargets,
-                                u32 batchSize, u32 numFolds,
-                                iEZTrainObserver* trainObserver = NULL);
-
-/**
- * This is also a version of ezTrain() for doing x-fold cross-validation,
- * but this version is used when you want to tell the function where
- * to split the dataset for each fold.
- *
- * This is necessary when you have created "extra" training data by
- * duplicating examples (with mutation). For example, you may have scaled
- * and/or translated example images to create more examples and inject
- * prior-knowledge into the system.
- * The results would be misleading if you let ezTrain() split such a dataset
- * anywhere it wanted, for you don't want to train with some data and test
- * on data which is a duplication of the training data. Instead, you should
- * tell ezTrain() where to split the dataset so that each duplicated example is
- * entirely in the training portion or the test portion, but does not overlap
- * the two.
- *
- * In this function, the number of training folds will equal:
- *          foldSplitPoints.size() + 1
- *
- * Each entry in foldSplitPoints indicates the first index of a fold.
- * Do not specify index-0 in your foldSplitPoints array. It is assumed
- * that the first fold will begin at index 0 and continue until the
- * index found in foldSplitPoints[0].
- */
-u32  ezTrain(iLearner* learner, const std::vector< tIO >& allInputs,
-                                const std::vector< tIO >& allTargets,
-                                u32 batchSize, std::vector<u32> foldSplitPoints,
                                 iEZTrainObserver* trainObserver = NULL);
 
 
@@ -565,7 +491,7 @@ class tSmartStoppingWrapper : public iEZTrainObserver
     public:
 
         // iTrainObserver interface:
-        bool didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch);
+        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
 
         // iEZTrainObserver interface:
         bool didFinishEpoch(iLearner* learner,
@@ -640,7 +566,7 @@ class tBestRememberingWrapper : public iEZTrainObserver
     public:
 
         // iTrainObserver interface:
-        bool didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch);
+        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
 
         // iEZTrainObserver interface:
         bool didFinishEpoch(iLearner* learner,
@@ -754,7 +680,7 @@ class tLoggingWrapper : public tBestRememberingWrapper
     public:
 
         // iTrainObserver interface:
-        bool didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch);
+        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
 
         // iEZTrainObserver interface:
         bool didFinishEpoch(iLearner* learner,
