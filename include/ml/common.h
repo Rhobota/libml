@@ -332,6 +332,34 @@ class iOutputCollector
         virtual ~iOutputCollector() { }
 };
 
+class iOutputPerformanceEvaluator : public iOutputCollector
+{
+    public:
+
+        /**
+         * Returns the human-readable name of the method being used
+         * to evaluate performance here.
+         */
+        virtual std::string evaluationMethodName() = 0;
+
+        /**
+         * Call this method after this collector has collected all
+         * its inputs/targets/outputs.
+         *
+         * This method will use its internal evaluation method, and
+         * it will return the result.
+         */
+        virtual f64 calculatePerformance() = 0;
+
+        /**
+         * This method will reset this object so that you can use it
+         * fresh to collect more inputs/targets/outputs and then
+         * calculate the performance on that new input. Basically,
+         * this method could also be called "forget".
+         */
+        virtual void reset() = 0;
+};
+
 class iTrainObserver
 {
     public:

@@ -804,24 +804,19 @@ u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
                                 u32 batchSize,
                                 iEZTrainObserver* trainObserver)
 {
-    if (trainInputs.size() != trainTargets.size())
-        throw eInvalidArgument("The number of training inputs does not match the number of training targets.");
-    if (testInputs.size() != testTargets.size())
-        throw eInvalidArgument("The number of testing inputs does not match the number of testing targets.");
-    if (trainInputs.size() == 0 || testInputs.size() == 0)
-        throw eInvalidArgument("The training and test sets must each be non-empty.");
+    if (!learner)
+        throw eInvalidArgument("learner must not be NULL!");
+
+    if (!trainingSetGenerator)
+        throw eInvalidArgument("trainingSetGenerator must not be NULL!");
+
+    if (!testSetGenerator)
+        throw eInvalidArgument("testSetGenerator must not be NULL!");
+
     if (batchSize == 0)
-        throw eInvalidArgument("The batch size must be non-zero.");
+        throw eInvalidArgument("batchSize must be positive!");
 
     u64 trainStartTime = sync::tTimer::usecTime();
-
-    std::vector<tIO> trainOutputs;
-    tConfusionMatrix trainCM;
-
-    std::vector<tIO> testOutputs;
-    tConfusionMatrix testCM;
-
-    algo::tKnuthLCG lcg;
 
     for (u32 epochs = 0; true; epochs++)
     {
@@ -833,50 +828,52 @@ u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
         // initial state of the learner looks like.
         if (epochs > 0)
         {
-            if (! train(learner, trainInputs, trainTargets,
+            if (! train(learner, trainingSetGenerator,
                         batchSize, trainObserver))
             {
                 if (trainObserver)
                 {
                     f64 trainElapsedTime = (f64)(sync::tTimer::usecTime() - trainStartTime);
                     trainElapsedTime /= 1000000;  // usecs to secs
-                    trainObserver->didFinishTraining(learner, epochs-1, foldIndex, numFolds,
-                                                     trainInputs, trainTargets, testInputs, testTargets,
+                    trainObserver->didFinishTraining(learner, epochs-1,
                                                      trainElapsedTime);
                 }
                 return epochs-1;
             }
 
             // Shuffle the training data for the next iteration.
-            algo::shuffle(trainInputs, trainTargets, lcg);
+            trainingSetGenerator->shuffle();
         }
 
         // Call the epoch observer.
         if (trainObserver)
         {
+            // Get the evaulation method used by this learner.
+            iOutputPerformanceEvaluator* evaluator = leaner->getOutputPerformanceEvaluator();
+            evaluator->reset();
+
             // Evaluate the learner using the training set.
-            evaluate(learner, trainInputs, trainOutputs, batchSize);
-            buildConfusionMatrix(trainOutputs, trainTargets, trainCM);
+            evaluate(learner, trainingSetGenerator, evaluator, batchSize);
+            trainingSetGenerator->restart();
+            f64 trainingSetPerformance = evaluator->calculatePerformance();
+            evaluator->reset();
 
             // Evaluate the learner using the test set.
-            evaluate(learner, testInputs, testOutputs, batchSize);
-            buildConfusionMatrix(testOutputs, testTargets, testCM);
+            evaluate(learner, testSetGenerator, evaluator, batchSize);
+            testSetGenerator->restart();
+            f64 testSetPerformance = evaluator->calculatePerformance();
+            evaluator->reset();
 
             // Calculate the elapsed time.
             f64 elapsedTime = (f64)(sync::tTimer::usecTime() - startTime);
             elapsedTime /= 1000000;  // usecs to secs
 
-            if (! trainObserver->didFinishEpoch(learner,
-                                                epochs,
-                                                foldIndex, numFolds,
-                                                trainInputs, trainTargets, trainOutputs, trainCM,
-                                                testInputs, testTargets, testOutputs, testCM,
-                                                elapsedTime))
+            if (! trainObserver->didFinishEpoch(learner, epochs, elapsedTime,
+                                                trainingSetPerformance, testSetPerformance))
             {
                 f64 trainElapsedTime = (f64)(sync::tTimer::usecTime() - trainStartTime);
                 trainElapsedTime /= 1000000;  // usecs to secs
-                trainObserver->didFinishTraining(learner, epochs, foldIndex, numFolds,
-                                                 trainInputs, trainTargets, testInputs, testTargets,
+                trainObserver->didFinishTraining(learner, epochs,
                                                  trainElapsedTime);
                 return epochs;
             }
