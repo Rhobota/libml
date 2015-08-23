@@ -296,6 +296,12 @@ class iInputTargetGenerator
         virtual bool generate(u32 count, std::vector< std::pair<tIO,tIO> >& fillme) = 0;
 
         /**
+         * This method is the same as generate() above, except it is used
+         * when the target values are not needed.
+         */
+        virtual bool generate(u32 count, std::vector<tIO>& fillme) = 0;
+
+        /**
          * This method is called between epochs. When called, you should shuffle
          * your data (if appropriate), to prepare for the next epoch to begin.
          */

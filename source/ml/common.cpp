@@ -690,59 +690,23 @@ bool train(iLearner* learner, iInputTargetGenerator* generator,
                               u32 batchSize,
                               iTrainObserver* trainObserver)
 {
-    if (inputs.size() != targets.size())
-    {
-        throw eInvalidArgument("The number of examples in inputs and targets must "
-                "be the same!");
-    }
+    if (!learner)
+        throw eInvalidArgument("learner must not be NULL!");
 
-    if (inputs.size() == 0)
-    {
-        throw eInvalidArgument("There must be at least one input/target pair!");
-    }
-
-    for (size_t i = 1; i < inputs.size(); i++)
-    {
-        if (inputs[i].size() != inputs[0].size())
-        {
-            throw eInvalidArgument("Every input must have the same dimensionality!");
-        }
-    }
-
-    for (size_t i = 1; i < targets.size(); i++)
-    {
-        if (targets[i].size() != targets[0].size())
-        {
-            throw eInvalidArgument("Every target must have the same dimensionality!");
-        }
-    }
+    if (!generator)
+        throw eInvalidArgument("generator must not be NULL!");
 
     if (batchSize == 0)
-    {
         throw eInvalidArgument("batchSize must be positive!");
-    }
 
-    std::vector<tIO> mostRecentBatch(batchSize);
-    u32 batchCounter = 0;
+    std::vector< std::pair<tIO,tIO> > batch(batchSize);
 
-    for (size_t i = 0; i < inputs.size(); i++)
+    while (generator->generate(batchSize, batch) && batch.size() > 0)
     {
-        learner->addExample(inputs[i], targets[i]);
-        mostRecentBatch[batchCounter] = inputs[i];
-        batchCounter++;
-        if (batchCounter == batchSize)
-        {
-            learner->update();
-            if (trainObserver && !trainObserver->didUpdate(learner, mostRecentBatch))
-                return false;
-            batchCounter = 0;
-        }
-    }
-    if (batchCounter > 0)
-    {
+        for (size_t i = 0; i < batch.size(); i++)
+            learner->addExample(batch[i].first, batch[i].second);
         learner->update();
-        mostRecentBatch.resize(batchCounter);
-        if (trainObserver && !trainObserver->didUpdate(learner, mostRecentBatch))
+        if (trainObserver && !trainObserver->didUpdate(learner, batch))
             return false;
     }
 
@@ -753,17 +717,27 @@ void evaluate(iLearner* learner, iInputTargetGenerator* generator,
                                  iOutputCollector* collector,
                                  u32 batchSize)
 {
-    if (inputs.size() == 0)
-        throw eInvalidArgument("There must be at least one input vector!");
+    if (!learner)
+        throw eInvalidArgument("learner must not be NULL!");
+
+    if (!generator)
+        throw eInvalidArgument("generator must not be NULL!");
+
+    if (!collector)
+        throw eInvalidArgument("collector must not be NULL!");
+
     if (batchSize == 0)
-        throw eInvalidArgument("The batch size must be positive.");
-    outputs.resize(inputs.size());
-    for (size_t i = 0; i < inputs.size(); i += batchSize)
+        throw eInvalidArgument("batchSize must be positive!");
+
+    std::vector<tIO> batch(batchSize);
+    std::vector<tIO> outputs;
+
+    while (generator->generate(batchSize, batch) && batch.size() > 0)
     {
-        size_t sizeHere = std::min((size_t)batchSize, inputs.size()-i);
-        learner->evaluateBatch(inputs.begin()+i,
-                               inputs.begin()+i+sizeHere,
-                               outputs.begin()+i);
+        outputs.resize(batch.size());
+        learner->evaluateBatch(batch.begin(),
+                               batch.end(),
+                               outputs.begin());
     }
 }
 
