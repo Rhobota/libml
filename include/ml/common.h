@@ -474,6 +474,77 @@ u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
                                 iEZTrainObserver* trainObserver = NULL);
 
 
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+// Training high-level helpers:
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+class tSmartStoppingWrapper : public iEZTrainObserver
+{
+    public:
+
+        /**
+         * This class defines an early stopping condition for training
+         * a learner.
+         *
+         * It guarantees that the learner will be trained for at least
+         * 'minEpochs' number of epochs, even if no progress is seen.
+         *
+         * It guarantees that the learner will be trained for at most
+         * 'maxEpochs' number of epochs, even if progress is seen the
+         * entire time.
+         *
+         * The algorithm respects significant improvements in performance
+         * and may increase the allowed training time when a significant
+         * improvement is encountered. If performance increases by
+         * 'significantThreshold' or more, the increase is considered
+         * significant. When a significant improvement happens, the allowed
+         * training time is extended to be at least the current duration of
+         * training time multiplied by 'patienceIncrease'.
+         *
+         * This class wraps another iEZTrainObserver so that observers
+         * can be decorated by objects of this type.
+         */
+        tSmartStoppingWrapper(u32 minEpochs=50,
+                              u32 maxEpochs=1000,
+                              f64 significantThreshold=0.005,   // <-- half a percent
+                              f64 patienceIncrease=2.0,
+                              iEZTrainObserver* wrappedObserver=NULL);
+
+    public:
+
+        // iTrainObserver interface:
+        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
+
+        // iEZTrainObserver interface:
+        bool didFinishEpoch(iLearner* learner,
+                            u32 epochsCompleted,
+                            f64 epochTrainTimeInSeconds,
+                            f64 trainingSetPerformance,
+                            f64 testSetPerformance);
+        void didFinishTraining(iLearner* learner,
+                               u32 epochsCompleted,
+                               f64 trainingTimeInSeconds);
+
+    private:
+
+        void m_reset();
+
+    private:
+
+        const u32 m_minEpochs;
+        const u32 m_maxEpochs;
+        const f64 m_significantThreshold;
+        const f64 m_patienceIncrease;
+
+        iEZTrainObserver * const m_obs;
+
+        f64 m_bestFoundTestSetPerformance;
+        u32 m_allowedEpochs;
+};
+
+
 }    // namespace ml
 
 
