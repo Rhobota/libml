@@ -7,6 +7,7 @@
 #include <rho/sync/tTimer.h>
 
 #include <cassert>
+#include <limits>
 #include <iomanip>
 #include <sstream>
 
@@ -927,20 +928,27 @@ bool tSmartStoppingWrapper::didFinishEpoch(iLearner* learner,
         return false;
     }
 
-    if (positivePerformanceIsGood)
+    if (isnan(m_bestFoundTestSetPerformance))
     {
-        if (testSetPerformance > m_bestFoundTestSetPerformance * (1.0 + m_significantThreshold))
-        {
-            m_bestFoundTestSetPerformance = testSetPerformance;
-            m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
-        }
+        m_bestFoundTestSetPerformance = testSetPerformance;
     }
     else
     {
-        if (testSetPerformance < m_bestFoundTestSetPerformance * (1.0 - m_significantThreshold))
+        if (positivePerformanceIsGood)
         {
-            m_bestFoundTestSetPerformance = testSetPerformance;
-            m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
+            if (testSetPerformance > m_bestFoundTestSetPerformance * (1.0 + m_significantThreshold))
+            {
+                m_bestFoundTestSetPerformance = testSetPerformance;
+                m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
+            }
+        }
+        else
+        {
+            if (testSetPerformance < m_bestFoundTestSetPerformance * (1.0 - m_significantThreshold))
+            {
+                m_bestFoundTestSetPerformance = testSetPerformance;
+                m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
+            }
         }
     }
 
@@ -958,8 +966,87 @@ void tSmartStoppingWrapper::didFinishTraining(iLearner* learner,
 
 void tSmartStoppingWrapper::m_reset()
 {
-    m_bestFoundTestSetPerformance = 1e100;
+    m_bestFoundTestSetPerformance = std::numeric_limits<double>::quiet_NaN();
     m_allowedEpochs = m_minEpochs;
+}
+
+
+tBestRememberingWrapper::tBestRememberingWrapper(iEZTrainObserver* wrappedObserver)
+    : m_bestAfterEpochsCompleted(0),
+      m_bestTestSetPerformance(0.0),
+      m_serializedLearner(),
+      m_obs(wrappedObserver)
+{
+    reset();
+}
+
+void tBestRememberingWrapper::reset()
+{
+    m_bestAfterEpochsCompleted = 0;
+    m_bestTestSetPerformance = std::numeric_limits<double>::quiet_NaN();
+}
+
+u32 tBestRememberingWrapper::bestAfterEpochsCompleted() const
+{
+    return m_bestAfterEpochsCompleted;
+}
+
+f64 tBestRememberingWrapper::bestTestSetPerformance()   const
+{
+    return m_bestTestSetPerformance;
+}
+
+iLearner* tBestRememberingWrapper::newBestLearner() const
+{
+    tByteReadable readable(m_serializedLearner.getBuf());
+    return iLearner::newLearnerFromStream(&readable);
+}
+
+bool tBestRememberingWrapper::didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch)
+{
+    return (!m_obs || m_obs->didUpdate(learner, mostRecentBatch));
+}
+
+bool tBestRememberingWrapper::didFinishEpoch(iLearner* learner,
+                                             u32 epochsCompleted,
+                                             f64 epochTrainTimeInSeconds,
+                                             f64 trainingSetPerformance,
+                                             f64 testSetPerformance,
+                                             bool positivePerformanceIsGood)
+{
+    // Delegate to the wrapped object whether or not to quit training.
+    bool retVal = (!m_obs || m_obs->didFinishEpoch(learner,
+                                                   epochsCompleted,
+                                                   epochTrainTimeInSeconds,
+                                                   trainingSetPerformance,
+                                                   testSetPerformance,
+                                                   positivePerformanceIsGood));
+
+    // If this is the zero'th epoch, reset myself in case I'm being re-used
+    // and the user forgot to reset me.
+    if (epochsCompleted == 0)
+        reset();
+
+    // Evaluate the performance on the test set and see if it's the best yet.
+    if ((isnan(m_bestTestSetPerformance))                                                    ||
+        (positivePerformanceIsGood  && testSetPerformance > m_bestTestSetPerformance)        ||
+        (!positivePerformanceIsGood && testSetPerformance < m_bestTestSetPerformance)        )
+    {
+        m_bestAfterEpochsCompleted = epochsCompleted;
+        m_bestTestSetPerformance = testSetPerformance;
+        m_serializedLearner.reset();
+        iLearner::writeLearnerToStream(learner, &m_serializedLearner);
+    }
+
+    return retVal;
+}
+
+void tBestRememberingWrapper::didFinishTraining(iLearner* learner,
+                                                u32 epochsCompleted,
+                                                f64 trainingTimeInSeconds)
+{
+    if (m_obs) m_obs->didFinishTraining(learner, epochsCompleted,
+                                        trainingTimeInSeconds);
 }
 
 
