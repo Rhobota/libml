@@ -69,21 +69,6 @@ void tLayeredLearnerBase::addExample(const tIO& input, const tIO& target)
     m_copyToTargetMatrix(target);
 }
 
-fml tLayeredLearnerBase::calculateError(const tIO& output, const tIO& target)
-{
-    if (m_layers.size() == 0)
-        throw eRuntimeError("Cannot calculate error when there are no layers!");
-    return m_layers.back()->calculateError(output, target);
-}
-
-fml tLayeredLearnerBase::calculateError(const std::vector<tIO>& outputs,
-                                        const std::vector<tIO>& targets)
-{
-    if (m_layers.size() == 0)
-        throw eRuntimeError("Cannot calculate error when there are no layers!");
-    return m_layers.back()->calculateError(outputs, targets);
-}
-
 void tLayeredLearnerBase::reset()
 {
     if (m_layers.size() == 0)

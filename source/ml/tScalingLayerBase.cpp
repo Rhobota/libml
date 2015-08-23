@@ -36,17 +36,6 @@ tScalingLayerBase::~tScalingLayerBase()
     // Nothing needed here...
 }
 
-fml tScalingLayerBase::calculateError(const tIO& output, const tIO& target)
-{
-    throw eImpossiblePath();
-}
-
-fml tScalingLayerBase::calculateError(const std::vector<tIO>& outputs,
-                                      const std::vector<tIO>& targets)
-{
-    throw eImpossiblePath();
-}
-
 void tScalingLayerBase::reset()
 {
     // Nothing needed here...

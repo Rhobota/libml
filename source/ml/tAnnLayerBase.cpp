@@ -85,25 +85,6 @@ void tAnnLayerBase::setViscosity(fml viscosity)
 }
 
 
-fml tAnnLayerBase::calculateError(const tIO& output, const tIO& target)
-{
-    if (m_type == kLayerTypeSoftmax)
-        return crossEntropyCost(output, target);
-    else
-        return standardSquaredError(output, target);
-}
-
-
-fml tAnnLayerBase::calculateError(const std::vector<tIO>& outputs,
-                                  const std::vector<tIO>& targets)
-{
-    if (m_type == kLayerTypeSoftmax)
-        return crossEntropyCost(outputs, targets);
-    else
-        return standardSquaredError(outputs, targets);
-}
-
-
 void tAnnLayerBase::reset()
 {
     if (!m_w_orig || !m_b_orig)

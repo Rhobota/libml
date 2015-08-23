@@ -38,17 +38,6 @@ tWrappedGPULayer::~tWrappedGPULayer()
     delete [] m_inputErrorGradients;
 }
 
-fml tWrappedGPULayer::calculateError(const tIO& output, const tIO& target)
-{
-    return m_wrappedLayer->calculateError(output, target);
-}
-
-fml tWrappedGPULayer::calculateError(const std::vector<tIO>& outputs,
-                                      const std::vector<tIO>& targets)
-{
-    return m_wrappedLayer->calculateError(outputs, targets);
-}
-
 void tWrappedGPULayer::reset()
 {
     m_wrappedLayer->reset();

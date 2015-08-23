@@ -29,11 +29,6 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
 
         void addExample(const tIO& input, const tIO& target);
 
-        fml calculateError(const tIO& output, const tIO& target);
-
-        fml calculateError(const std::vector<tIO>& outputs,
-                           const std::vector<tIO>& targets);
-
         void reset();
 
         void printLearnerInfo(std::ostream& out) const;

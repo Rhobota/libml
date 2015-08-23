@@ -62,22 +62,13 @@ class iLearner : public iPackable
                                    std::vector<tIO>::iterator outputStart) = 0;
 
         /**
-         * Asks the learner to calculate the error between the given output
-         * and the given target. For example, the learner may calculate
-         * the standard squared error or the cross-entropy loss, if one of
-         * those is appropriate. Or the learner may do something else.
-         */
-        virtual fml calculateError(const tIO& output, const tIO& target) = 0;
-
-        /**
-         * Asks the learner to calculate the error between all the given
-         * output/target pairs. For example, the learner may calculate
+         * Asks the layer to calculate the error between all the given
+         * output/target pairs. For example, the layer may calculate
          * the average standard squared error or the average cross-entropy
-         * loss, if one of those is appropriate. Or the learner may do
+         * loss, if one of those is appropriate. Or the layer may do
          * something else.
          */
-        virtual fml calculateError(const std::vector<tIO>& outputs,
-                                   const std::vector<tIO>& targets) = 0;
+        // TODO
 
         /**
          * Resets the learner to its initial state.

@@ -46,17 +46,6 @@ void tSplittingLayerBase::addLayer(iLayer* layer, u32 numInputDims, u32 numOutpu
     m_layerRecords.push_back(tLayerRecord(layer, numInputDims, numOutputDims));
 }
 
-fml tSplittingLayerBase::calculateError(const tIO& output, const tIO& target)
-{
-    throw eImpossiblePath();
-}
-
-fml tSplittingLayerBase::calculateError(const std::vector<tIO>& outputs,
-                                        const std::vector<tIO>& targets)
-{
-    throw eImpossiblePath();
-}
-
 void tSplittingLayerBase::reset()
 {
     // Nothing needed here...

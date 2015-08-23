@@ -39,11 +39,6 @@ class tPoolingLayerBase : public iLayer, public bNonCopyable
         // The iLayer interface:   (partial interface only)
         ///////////////////////////////////////////////////////////////////////
 
-        fml calculateError(const tIO& output, const tIO& target);
-
-        fml calculateError(const std::vector<tIO>& outputs,
-                           const std::vector<tIO>& targets);
-
         void reset();
 
         void printLayerInfo(std::ostream& out) const;

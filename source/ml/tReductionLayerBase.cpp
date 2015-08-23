@@ -34,17 +34,6 @@ tReductionLayerBase::~tReductionLayerBase()
     // Nothing needed here...
 }
 
-fml tReductionLayerBase::calculateError(const tIO& output, const tIO& target)
-{
-    throw eImpossiblePath();
-}
-
-fml tReductionLayerBase::calculateError(const std::vector<tIO>& outputs,
-                                      const std::vector<tIO>& targets)
-{
-    throw eImpossiblePath();
-}
-
 void tReductionLayerBase::reset()
 {
     // Nothing needed here...
