@@ -886,14 +886,12 @@ tSmartStoppingWrapper::tSmartStoppingWrapper(u32 minEpochs,
                                              u32 maxEpochs,
                                              f64 significantThreshold,
                                              f64 patienceIncrease,
-                                             iEZTrainObserver* wrappedObserver,
-                                             nPerformanceAttribute performanceAttribute)
+                                             iEZTrainObserver* wrappedObserver)
     : m_minEpochs(minEpochs),
       m_maxEpochs(maxEpochs),
       m_significantThreshold(significantThreshold),
       m_patienceIncrease(patienceIncrease),
-      m_obs(wrappedObserver),
-      m_performanceAttribute(performanceAttribute)
+      m_obs(wrappedObserver)
 {
     if (m_maxEpochs < m_minEpochs)
         throw eInvalidArgument("max epochs must be >= min epochs");
@@ -906,56 +904,29 @@ tSmartStoppingWrapper::tSmartStoppingWrapper(u32 minEpochs,
     m_reset();
 }
 
-bool tSmartStoppingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch)
+bool tSmartStoppingWrapper::didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch)
 {
     return (!m_obs || m_obs->didUpdate(learner, mostRecentBatch));
 }
 
 bool tSmartStoppingWrapper::didFinishEpoch(iLearner* learner,
                                            u32 epochsCompleted,
-                                           u32 foldIndex, u32 numFolds,
-                                           const std::vector< tIO >& trainInputs,
-                                           const std::vector< tIO >& trainTargets,
-                                           const std::vector< tIO >& trainOutputs,
-                                           const tConfusionMatrix& trainCM,
-                                           const std::vector< tIO >& testInputs,
-                                           const std::vector< tIO >& testTargets,
-                                           const std::vector< tIO >& testOutputs,
-                                           const tConfusionMatrix& testCM,
-                                           f64 epochTrainTimeInSeconds)
+                                           f64 epochTrainTimeInSeconds,
+                                           f64 trainingSetPerformance,
+                                           f64 testSetPerformance)
 {
     if (m_obs && !m_obs->didFinishEpoch(learner,
                                         epochsCompleted,
-                                        foldIndex,
-                                        numFolds,
-                                        trainInputs,
-                                        trainTargets,
-                                        trainOutputs,
-                                        trainCM,
-                                        testInputs,
-                                        testTargets,
-                                        testOutputs,
-                                        testCM,
-                                        epochTrainTimeInSeconds))
+                                        epochTrainTimeInSeconds,
+                                        trainingSetPerformance,
+                                        testSetPerformance))
     {
         return false;
     }
 
-    f64 testError;
-    switch (m_performanceAttribute)
+    if (testSetPerformance <= m_bestFoundTestSetPerformance * (1.0 - m_significantThreshold))
     {
-        case kClassificationErrorRate:
-            testError = (f64) errorRate(testCM);
-            break;
-        case kOutputErrorMeasure:
-            testError = (f64) learner->calculateError(testOutputs, testTargets);
-            break;
-        default:
-            throw eLogicError("Unknown performance attribute");
-    }
-    if (testError <= m_bestTestErrorYet * (1.0 - m_significantThreshold))
-    {
-        m_bestTestErrorYet = testError;
+        m_bestFoundTestSetPerformance = testSetPerformance;
         m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
     }
 
@@ -964,22 +935,16 @@ bool tSmartStoppingWrapper::didFinishEpoch(iLearner* learner,
 
 void tSmartStoppingWrapper::didFinishTraining(iLearner* learner,
                                               u32 epochsCompleted,
-                                              u32 foldIndex, u32 numFolds,
-                                              const std::vector< tIO >& trainInputs,
-                                              const std::vector< tIO >& trainTargets,
-                                              const std::vector< tIO >& testInputs,
-                                              const std::vector< tIO >& testTargets,
                                               f64 trainingTimeInSeconds)
 {
-    if (m_obs) m_obs->didFinishTraining(learner, epochsCompleted, foldIndex, numFolds,
-                                        trainInputs, trainTargets, testInputs, testTargets,
+    if (m_obs) m_obs->didFinishTraining(learner, epochsCompleted,
                                         trainingTimeInSeconds);
     m_reset();
 }
 
 void tSmartStoppingWrapper::m_reset()
 {
-    m_bestTestErrorYet = 1e100;
+    m_bestFoundTestSetPerformance = 1e100;
     m_allowedEpochs = m_minEpochs;
 }
 
