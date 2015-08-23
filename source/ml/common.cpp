@@ -1050,4 +1050,106 @@ void tBestRememberingWrapper::didFinishTraining(iLearner* learner,
 }
 
 
+tLoggingWrapper::tLoggingWrapper(u32 logInterval,
+                iEZTrainObserver* wrappedObserver,
+                std::string fileprefix)
+    : tBestRememberingWrapper(wrappedObserver),
+      m_logInterval(logInterval),
+      m_fileprefix(fileprefix),
+      m_logfile(),
+      m_datafile()
+{
+    if (m_logInterval == 0)
+        throw eInvalidArgument("The log interval cannot be zero...");
+}
+
+tLoggingWrapper::~tLoggingWrapper()
+{
+    m_logfile.close();
+    m_datafile.close();
+}
+
+bool tLoggingWrapper::didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch)
+{
+    // Nothing special to do here, so just call the super method.
+    // The super method will call into the wrapped object.
+    return tBestRememberingWrapper::didUpdate(learner, mostRecentBatch);
+}
+
+bool tLoggingWrapper::didFinishEpoch(iLearner* learner,
+                                     u32 epochsCompleted,
+                                     f64 epochTrainTimeInSeconds,
+                                     f64 trainingSetPerformance,
+                                     f64 testSetPerformance,
+                                     bool positivePerformanceIsGood)
+{
+    // Delegate to the super object whether or not to quit training.
+    // The super method will call into the wrapped object.
+    bool retVal = tBestRememberingWrapper::didFinishEpoch(learner,
+                                                          epochsCompleted,
+                                                          epochTrainTimeInSeconds,
+                                                          trainingSetPerformance,
+                                                          testSetPerformance,
+                                                          positivePerformanceIsGood);
+
+    // If this is the first callback, open the log files.
+    if (epochsCompleted == 0)
+    {
+        m_logfile.close();
+        m_datafile.close();
+        m_logfile.open((m_fileprefix + learner->learnerInfoString() + ".log").c_str());
+        m_datafile.open((m_fileprefix + learner->learnerInfoString() + ".data").c_str());
+        learner->printLearnerInfo(m_logfile);
+    }
+
+    // Print the training and test performance to the human-readable log.
+    m_logfile << "Train performance:    " << trainingSetPerformance << std::endl;
+    m_logfile << "Test performance:     " << testSetPerformance << std::endl;
+    m_logfile << "Epoch train time:     " << epochTrainTimeInSeconds << " seconds" << std::endl;
+    m_logfile << std::endl;
+
+    // Print the training and test performance to the simplified data log.
+    m_datafile << trainingSetPerformance << std::endl;
+    m_datafile << testSetPerformance << std::endl;
+    m_datafile << std::endl;
+
+    // Serialize the learner every so many epochs.
+    if ((epochsCompleted % m_logInterval) == 0)
+    {
+        std::ostringstream out;
+        out << m_fileprefix << learner->learnerInfoString() << "__epoch" << epochsCompleted << ".learner";
+        tFileWritable file(out.str());
+        iLearner::writeLearnerToStream(learner, &file);
+    }
+
+    return retVal;
+}
+
+void tLoggingWrapper::didFinishTraining(iLearner* learner,
+                                        u32 epochsCompleted,
+                                        f64 trainingTimeInSeconds)
+{
+    // The super method will call into the wrapped object.
+    tBestRememberingWrapper::didFinishTraining(learner, epochsCompleted,
+                                               trainingTimeInSeconds);
+
+    // Get a copy of the best found learner.
+    iLearner* bestLearner = newBestLearner();
+
+    // Log the final results.
+    {
+        m_logfile << "Best test set performance of " << bestTestSetPerformance() << " "
+                  << "found after epoch " << bestAfterEpochsCompleted() << "." << std::endl << std::endl;
+        m_logfile << "Trained for a total " << epochsCompleted << " epochs; training lasted " << trainingTimeInSeconds << " seconds." << std::endl << std::endl;
+        std::ostringstream out;
+        out << m_fileprefix << bestLearner->learnerInfoString() << "__best" << ".learner";
+        tFileWritable file(out.str());
+        iLearner::writeLearnerToStream(bestLearner, &file);
+    }
+
+    // Delete the copy of the best learner.
+    delete bestLearner;
+}
+
+
 }   // namespace ml
