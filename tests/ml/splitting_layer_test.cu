@@ -1,6 +1,10 @@
 #include <ml/tSplittingLayerCPU.h>
 #include <ml/tScalingLayerCPU.h>
 #include <ml/tReductionLayerCPU.h>
+#include <ml/tSplittingLayerGPU.h>
+#include <ml/tScalingLayerGPU.h>
+#include <ml/tReductionLayerGPU.h>
+#include <ml/tWrappedGPULayer.h>
 
 #include <rho/tTest.h>
 #include <rho/tCrashReporter.h>
@@ -16,28 +20,8 @@ static const int kTestIterations = 100;
 static const int kTestInnerIterations = 100;
 
 
-void test1(const tTest& t)
+void test1(const tTest& t, u32 numInputDims, u32 numOutputDims, ml::iLayer* layer, const std::vector< std::pair<u32, fml> >& layerInfo)
 {
-    u32 numInputDims = (rand() % 20) + 1;
-    u32 numOutputDims = numInputDims;
-    ml::tSplittingLayerCPU layer(numInputDims, numOutputDims);
-
-    std::vector< std::pair<u32, fml> > layerInfo;
-
-    u32 sum = 0;
-    while (sum < numInputDims)
-    {
-        u32 innerInputDims = (rand() % (numInputDims - sum)) + 1;
-        u32 innerOutputDims = innerInputDims;
-        fml scaleFactor = (rand() % 50);
-        ml::iLayer* innerLayer = new ml::tScalingLayerCPU(innerInputDims, innerOutputDims, scaleFactor);
-        layer.addLayer(innerLayer, innerInputDims, innerOutputDims);
-        sum += innerInputDims;
-        layerInfo.push_back(std::make_pair(innerInputDims, scaleFactor));
-    }
-    t.assert(sum == numInputDims);
-    t.assert(sum == numOutputDims);
-
     for (int iter = 0; iter < kTestInnerIterations; iter++)
     {
         u32 count = (rand() % 10) + 1;
@@ -66,10 +50,10 @@ void test1(const tTest& t)
                 t.assert(index == numOutputDims);
             }
 
-            layer.takeInput(input, numInputDims, count);
+            layer->takeInput(input, numInputDims, count);
 
             u32 retNumOutputDims = 0, retCount = 0;
-            const fml* output = layer.getOutput(retNumOutputDims, retCount);
+            const fml* output = layer->getOutput(retNumOutputDims, retCount);
             t.assert(retNumOutputDims == numOutputDims);
             t.assert(retCount == count);
 
@@ -106,12 +90,12 @@ void test1(const tTest& t)
                 t.assert(index == numInputDims);
             }
 
-            layer.takeOutputErrorGradients(outError, numOutputDims, count,
-                                           input, numInputDims, count,
-                                           true);
+            layer->takeOutputErrorGradients(outError, numOutputDims, count,
+                                            input, numInputDims, count,
+                                            true);
 
             u32 retNumInputDims = 0, retCount = 0;
-            const fml* inError = layer.getInputErrorGradients(retNumInputDims, retCount);
+            const fml* inError = layer->getInputErrorGradients(retNumInputDims, retCount);
             t.assert(retNumInputDims == numInputDims);
             t.assert(retCount == count);
 
@@ -136,32 +120,62 @@ void test1(const tTest& t)
 }
 
 
-void test2(const tTest& t)
+void test1CPU(const tTest& t)
 {
     u32 numInputDims = (rand() % 20) + 1;
+    u32 numOutputDims = numInputDims;
+    ml::tSplittingLayerCPU layer(numInputDims, numOutputDims);
 
-    std::vector<u32> layerInfo;
+    std::vector< std::pair<u32, fml> > layerInfo;
 
     u32 sum = 0;
     while (sum < numInputDims)
     {
         u32 innerInputDims = (rand() % (numInputDims - sum)) + 1;
+        u32 innerOutputDims = innerInputDims;
+        fml scaleFactor = (rand() % 50);
+        ml::iLayer* innerLayer = new ml::tScalingLayerCPU(innerInputDims, innerOutputDims, scaleFactor);
+        layer.addLayer(innerLayer, innerInputDims, innerOutputDims);
         sum += innerInputDims;
-        layerInfo.push_back(innerInputDims);
+        layerInfo.push_back(std::make_pair(innerInputDims, scaleFactor));
     }
     t.assert(sum == numInputDims);
+    t.assert(sum == numOutputDims);
 
-    u32 numOutputDims = layerInfo.size();
-    ml::tSplittingLayerCPU layer(numInputDims, numOutputDims);
+    test1(t, numInputDims, numOutputDims, &layer, layerInfo);
+}
 
-    for (size_t i = 0; i < layerInfo.size(); i++)
+
+void test1GPU(const tTest& t)
+{
+    u32 numInputDims = (rand() % 20) + 1;
+    u32 numOutputDims = numInputDims;
+    ml::tSplittingLayerGPU* wrappedLayer = new ml::tSplittingLayerGPU(numInputDims, numOutputDims);
+    ml::tWrappedGPULayer layer(numInputDims, numOutputDims,
+        wrappedLayer);
+
+    std::vector< std::pair<u32, fml> > layerInfo;
+
+    u32 sum = 0;
+    while (sum < numInputDims)
     {
-        u32 innerInputDims = layerInfo[i];
-        u32 innerOutputDims = 1;
-        ml::iLayer* innerLayer = new ml::tReductionLayerCPU(innerInputDims, innerOutputDims);
-        layer.addLayer(innerLayer, innerInputDims, innerOutputDims);
+        u32 innerInputDims = (rand() % (numInputDims - sum)) + 1;
+        u32 innerOutputDims = innerInputDims;
+        fml scaleFactor = (rand() % 50);
+        ml::iLayer* innerLayer = new ml::tScalingLayerGPU(innerInputDims, innerOutputDims, scaleFactor);
+        wrappedLayer->addLayer(innerLayer, innerInputDims, innerOutputDims);
+        sum += innerInputDims;
+        layerInfo.push_back(std::make_pair(innerInputDims, scaleFactor));
     }
+    t.assert(sum == numInputDims);
+    t.assert(sum == numOutputDims);
 
+    test1(t, numInputDims, numOutputDims, &layer, layerInfo);
+}
+
+
+void test2(const tTest& t, u32 numInputDims, const std::vector<u32>& layerInfo, u32 numOutputDims, ml::iLayer* layer)
+{
     for (int iter = 0; iter < kTestInnerIterations; iter++)
     {
         u32 count = (rand() % 10) + 1;
@@ -193,10 +207,10 @@ void test2(const tTest& t)
                 t.assert(layerInfo.size() == numOutputDims);
             }
 
-            layer.takeInput(input, numInputDims, count);
+            layer->takeInput(input, numInputDims, count);
 
             u32 retNumOutputDims = 0, retCount = 0;
-            const fml* output = layer.getOutput(retNumOutputDims, retCount);
+            const fml* output = layer->getOutput(retNumOutputDims, retCount);
             t.assert(retNumOutputDims == numOutputDims);
             t.assert(retCount == count);
 
@@ -234,12 +248,12 @@ void test2(const tTest& t)
                 t.assert(layerInfo.size() == numOutputDims);
             }
 
-            layer.takeOutputErrorGradients(outError, numOutputDims, count,
-                                           input, numInputDims, count,
-                                           true);
+            layer->takeOutputErrorGradients(outError, numOutputDims, count,
+                                            input, numInputDims, count,
+                                            true);
 
             u32 retNumInputDims = 0, retCount = 0;
-            const fml* inError = layer.getInputErrorGradients(retNumInputDims, retCount);
+            const fml* inError = layer->getInputErrorGradients(retNumInputDims, retCount);
             t.assert(retNumInputDims == numInputDims);
             t.assert(retCount == count);
 
@@ -264,14 +278,79 @@ void test2(const tTest& t)
 }
 
 
+void test2CPU(const tTest& t)
+{
+    u32 numInputDims = (rand() % 20) + 1;
+
+    std::vector<u32> layerInfo;
+
+    u32 sum = 0;
+    while (sum < numInputDims)
+    {
+        u32 innerInputDims = (rand() % (numInputDims - sum)) + 1;
+        sum += innerInputDims;
+        layerInfo.push_back(innerInputDims);
+    }
+    t.assert(sum == numInputDims);
+
+    u32 numOutputDims = layerInfo.size();
+    ml::tSplittingLayerCPU layer(numInputDims, numOutputDims);
+
+    for (size_t i = 0; i < layerInfo.size(); i++)
+    {
+        u32 innerInputDims = layerInfo[i];
+        u32 innerOutputDims = 1;
+        ml::iLayer* innerLayer = new ml::tReductionLayerCPU(innerInputDims, innerOutputDims);
+        layer.addLayer(innerLayer, innerInputDims, innerOutputDims);
+    }
+
+    test2(t, numInputDims, layerInfo, numOutputDims, &layer);
+}
+
+
+void test2GPU(const tTest& t)
+{
+    u32 numInputDims = (rand() % 20) + 1;
+
+    std::vector<u32> layerInfo;
+
+    u32 sum = 0;
+    while (sum < numInputDims)
+    {
+        u32 innerInputDims = (rand() % (numInputDims - sum)) + 1;
+        sum += innerInputDims;
+        layerInfo.push_back(innerInputDims);
+    }
+    t.assert(sum == numInputDims);
+
+    u32 numOutputDims = layerInfo.size();
+    ml::tSplittingLayerGPU* wrappedLayer = new ml::tSplittingLayerGPU(numInputDims, numOutputDims);
+    ml::tWrappedGPULayer layer(numInputDims, numOutputDims,
+                               wrappedLayer);
+
+    for (size_t i = 0; i < layerInfo.size(); i++)
+    {
+        u32 innerInputDims = layerInfo[i];
+        u32 innerOutputDims = 1;
+        ml::iLayer* innerLayer = new ml::tReductionLayerGPU(innerInputDims, innerOutputDims);
+        wrappedLayer->addLayer(innerLayer, innerInputDims, innerOutputDims);
+    }
+
+    test2(t, numInputDims, layerInfo, numOutputDims, &layer);
+}
+
+
 int main()
 {
     tCrashReporter::init();
 
     srand(time(0));
 
-    tTest("splitting layer test (1)", test1, kTestIterations);
-    tTest("splitting layer test (2)", test2, kTestIterations);
+    tTest("splitting layer cpu test (1)", test1CPU, kTestIterations);
+    tTest("splitting layer gpu test (1)", test1GPU, kTestIterations);
+
+    tTest("splitting layer cpu test (2)", test2CPU, kTestIterations);
+    tTest("splitting layer gpu test (2)", test2GPU, kTestIterations);
 
     return 0;
 }
