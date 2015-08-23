@@ -848,7 +848,7 @@ u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
         // Call the epoch observer.
         if (trainObserver)
         {
-            // Get the evaulation method used by this learner.
+            // Get the evaluation method used by this learner.
             iOutputPerformanceEvaluator* evaluator = leaner->getOutputPerformanceEvaluator();
             evaluator->reset();
 

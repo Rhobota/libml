@@ -22,12 +22,16 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
 
         void addLayer(iLayer* layer);  // <-- takes ownership of the layer
 
+        void setOutputPerformanceEvaluator(iOutputPerformanceEvaluator* evaluator); // <-- takes ownership
+
 
         ///////////////////////////////////////////////////////////////////////
         // iLearner interface:   (partial interface only)
         ///////////////////////////////////////////////////////////////////////
 
         void addExample(const tIO& input, const tIO& target);
+
+        iOutputPerformanceEvaluator* getOutputPerformanceEvaluator();
 
         void reset();
 
@@ -80,6 +84,8 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
 
         u32 m_numInputDims;
         u32 m_numOutputDims;
+
+        iOutputPerformanceEvaluator* m_evaluator;
 
         fml* m_inputMatrix;
         u32  m_inputMatrixSize;

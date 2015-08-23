@@ -12,6 +12,7 @@ tLayeredLearnerBase::tLayeredLearnerBase(u32 numInputDims, u32 numOutputDims)
     : m_layers(),
       m_numInputDims(numInputDims),
       m_numOutputDims(numOutputDims),
+      m_evaluator(NULL),
       m_inputMatrix(NULL),
       m_inputMatrixSize(0),
       m_inputMatrixUsed(0),
@@ -35,6 +36,7 @@ tLayeredLearnerBase::tLayeredLearnerBase(iReadable* in)
     : m_layers(),
       m_numInputDims(0),
       m_numOutputDims(0),
+      m_evaluator(NULL),
       m_inputMatrix(NULL),
       m_inputMatrixSize(0),
       m_inputMatrixUsed(0),
@@ -47,6 +49,9 @@ tLayeredLearnerBase::tLayeredLearnerBase(iReadable* in)
 
 tLayeredLearnerBase::~tLayeredLearnerBase()
 {
+    delete m_evaluator;
+    m_evaluator = NULL;
+
     delete [] m_inputMatrix;
     m_inputMatrix = NULL;
 
@@ -63,10 +68,23 @@ void tLayeredLearnerBase::addLayer(iLayer* layer)
     m_layers.push_back(layer);
 }
 
+void tLayeredLearnerBase::setOutputPerformanceEvaluator(iOutputPerformanceEvaluator* evaluator)
+{
+    delete m_evaluator;
+    m_evaluator = evaluator;
+}
+
 void tLayeredLearnerBase::addExample(const tIO& input, const tIO& target)
 {
     m_copyToInputMatrix(input);
     m_copyToTargetMatrix(target);
+}
+
+iOutputPerformanceEvaluator* tLayeredLearnerBase::getOutputPerformanceEvaluator()
+{
+    if (!m_evaluator)
+        throw eRuntimeError("The output performance evaluator object has not been set! It is NULL!");
+    return m_evaluator;
 }
 
 void tLayeredLearnerBase::reset()

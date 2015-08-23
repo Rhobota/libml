@@ -62,13 +62,21 @@ class iLearner : public iPackable
                                    std::vector<tIO>::iterator outputStart) = 0;
 
         /**
-         * Asks the layer to calculate the error between all the given
-         * output/target pairs. For example, the layer may calculate
-         * the average standard squared error or the average cross-entropy
-         * loss, if one of those is appropriate. Or the layer may do
-         * something else.
+         * There are many evaluation methods for determining how well
+         * your learner is performing. Which one is most appropriate depends
+         * on the type of learner you're using and the type of problem you're
+         * trying to solve.
+         *
+         * For example, if you're doing basic regression, then using average
+         * standard squared error is probably what you want. But if you're
+         * doing binary classification, you might consider AUC, or average cross-
+         * entropy loss, or simply average standard squared error.
+         *
+         * This method returns the object which will do the performance evaluation.
+         * Your learner will have to decide what method that is, then implement
+         * it as an iOutputPerformanceEvaluator subclass and return it here.
          */
-        // TODO
+        virtual iOutputPerformanceEvaluator* getOutputPerformanceEvaluator() = 0;
 
         /**
          * Resets the learner to its initial state.
