@@ -12,7 +12,7 @@ using ml::fml;
 #define dout if (false) std::cout
 
 
-static const int kTestIterations = 3000;
+static const int kTestIterations = 500;
 
 
 void convolveTest(
