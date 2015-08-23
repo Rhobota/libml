@@ -352,6 +352,21 @@ class iOutputPerformanceEvaluator : public iOutputCollector
         virtual f64 calculatePerformance() = 0;
 
         /**
+         * Indicates whether or not positive (i.e. increasing) values
+         * of the performance metric returned by calculatePerformance()
+         * are good (i.e. indicates better performance).
+         *
+         * E.g. If the performance metric is AUC, this method should
+         * return true.
+         *
+         * E.g. If the performance metric is average standard squared
+         * error, this method should return false. Because for the
+         * squared error metric, decreasing values indicate better
+         * performance.
+         */
+        virtual bool isPositivePerformanceGood() = 0;
+
+        /**
          * This method will reset this object so that you can use it
          * fresh to collect more inputs/targets/outputs and then
          * calculate the performance on that new input. Basically,
@@ -441,7 +456,8 @@ class iEZTrainObserver : public iTrainObserver
                                     u32 epochsCompleted,
                                     f64 epochTrainTimeInSeconds,
                                     f64 trainingSetPerformance,
-                                    f64 testSetPerformance) = 0;
+                                    f64 testSetPerformance,
+                                    bool positivePerformanceIsGood) = 0;
 
         /**
          * This method is called after training completes, meaning that
@@ -522,7 +538,8 @@ class tSmartStoppingWrapper : public iEZTrainObserver
                             u32 epochsCompleted,
                             f64 epochTrainTimeInSeconds,
                             f64 trainingSetPerformance,
-                            f64 testSetPerformance);
+                            f64 testSetPerformance,
+                            bool positivePerformanceIsGood);
         void didFinishTraining(iLearner* learner,
                                u32 epochsCompleted,
                                f64 trainingTimeInSeconds);

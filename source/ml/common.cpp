@@ -869,7 +869,8 @@ u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
             elapsedTime /= 1000000;  // usecs to secs
 
             if (! trainObserver->didFinishEpoch(learner, epochs, elapsedTime,
-                                                trainingSetPerformance, testSetPerformance))
+                                                trainingSetPerformance, testSetPerformance,
+                                                evaluator->isPositivePerformanceGood()))
             {
                 f64 trainElapsedTime = (f64)(sync::tTimer::usecTime() - trainStartTime);
                 trainElapsedTime /= 1000000;  // usecs to secs
@@ -913,21 +914,34 @@ bool tSmartStoppingWrapper::didFinishEpoch(iLearner* learner,
                                            u32 epochsCompleted,
                                            f64 epochTrainTimeInSeconds,
                                            f64 trainingSetPerformance,
-                                           f64 testSetPerformance)
+                                           f64 testSetPerformance,
+                                           bool positivePerformanceIsGood)
 {
     if (m_obs && !m_obs->didFinishEpoch(learner,
                                         epochsCompleted,
                                         epochTrainTimeInSeconds,
                                         trainingSetPerformance,
-                                        testSetPerformance))
+                                        testSetPerformance,
+                                        positivePerformanceIsGood))
     {
         return false;
     }
 
-    if (testSetPerformance <= m_bestFoundTestSetPerformance * (1.0 - m_significantThreshold))
+    if (positivePerformanceIsGood)
     {
-        m_bestFoundTestSetPerformance = testSetPerformance;
-        m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
+        if (testSetPerformance > m_bestFoundTestSetPerformance * (1.0 + m_significantThreshold))
+        {
+            m_bestFoundTestSetPerformance = testSetPerformance;
+            m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
+        }
+    }
+    else
+    {
+        if (testSetPerformance < m_bestFoundTestSetPerformance * (1.0 - m_significantThreshold))
+        {
+            m_bestFoundTestSetPerformance = testSetPerformance;
+            m_allowedEpochs = (u32)std::ceil(std::max((f64)m_minEpochs, epochsCompleted * m_patienceIncrease));
+        }
     }
 
     return (epochsCompleted < m_allowedEpochs && epochsCompleted < m_maxEpochs);
