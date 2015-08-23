@@ -562,6 +562,53 @@ class tSmartStoppingWrapper : public iEZTrainObserver
 };
 
 
+class tBestRememberingWrapper : public iEZTrainObserver
+{
+    public:
+
+        /**
+         * This class wraps a iEZTrainObserver to add the ability to remember the
+         * learner which performed best on the test set during training. This
+         * allows you to identify which point in the learning process gave you
+         * the best generalization error estimate, and then to recreate that point
+         * at the end of training.
+         */
+        tBestRememberingWrapper(iEZTrainObserver* wrappedObserver=NULL);
+
+        void reset();
+
+        u32 bestAfterEpochsCompleted() const;
+        f64 bestTestSetPerformance()   const;
+
+        iLearner* newBestLearner() const;   // <-- caller must call delete on this when finished with it
+
+    public:
+
+        // iTrainObserver interface:
+        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
+
+        // iEZTrainObserver interface:
+        bool didFinishEpoch(iLearner* learner,
+                            u32 epochsCompleted,
+                            f64 epochTrainTimeInSeconds,
+                            f64 trainingSetPerformance,
+                            f64 testSetPerformance,
+                            bool positivePerformanceIsGood);
+        void didFinishTraining(iLearner* learner,
+                               u32 epochsCompleted,
+                               f64 trainingTimeInSeconds);
+
+    private:
+
+        u32 m_bestAfterEpochsCompleted;
+        f64 m_bestTestSetPerformance;
+
+        tByteWritable m_serializedLearner;
+
+        iEZTrainObserver * const m_obs;
+};
+
+
 }    // namespace ml
 
 
