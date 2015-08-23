@@ -276,6 +276,56 @@ f64  recall(const tConfusionMatrix& confusionMatrix);
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
+class iInputTargetGenerator
+{
+    public:
+
+        /**
+         * This method is called when more input/target pairs are needed.
+         *
+         * Return true if there is still more input to get in this epoch.
+         * Return false if the last of the current epoch has been returned
+         * by this call.
+         *
+         * The requester passes 'count' as the maximum it wants to receive.
+         * You should return 'count' input/target pairs unless you've reached
+         * the end of this epoch (in which case you may return less). If you
+         * return less than 'count', be sure to resize 'fillme' so that it
+         * contains the correct number of input/target pairs.
+         */
+        virtual bool generate(u32 count, std::vector< std::pair<tIO,tIO> >& fillme) = 0;
+
+        /**
+         * This method is called between epochs. When called, you should shuffle
+         * your data (if appropriate), to prepare for the next epoch to begin.
+         */
+        virtual void shuffle() = 0;
+
+        /**
+         * This method is called to restart the current epoch. This method can
+         * also be used to train on the just-completed epoch without doing a shuffle,
+         * in the case that (for some reason) you don't want to shuffle your data
+         * between epochs.
+         */
+        virtual void restart() = 0;
+
+        virtual ~iInputTargetGenerator() { }
+};
+
+class iOutputCollector
+{
+    public:
+
+        /**
+         * This method is called after every batch is evaluated.
+         * It contains the inputs, targets, and outputs of the batch.
+         */
+        virtual void receivedOutput(const std::vector< std::pair<tIO,tIO> >& inputTargetPairs,
+                                    const std::vector<               tIO  >& outputs) = 0;
+
+        virtual ~iOutputCollector() { }
+};
+
 class iTrainObserver
 {
     public:
@@ -288,13 +338,13 @@ class iTrainObserver
          * halt. This is useful if you need to cancel training
          * due to user input, or something like that.
          */
-        virtual bool didUpdate(iLearner* learner, const std::vector<tIO>& mostRecentBatch) = 0;
+        virtual bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch) = 0;
 
         virtual ~iTrainObserver() { }
 };
 
 /**
- * This function trains the leaner on the given examples,
+ * This function trains the leaner for one epoch,
  * calling the training observer after each batch has been
  * processed by the learner. This function returns true if
  * the training process completed fully, and it returns false
@@ -303,25 +353,27 @@ class iTrainObserver
  *
  * Use this for training on the training-set.
  */
-bool train(iLearner* learner, const std::vector<tIO>& inputs,
-                              const std::vector<tIO>& targets,
+bool train(iLearner* learner, iInputTargetGenerator* generator,
                               u32 batchSize,
                               iTrainObserver* trainObserver = NULL);
 
 /**
- * This function tests the learner on the given examples.
- * The 'outputs' parameter is populated by this function,
- * making it easy to create a confusion matrix after this
- * function returns (assuming, of course, that you have
- * the targets for each of the inputs given to this function).
+ * This function uses the learner to evaluate every input
+ * examples from one epoch's-worth of input obtained via
+ * the generator.
+ * Use the collector to collect the output of each input.
+ * Inside the collector, you can do whatever you want with
+ * the results. E.g. Create a confusion matrix, or just calculate
+ * accuracy, or whatever.
  *
  * Use this for evaluating how the learner is doing on the
- * training-set AND test-set. Know how the learner is doing
- * on each is vital.
+ * training-set AND test-set. Knowing how the learner is doing
+ * on each is vital for determining bias and variance of your
+ * model.
  */
-void evaluate(iLearner* learner, const std::vector<tIO>& inputs,
-                                       std::vector<tIO>& outputs,
-                                 u32 batchSize=100);
+void evaluate(iLearner* learner, iInputTargetGenerator* generator,
+                                 iOutputCollector* collector,
+                                 u32 batchSize=1000);
 
 /**
  * Creates a visual of the learner processing the example provided.

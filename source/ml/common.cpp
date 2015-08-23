@@ -686,8 +686,7 @@ f64  recall(const tConfusionMatrix& confusionMatrix)
 }
 
 
-bool train(iLearner* learner, const std::vector<tIO>& inputs,
-                              const std::vector<tIO>& targets,
+bool train(iLearner* learner, iInputTargetGenerator* generator,
                               u32 batchSize,
                               iTrainObserver* trainObserver)
 {
@@ -750,8 +749,8 @@ bool train(iLearner* learner, const std::vector<tIO>& inputs,
     return true;
 }
 
-void evaluate(iLearner* learner, const std::vector<tIO>& inputs,
-                                       std::vector<tIO>& outputs,
+void evaluate(iLearner* learner, iInputTargetGenerator* generator,
+                                 iOutputCollector* collector,
                                  u32 batchSize)
 {
     if (inputs.size() == 0)
