@@ -913,9 +913,10 @@ tSmartStoppingWrapper::tSmartStoppingWrapper(u32 minEpochs,
     m_reset();
 }
 
-bool tSmartStoppingWrapper::didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch)
+bool tSmartStoppingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& inputs,
+                                                         const std::vector<tIO>& targets)
 {
-    return (!m_obs || m_obs->didUpdate(learner, mostRecentBatch));
+    return (!m_obs || m_obs->didUpdate(learner, inputs, targets));
 }
 
 bool tSmartStoppingWrapper::didFinishEpoch(iLearner* learner,
@@ -1009,9 +1010,10 @@ iLearner* tBestRememberingWrapper::newBestLearner() const
     return iLearner::newLearnerFromStream(&readable);
 }
 
-bool tBestRememberingWrapper::didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch)
+bool tBestRememberingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& inputs,
+                                                           const std::vector<tIO>& targets)
 {
-    return (!m_obs || m_obs->didUpdate(learner, mostRecentBatch));
+    return (!m_obs || m_obs->didUpdate(learner, inputs, targets));
 }
 
 bool tBestRememberingWrapper::didFinishEpoch(iLearner* learner,
@@ -1076,11 +1078,12 @@ tLoggingWrapper::~tLoggingWrapper()
     m_datafile.close();
 }
 
-bool tLoggingWrapper::didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch)
+bool tLoggingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& inputs,
+                                                   const std::vector<tIO>& targets)
 {
     // Nothing special to do here, so just call the super method.
     // The super method will call into the wrapped object.
-    return tBestRememberingWrapper::didUpdate(learner, mostRecentBatch);
+    return tBestRememberingWrapper::didUpdate(learner, inputs, targets);
 }
 
 bool tLoggingWrapper::didFinishEpoch(iLearner* learner,

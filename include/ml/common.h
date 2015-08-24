@@ -384,13 +384,17 @@ class iTrainObserver
 
         /**
          * This method is called by the train() function below after
-         * update() has been called on the given learner. It should
-         * return true if all is well and training should continue.
-         * It should return false if the training process should
-         * halt. This is useful if you need to cancel training
-         * due to user input, or something like that.
+         * update() has been called on the given learner. The inputs
+         * and targets passed are from the most recent batch used
+         * for training.
+         *
+         * This method should return true if all is well and training
+         * should continue. It should return false if the training
+         * process should halt. This is useful if you need to cancel
+         * training due to user input, or something like that.
          */
-        virtual bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch) = 0;
+        virtual bool didUpdate(iLearner* learner, const std::vector<tIO>& inputs,
+                                                  const std::vector<tIO>& targets) = 0;
 
         virtual ~iTrainObserver() { }
 };
@@ -534,7 +538,8 @@ class tSmartStoppingWrapper : public iEZTrainObserver
     public:
 
         // iTrainObserver interface:
-        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
+        bool didUpdate(iLearner* learner, const std::vector<tIO>& inputs,
+                                          const std::vector<tIO>& targets);
 
         // iEZTrainObserver interface:
         bool didFinishEpoch(iLearner* learner,
@@ -588,7 +593,8 @@ class tBestRememberingWrapper : public iEZTrainObserver
     public:
 
         // iTrainObserver interface:
-        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
+        bool didUpdate(iLearner* learner, const std::vector<tIO>& inputs,
+                                          const std::vector<tIO>& targets);
 
         // iEZTrainObserver interface:
         bool didFinishEpoch(iLearner* learner,
@@ -641,7 +647,8 @@ class tLoggingWrapper : public tBestRememberingWrapper
     public:
 
         // iTrainObserver interface:
-        bool didUpdate(iLearner* learner, const std::vector< std::pair<tIO,tIO> >& mostRecentBatch);
+        bool didUpdate(iLearner* learner, const std::vector<tIO>& inputs,
+                                          const std::vector<tIO>& targets);
 
         // iEZTrainObserver interface:
         bool didFinishEpoch(iLearner* learner,
