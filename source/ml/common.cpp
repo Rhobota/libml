@@ -700,14 +700,17 @@ bool train(iLearner* learner, iInputTargetGenerator* generator,
     if (batchSize == 0)
         throw eInvalidArgument("batchSize must be positive!");
 
-    std::vector< std::pair<tIO,tIO> > batch(batchSize);
+    std::vector<tIO> inputs(batchSize);
+    std::vector<tIO> targets(batchSize);
 
-    while (generator->generate(batchSize, batch) && batch.size() > 0)
+    while (generator->generate(batchSize, inputs, targets) && inputs.size() > 0)
     {
-        for (size_t i = 0; i < batch.size(); i++)
-            learner->addExample(batch[i].first, batch[i].second);
+        if (inputs.size() != targets.size())
+            throw eRuntimeError("The generator is busted. It returned a different number of inputs and targets.");
+        for (size_t i = 0; i < inputs.size(); i++)
+            learner->addExample(inputs[i], targets[i]);
         learner->update();
-        if (trainObserver && !trainObserver->didUpdate(learner, batch))
+        if (trainObserver && !trainObserver->didUpdate(learner, inputs, targets))
             return false;
     }
 
@@ -730,14 +733,17 @@ void evaluate(iLearner* learner, iInputTargetGenerator* generator,
     if (batchSize == 0)
         throw eInvalidArgument("batchSize must be positive!");
 
-    std::vector<tIO> batch(batchSize);
+    std::vector<tIO> inputs(batchSize);
+    std::vector<tIO> targets(batchSize);
     std::vector<tIO> outputs;
 
-    while (generator->generate(batchSize, batch) && batch.size() > 0)
+    while (generator->generate(batchSize, inputs, targets) && inputs.size() > 0)
     {
-        outputs.resize(batch.size());
-        learner->evaluateBatch(batch.begin(),
-                               batch.end(),
+        if (inputs.size() != targets.size())
+            throw eRuntimeError("The generator is busted. It returned a different number of inputs and targets.");
+        outputs.resize(inputs.size());
+        learner->evaluateBatch(inputs.begin(),
+                               inputs.end(),
                                outputs.begin());
     }
 }

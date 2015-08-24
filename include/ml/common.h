@@ -290,16 +290,18 @@ class iInputTargetGenerator
          * The requester passes 'count' as the maximum it wants to receive.
          * You should return 'count' input/target pairs unless you've reached
          * the end of this epoch (in which case you may return less). If you
-         * return less than 'count', be sure to resize 'fillme' so that it
-         * contains the correct number of input/target pairs.
+         * return less than 'count', be sure to resize 'fillmeInputs' and
+         * 'fillmeTargets' so that they contains the correct number of
+         * input/target pairs.
          */
-        virtual bool generate(u32 count, std::vector< std::pair<tIO,tIO> >& fillme) = 0;
+        virtual bool generate(u32 count, std::vector<tIO>& fillmeInputs,
+                                         std::vector<tIO>& fillmeTargets) = 0;
 
         /**
          * This method is the same as generate() above, except it is used
          * when the target values are not needed.
          */
-        virtual bool generate(u32 count, std::vector<tIO>& fillme) = 0;
+        virtual bool generate(u32 count, std::vector<tIO>& fillmeInputs) = 0;
 
         /**
          * This method is called between epochs. When called, you should shuffle
