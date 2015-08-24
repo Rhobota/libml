@@ -809,7 +809,7 @@ void visualize(iLearner* learner, const tIO& example,
 
 u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
                                 iInputTargetGenerator* testSetGenerator,
-                                u32 batchSize,
+                                u32 batchSize, u32 evaluationInterval,
                                 iEZTrainObserver* trainObserver)
 {
     if (!learner)
@@ -823,6 +823,9 @@ u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
 
     if (batchSize == 0)
         throw eInvalidArgument("batchSize must be positive!");
+
+    if (evaluationInterval == 0)
+        throw eInvalidArgument("evaluationInterval must be positive!");
 
     u64 trainStartTime = sync::tTimer::usecTime();
 
@@ -839,6 +842,7 @@ u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
             if (! train(learner, trainingSetGenerator,
                         batchSize, trainObserver))
             {
+                trainingSetGenerator->restart();
                 if (trainObserver)
                 {
                     f64 trainElapsedTime = (f64)(sync::tTimer::usecTime() - trainStartTime);
@@ -854,7 +858,7 @@ u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
         }
 
         // Call the epoch observer.
-        if (trainObserver)
+        if (trainObserver && ((epochs % evaluationInterval) == 0))
         {
             // Get the evaluation method used by this learner.
             iOutputPerformanceEvaluator* evaluator = learner->getOutputPerformanceEvaluator();
@@ -1113,6 +1117,7 @@ bool tLoggingWrapper::didFinishEpoch(iLearner* learner,
     }
 
     // Print the training and test performance to the human-readable log.
+    m_logfile << "Epochs completed:     " << epochsCompleted << std::endl;
     m_logfile << "Train performance:    " << trainingSetPerformance << std::endl;
     m_logfile << "Test performance:     " << testSetPerformance << std::endl;
     m_logfile << "Epoch train time:     " << epochTrainTimeInSeconds << " seconds" << std::endl;

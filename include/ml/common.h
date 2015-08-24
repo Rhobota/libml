@@ -481,9 +481,9 @@ class iEZTrainObserver : public iTrainObserver
  * for as many epochs are needed by calling the train()
  * function above to train the learner on each epoch. This
  * function takes a train observer which it notifies (if not
- * null) after each epoch with the most recent training results.
- * This function will not return until the observer indicates
- * that training can halt.
+ * null) every 'evaluationInterval' epochs with the most recent
+ * training results. This function will not return until the
+ * observer indicates that training can halt.
  *
  * This function returns the number of epochs of training which
  * were completed.
@@ -493,7 +493,7 @@ class iEZTrainObserver : public iTrainObserver
  */
 u32  ezTrain(iLearner* learner, iInputTargetGenerator* trainingSetGenerator,
                                 iInputTargetGenerator* testSetGenerator,
-                                u32 batchSize,
+                                u32 batchSize, u32 evaluationInterval,
                                 iEZTrainObserver* trainObserver = NULL);
 
 
