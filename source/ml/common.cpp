@@ -745,6 +745,7 @@ void evaluate(iLearner* learner, iInputTargetGenerator* generator,
         learner->evaluateBatch(inputs.begin(),
                                inputs.end(),
                                outputs.begin());
+        collector->receivedOutput(inputs, targets, outputs);
     }
 }
 

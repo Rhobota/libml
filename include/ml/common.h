@@ -328,8 +328,9 @@ class iOutputCollector
          * This method is called after every batch is evaluated.
          * It contains the inputs, targets, and outputs of the batch.
          */
-        virtual void receivedOutput(const std::vector< std::pair<tIO,tIO> >& inputTargetPairs,
-                                    const std::vector<               tIO  >& outputs) = 0;
+        virtual void receivedOutput(const std::vector<tIO>& inputs,
+                                    const std::vector<tIO>& targets,
+                                    const std::vector<tIO>& outputs) = 0;
 
         virtual ~iOutputCollector() { }
 };
