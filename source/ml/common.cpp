@@ -702,10 +702,13 @@ bool train(iLearner* learner, iInputTargetGenerator* generator,
     std::vector<tIO> inputs(batchSize);
     std::vector<tIO> targets(batchSize);
 
-    while (generator->generate(batchSize, inputs, targets) && inputs.size() > 0)
+    while (true)
     {
+        generator->generate(batchSize, inputs, targets);
         if (inputs.size() != targets.size())
             throw eRuntimeError("The generator is busted. It returned a different number of inputs and targets.");
+        if (inputs.size() == 0)
+            break;
         for (size_t i = 0; i < inputs.size(); i++)
             learner->addExample(inputs[i], targets[i]);
         learner->update();
@@ -736,10 +739,13 @@ void evaluate(iLearner* learner, iInputTargetGenerator* generator,
     std::vector<tIO> targets(batchSize);
     std::vector<tIO> outputs;
 
-    while (generator->generate(batchSize, inputs, targets) && inputs.size() > 0)
+    while (true)
     {
+        generator->generate(batchSize, inputs, targets);
         if (inputs.size() != targets.size())
             throw eRuntimeError("The generator is busted. It returned a different number of inputs and targets.");
+        if (inputs.size() == 0)
+            break;
         outputs.resize(inputs.size());
         learner->evaluateBatch(inputs.begin(),
                                inputs.end(),
