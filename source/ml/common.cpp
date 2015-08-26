@@ -6,7 +6,6 @@
 #include <rho/img/tCanvas.h>
 #include <rho/sync/tTimer.h>
 
-#include <cassert>
 #include <limits>
 #include <iomanip>
 #include <sstream>
@@ -1117,7 +1116,7 @@ bool tLoggingWrapper::didFinishEpoch(iLearner* learner,
     }
 
     // Print the training and test performance to the human-readable log.
-    m_logfile << "Epochs completed:     " << epochsCompleted << std::endl;
+    m_logfile << "Epoch " << epochsCompleted << std::endl;
     m_logfile << "Train performance:    " << trainingSetPerformance << std::endl;
     m_logfile << "Test performance:     " << testSetPerformance << std::endl;
     m_logfile << "Epoch train time:     " << epochTrainTimeInSeconds << " seconds" << std::endl;

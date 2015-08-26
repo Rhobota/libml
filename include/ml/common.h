@@ -7,6 +7,7 @@
 
 #include <rho/img/tImage.h>
 
+#include <cassert>
 #include <cmath>
 #include <fstream>
 #include <vector>
@@ -376,6 +377,74 @@ class iOutputPerformanceEvaluator : public iOutputCollector
          * this method could also be called "forget".
          */
         virtual void reset() = 0;
+};
+
+class tOutputPerformanceEvaluatorClassificationError : public iOutputPerformanceEvaluator
+{
+    public:
+
+        tOutputPerformanceEvaluatorClassificationError()
+        {
+            reset();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // iOutputCollector interface:
+        ///////////////////////////////////////////////////////////////////////
+
+        void receivedOutput(const std::vector<tIO>& inputs,
+                            const std::vector<tIO>& targets,
+                            const std::vector<tIO>& outputs)
+        {
+            assert(inputs.size() == targets.size());
+            assert(targets.size() == outputs.size());
+
+            for (size_t i = 0; i < outputs.size(); i++)
+            {
+                assert(outputs[i].size() == targets[i].size());
+
+                u32 outputClass = un_examplify(outputs[i]);
+                u32 targetClass = un_examplify(targets[i]);
+
+                if (outputClass != targetClass)
+                    ++m_errors;
+                ++m_total;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // iOutputPerformanceEvaluator interface:
+        ///////////////////////////////////////////////////////////////////////
+
+        std::string evaluationMethodName()
+        {
+            return "Classification Error Rate";
+        }
+
+        f64 calculatePerformance()
+        {
+            if (m_total == 0)
+                throw eRuntimeError("Cannot calculate performance on zero examples.");
+            f64 error = m_errors;
+            error /= m_total;
+            return error;
+        }
+
+        bool isPositivePerformanceGood()
+        {
+            return false;
+        }
+
+        void reset()
+        {
+            m_errors = 0;
+            m_total = 0;
+        }
+
+    private:
+
+        u32 m_errors;
+        u32 m_total;
 };
 
 class iTrainObserver
