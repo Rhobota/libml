@@ -7,9 +7,11 @@
 
 #include <rho/img/tImage.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <fstream>
+#include <utility>
 #include <vector>
 
 
@@ -378,6 +380,10 @@ class iOutputPerformanceEvaluator : public iOutputCollector
         virtual void reset() = 0;
 };
 
+/**
+ * This class assumes you're doing classification. Any number of classes is fine.
+ * It calculates the classicition error rate.
+ */
 class tOutputPerformanceEvaluatorClassificationError : public iOutputPerformanceEvaluator
 {
     public:
@@ -401,6 +407,7 @@ class tOutputPerformanceEvaluatorClassificationError : public iOutputPerformance
             for (size_t i = 0; i < outputs.size(); i++)
             {
                 assert(outputs[i].size() == targets[i].size());
+                assert(outputs[i].size() > 0);
 
                 u32 outputClass = un_examplify(outputs[i]);
                 u32 targetClass = un_examplify(targets[i]);
@@ -444,6 +451,107 @@ class tOutputPerformanceEvaluatorClassificationError : public iOutputPerformance
 
         u32 m_errors;
         u32 m_total;
+};
+
+/**
+ * This class assumes you're doing binary classification, and it is used
+ * to calculate the Area Under the ROC Curve (AUC).
+ *
+ * It works in two modes (it automatically detects each mode).
+ *
+ * The first mode is where the model outputs a single fml value in [0,1].
+ * As you hopefully expect, that value indicates a probability of being
+ * in the positive class. I.e. 0 is a sure negative case and 1 is sure positive
+ * case.
+ *
+ * The second mode is where the model outputs two fml values. The first value
+ * is the probability of a negative case, and the second value is the probability
+ * of a positive case. Typically these two values will sum to 1, but the code below
+ * doesn't require that to be true.
+ */
+class tOutputPerformanceEvaluatorAUC : public iOutputPerformanceEvaluator
+{
+    public:
+
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        // iOutputCollector interface:
+        /////////////////////////////////////////////////////////////////////////////////////////////
+
+        void receivedOutput(const std::vector<tIO>& inputs,
+                            const std::vector<tIO>& targets,
+                            const std::vector<tIO>& outputs)
+        {
+            assert(inputs.size() == targets.size());
+            assert(targets.size() == outputs.size());
+
+            for (size_t i = 0; i < targets.size(); i++)
+            {
+                assert(targets[i].size() == outputs[i].size());
+                assert(outputs[i].size() == 1 || outputs[i].size() == 2);
+
+                if (outputs[i].size() == 1)
+                {
+                    u32 target = (u32) std::round(targets[i][0]);
+                    fml output = outputs[i][0];
+                    m_predictions.push_back(std::make_pair(output, target));
+                }
+                else  // outputs[i].size() == 2
+                {
+                    u32 target = un_examplify(targets[i]);
+                    fml output = outputs[i][1] / (outputs[i][0] + outputs[i][1]);
+                    m_predictions.push_back(std::make_pair(output, target));
+                }
+            }
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        // iOutputPerformanceEvaluator interface:
+        /////////////////////////////////////////////////////////////////////////////////////////////
+
+        std::string evaluationMethodName()
+        {
+            return "AUC";
+        }
+
+        f64 calculatePerformance()
+        {
+            std::sort(m_predictions.begin(), m_predictions.end());
+
+            u32 numPos = 0;
+            for (size_t i = 0; i < m_predictions.size(); i++)
+                if (m_predictions[i].second == 1)
+                    numPos += 1;
+
+            u32 tp = numPos;
+            u64 coveredArea = 0;
+            u64 maxArea = 0;
+            for (size_t i = 0; i < m_predictions.size(); i++)
+            {
+                if (m_predictions[i].second == 1)
+                    tp -= 1;
+                else
+                {
+                    coveredArea += tp;
+                    maxArea += numPos;
+                }
+            }
+
+            return ((f64)coveredArea) / maxArea;
+        }
+
+        bool isPositivePerformanceGood()
+        {
+            return true;
+        }
+
+        void reset()
+        {
+            m_predictions.clear();
+        }
+
+    private:
+
+        std::vector< std::pair<fml,u32> > m_predictions;
 };
 
 class iTrainObserver
