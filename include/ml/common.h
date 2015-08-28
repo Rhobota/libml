@@ -491,7 +491,7 @@ class tOutputPerformanceEvaluatorAUC : public iOutputPerformanceEvaluator
 
                 if (outputs[i].size() == 1)
                 {
-                    u32 target = (u32) std::round(targets[i][0]);
+                    u32 target = (u32) round(targets[i][0]);
                     fml output = outputs[i][0];
                     m_predictions.push_back(std::make_pair(output, target));
                 }
@@ -536,7 +536,7 @@ class tOutputPerformanceEvaluatorAUC : public iOutputPerformanceEvaluator
                 }
             }
 
-            return ((f64)coveredArea) / maxArea;
+            return ((f64)coveredArea) / ((f64)maxArea);
         }
 
         bool isPositivePerformanceGood()
