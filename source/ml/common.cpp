@@ -33,7 +33,7 @@ u32 un_examplify(const tIO& output, fml* error)
         if (output[i] > output[maxindex])
             maxindex = (u32)i;
     if (error)
-        *error = standardSquaredError(output, examplify(maxindex, (u32)output.size()));
+        *error = squaredError(output, examplify(maxindex, (u32)output.size()));
     return maxindex;
 }
 
@@ -250,7 +250,7 @@ void zscore(std::vector<tIO>& trainingInputs, std::vector<tIO>& testInputs)
 }
 
 
-fml standardSquaredError(const tIO& output, const tIO& target)
+fml squaredError(const tIO& output, const tIO& target)
 {
     if (output.size() != target.size())
         throw eInvalidArgument(
@@ -263,8 +263,8 @@ fml standardSquaredError(const tIO& output, const tIO& target)
     return FML(0.5) * error;
 }
 
-fml standardSquaredError(const std::vector<tIO>& outputs,
-                         const std::vector<tIO>& targets)
+fml meanSquaredError(const std::vector<tIO>& outputs,
+                     const std::vector<tIO>& targets)
 {
     if (outputs.size() != targets.size())
     {
@@ -293,7 +293,7 @@ fml standardSquaredError(const std::vector<tIO>& outputs,
 
     fml error = 0.0;
     for (size_t i = 0; i < outputs.size(); i++)
-        error += standardSquaredError(outputs[i], targets[i]);
+        error += squaredError(outputs[i], targets[i]);
     return error / ((fml)outputs.size());
 }
 
@@ -367,7 +367,7 @@ fml crossEntropyCost(const std::vector<tIO>& outputs,
 fml rmsError(const std::vector<tIO>& outputs,
              const std::vector<tIO>& targets)
 {
-    fml sqrdError = standardSquaredError(outputs, targets);
+    fml sqrdError = meanSquaredError(outputs, targets);
     return std::sqrt(sqrdError * FML(2.0) / ((fml)outputs[0].size()));
 }
 

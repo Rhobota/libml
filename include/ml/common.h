@@ -69,12 +69,12 @@ tIO examplify(u32 highDimension, u32 numDimensions);
  * It does so by determining which dimension has the highest
  * value, and returns the index to that dimension.
  *
- * If 'error' is not NULL, the std squared error between the given
- * output and the "correct" output is calculated and stored in 'error'.
+ * If 'error' is not NULL, the squared error between the given output
+ * and the "correct" output is calculated and stored in 'error'.
  * The "correct" output is obtained by calling the examplify()
  * function above. The assumption is made that the returned
  * index for the highest dimension is correct, thus the method
- * calculates the standard error between the given output and
+ * calculates the squared error between the given output and
  * the "correct" output.
  *
  * This is useful for evaluating the output of a classifier.
@@ -152,17 +152,17 @@ void zscore(std::vector<tIO>& trainingInputs,
 //////////////////////////////////////////////////////////////////////
 
 /**
- * Calculates and returns the standard squared error between the given
+ * Calculates and returns the squared error between the given
  * output and the given target.
  */
-fml standardSquaredError(const tIO& output, const tIO& target);
+fml squaredError(const tIO& output, const tIO& target);
 
 /**
- * Calculates the average standard squared error between each output/target
+ * Calculates the mean squared error between each output/target
  * pair.
  */
-fml standardSquaredError(const std::vector<tIO>& outputs,
-                         const std::vector<tIO>& targets);
+fml meanSquaredError(const std::vector<tIO>& outputs,
+                     const std::vector<tIO>& targets);
 
 /**
  * Calculates and returns the cross-entropy cost between the given
@@ -364,7 +364,7 @@ class iOutputPerformanceEvaluator : public iOutputCollector
          * E.g. If the performance metric is AUC, this method should
          * return true.
          *
-         * E.g. If the performance metric is average standard squared
+         * E.g. If the performance metric is average mean squared
          * error, this method should return false. Because for the
          * squared error metric, decreasing values indicate better
          * performance.
