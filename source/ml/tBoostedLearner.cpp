@@ -170,6 +170,7 @@ void tBoostedLearner::printLearnerInfo(std::ostream& out) const
 
     for (size_t i = 0; i < m_learners.size(); i++)
     {
+        out << "Weak learner #" << i+1 << " (weight=" << m_learners[i].second << "):" << std::endl;
         m_learners[i].first->printLearnerInfo(out);
         out << std::endl;
     }
