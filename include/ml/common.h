@@ -406,7 +406,7 @@ class tOutputPerformanceEvaluatorMeanSquaredError : public iOutputPerformanceEva
 
             for (size_t i = 0; i < outputs.size(); i++)
             {
-                m_errorSum += squaredError(outputs[i], targets[i]);
+                m_errorSum += (f64) squaredError(outputs[i], targets[i]);
                 ++m_numExamples;
             }
         }
