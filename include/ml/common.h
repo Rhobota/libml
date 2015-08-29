@@ -381,8 +381,74 @@ class iOutputPerformanceEvaluator : public iOutputCollector
 };
 
 /**
+ * This class calculates the mean squared error of the outputs. Any dimensionality
+ * of the outputs is fine.
+ */
+class tOutputPerformanceEvaluatorMeanSquaredError : public iOutputPerformanceEvaluator
+{
+    public:
+
+        tOutputPerformanceEvaluatorMeanSquaredError()
+        {
+            reset();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // iOutputCollector interface:
+        ///////////////////////////////////////////////////////////////////////
+
+        void receivedOutput(const std::vector<tIO>& inputs,
+                            const std::vector<tIO>& targets,
+                            const std::vector<tIO>& outputs)
+        {
+            assert(inputs.size() == targets.size());
+            assert(targets.size() == outputs.size());
+
+            for (size_t i = 0; i < outputs.size(); i++)
+            {
+                m_errorSum += squaredError(outputs[i], targets[i]);
+                ++m_numExamples;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // iOutputPerformanceEvaluator interface:
+        ///////////////////////////////////////////////////////////////////////
+
+        std::string evaluationMethodName()
+        {
+            return "Mean Squared Error";
+        }
+
+        f64 calculatePerformance()
+        {
+            if (m_numExamples == 0)
+                throw eRuntimeError("Cannot calculate performance on zero examples.");
+            f64 error = m_errorSum;
+            error /= m_numExamples;
+            return error;
+        }
+
+        bool isPositivePerformanceGood()
+        {
+            return false;
+        }
+
+        void reset()
+        {
+            m_errorSum = 0.0;
+            m_numExamples = 0;
+        }
+
+    private:
+
+        f64 m_errorSum;
+        u32 m_numExamples;
+};
+
+/**
  * This class assumes you're doing classification. Any number of classes is fine.
- * It calculates the classicition error rate.
+ * It calculates the classification error rate.
  */
 class tOutputPerformanceEvaluatorClassificationError : public iOutputPerformanceEvaluator
 {
