@@ -132,6 +132,13 @@ void tCnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
             break;
         }
 
+        case kLayerTypeReLU:
+        {
+            tReLUFunc func;
+            thrust::transform(A, A+numOutputDims*count, a, func);
+            break;
+        }
+
         default:
         {
             throw eRuntimeError("Unknown layer type");
@@ -208,6 +215,13 @@ void tCnnLayerGPU::takeOutputErrorGradients(
         case kLayerTypeHyperbolic:
         {
             tMultWithDirHyperbolicFunc func;
+            thrust::transform(da, da + numOutputDims*outputCount, A, dA, func);
+            break;
+        }
+
+        case kLayerTypeReLU:
+        {
+            tMultWithDirReLUFunc func;
             thrust::transform(da, da + numOutputDims*outputCount, A, dA, func);
             break;
         }

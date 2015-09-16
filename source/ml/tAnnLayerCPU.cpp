@@ -117,6 +117,13 @@ void tAnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
             break;
         }
 
+        case kLayerTypeReLU:
+        {
+            tReLUFunc func;
+            a = A.unaryExpr(func);
+            break;
+        }
+
         default:
         {
             throw eRuntimeError("Unknown layer type");
@@ -194,6 +201,13 @@ void tAnnLayerCPU::takeOutputErrorGradients(
         case kLayerTypeHyperbolic:
         {
             tDirHyperbolicFunc func;
+            dA = (da.array() * A.unaryExpr(func).array()).matrix();
+            break;
+        }
+
+        case kLayerTypeReLU:
+        {
+            tDirReLUFunc func;
             dA = (da.array() * A.unaryExpr(func).array()).matrix();
             break;
         }

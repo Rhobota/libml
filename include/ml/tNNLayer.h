@@ -28,8 +28,9 @@ class tNNLayer : public iLayer, public bNonCopyable
         enum nLayerType {
             kLayerTypeLogistic      = 0, // the logistic function
             kLayerTypeHyperbolic    = 1, // the hyperbolic tangent function
-            kLayerTypeSoftmax       = 2, // a softmax group
-            kLayerTypeMax           = 3  // marks the max of this enum (do not use)
+            kLayerTypeReLU          = 2, // the Rectified Linear Unit (ReLU)
+            kLayerTypeSoftmax       = 3, // a softmax group
+            kLayerTypeMax           = 4  // marks the max of this enum (do not use)
         };
 
         static std::string layerTypeToString(nLayerType type);

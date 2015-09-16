@@ -15,6 +15,8 @@ std::string tNNLayer::layerTypeToString(nLayerType type)
             return "logistic";
         case kLayerTypeHyperbolic:
             return "hyperbolic";
+        case kLayerTypeReLU:
+            return "ReLU";
         case kLayerTypeSoftmax:
             return "softmax";
         default:
@@ -31,6 +33,8 @@ char tNNLayer::layerTypeToChar(nLayerType type)
             return 'l';
         case kLayerTypeHyperbolic:
             return 'h';
+        case kLayerTypeReLU:
+            return 'r';
         case kLayerTypeSoftmax:
             return 's';
         default:
