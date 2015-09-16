@@ -127,6 +127,54 @@ fml hyperbolic_function_max()
 }
 
 
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
+#endif
+fml relu_function(fml z)
+{
+    if (z > FML(0.0))
+        return z;
+    return z * FML(0.001);
+}
+
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
+#endif
+fml derivative_of_relu_function(fml z)
+{
+    if (z > FML(0.0))
+        return FML(1.0);
+    return FML(0.001);
+}
+
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
+#endif
+fml inverse_of_relu_function(fml y)
+{
+    // This function isn't invertible. But this is close...
+    // I want to throw an exception here, but you can't throw
+    // exceptions in GPU code.
+    return relu_function(y);
+}
+
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
+#endif
+fml relu_function_min()
+{
+    return FML(0.0);
+}
+
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
+#endif
+fml relu_function_max()
+{
+    return INFINITY;
+}
+
+
 class tExpFunc
 {
     public:
@@ -179,6 +227,28 @@ class tDirHyperbolicFunc
 __host__ __device__
 #endif
         fml operator()(fml val) const { return derivative_of_hyperbolic_function(val); }
+};
+
+
+class tReLUFunc
+{
+    public:
+
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
+#endif
+        fml operator()(fml val) const { return relu_function(val); }
+};
+
+
+class tDirReLUFunc
+{
+    public:
+
+#ifdef ENABLE_DEVICE_FUNCTIONS
+__host__ __device__
+#endif
+        fml operator()(fml val) const { return derivative_of_relu_function(val); }
 };
 
 
@@ -295,6 +365,18 @@ class tMultWithDirHyperbolicFunc
         fml operator()(const fml& a, const fml& b)
         {
             return a * derivative_of_hyperbolic_function(b);
+        }
+};
+
+
+class tMultWithDirReLUFunc
+{
+    public:
+
+        __host__ __device__
+        fml operator()(const fml& a, const fml& b)
+        {
+            return a * derivative_of_relu_function(b);
         }
 };
 
