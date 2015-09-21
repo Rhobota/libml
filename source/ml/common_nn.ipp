@@ -152,10 +152,9 @@ __host__ __device__
 #endif
 fml inverse_of_relu_function(fml y)
 {
-    // This function isn't invertible. But this is close...
-    // I want to throw an exception here, but you can't throw
-    // exceptions in GPU code.
-    return relu_function(y);
+    if (y > FML(0.0))
+        return y;
+    return y / FML(0.001);
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
@@ -163,7 +162,7 @@ __host__ __device__
 #endif
 fml relu_function_min()
 {
-    return FML(0.0);
+    return -(INFINITY);
 }
 
 #ifdef ENABLE_DEVICE_FUNCTIONS
