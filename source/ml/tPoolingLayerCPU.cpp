@@ -35,7 +35,8 @@ tPoolingLayerCPU::~tPoolingLayerCPU()
     delete [] m_prev_da;    m_prev_da = NULL;
 }
 
-void tPoolingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tPoolingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count,
+                                 bool isTrainMode, iLayer* prevLayer)
 {
     if (!input)
         throw eInvalidArgument("input may not be null!");

@@ -37,7 +37,8 @@ tPoolingLayerGPU::~tPoolingLayerGPU()
     s_cudaFree(m_gpu_prev_da);
 }
 
-void tPoolingLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tPoolingLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count,
+                                 bool isTrainMode, iLayer* prevLayer)
 {
     if (!input)
         throw eInvalidArgument("input may not be null!");

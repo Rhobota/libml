@@ -36,7 +36,8 @@ tSplittingLayerCPU::~tSplittingLayerCPU()
     m_layerRecords.clear();
 }
 
-void tSplittingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tSplittingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count,
+                                   bool isTrainMode, iLayer* prevLayer)
 {
     if (!input)
         throw eInvalidArgument("input may not be null!");
@@ -94,7 +95,8 @@ void tSplittingLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count
     for (size_t i = 0; i < m_layerRecords.size(); i++)
     {
         tLayerRecord& rec = m_layerRecords[i];
-        rec.layer->takeInput(rec.inputPtr, rec.numInputDims, count);
+        rec.layer->takeInput(rec.inputPtr, rec.numInputDims, count,
+                             isTrainMode, prevLayer);
     }
 
     fml* output = m_a;

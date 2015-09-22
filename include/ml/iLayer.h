@@ -25,8 +25,16 @@ class iLayer : public iPackable
          * in column-major order, where each column is a single example. Therefore,
          * 'numInputDims' denotes the number of rows in the matrix, and 'count'
          * denotes the number of columns in the matrix.
+         *
+         * The layer knows if this input is for training based on the 'isTrainMode'
+         * parameter. (Some layers do different things in train vs test mode.)
+         *
+         * A pointer to the previous layer is passed just for fun, in case the
+         * layer wants to probe it for some reason. It will be NULL if this is
+         * the first layer.
          */
-        virtual void takeInput(const fml* input, u32 numInputDims, u32 count) = 0;
+        virtual void takeInput(const fml* input, u32 numInputDims, u32 count,
+                               bool isTrainMode, iLayer* prevLayer) = 0;
 
         /**
          * Obtains the output of this layer. The output will reflect the output

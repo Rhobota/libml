@@ -33,7 +33,8 @@ class tScalingLayerCPU : public tScalingLayerBase
         // The iLayer interface:   (partial interface only)
         ///////////////////////////////////////////////////////////////////////
 
-        void takeInput(const fml* input, u32 numInputDims, u32 count);
+        void takeInput(const fml* input, u32 numInputDims, u32 count,
+                       bool isTrainMode, iLayer* prevLayer);
 
         const fml* getOutput(u32& numOutputDims, u32& count) const;
 

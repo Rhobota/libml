@@ -50,7 +50,7 @@ void test1(const tTest& t, u32 numInputDims, u32 numOutputDims, ml::iLayer* laye
                 t.assert(index == numOutputDims);
             }
 
-            layer->takeInput(input, numInputDims, count);
+            layer->takeInput(input, numInputDims, count, false, NULL);
 
             u32 retNumOutputDims = 0, retCount = 0;
             const fml* output = layer->getOutput(retNumOutputDims, retCount);
@@ -207,7 +207,7 @@ void test2(const tTest& t, u32 numInputDims, const std::vector<u32>& layerInfo, 
                 t.assert(layerInfo.size() == numOutputDims);
             }
 
-            layer->takeInput(input, numInputDims, count);
+            layer->takeInput(input, numInputDims, count, false, NULL);
 
             u32 retNumOutputDims = 0, retCount = 0;
             const fml* output = layer->getOutput(retNumOutputDims, retCount);

@@ -40,7 +40,7 @@ void test(const tTest& t, u32 numInputDims, u32 numOutputDims, ml::iLayer* layer
                 correctOutput[c] = sum;
             }
 
-            layer->takeInput(input, numInputDims, count);
+            layer->takeInput(input, numInputDims, count, false, NULL);
 
             u32 retNumOutputDims = 0, retCount = 0;
             const fml* output = layer->getOutput(retNumOutputDims, retCount);

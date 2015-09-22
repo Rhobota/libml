@@ -66,7 +66,8 @@ tReductionLayerGPU::~tReductionLayerGPU()
     s_cudaFree(m_gpu_inputErrorGradients);
 }
 
-void tReductionLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tReductionLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count,
+                                   bool isTrainMode, iLayer* prevLayer)
 {
     if (!input)
         throw eInvalidArgument("input may not be null!");

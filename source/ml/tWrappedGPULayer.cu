@@ -53,7 +53,8 @@ std::string tWrappedGPULayer::layerInfoString() const
     return m_wrappedLayer->layerInfoString();
 }
 
-void tWrappedGPULayer::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tWrappedGPULayer::takeInput(const fml* input, u32 numInputDims, u32 count,
+                                 bool isTrainMode, iLayer* prevLayer)
 {
     if (!input)
         throw eInvalidArgument("input may not be null!");
@@ -83,7 +84,8 @@ void tWrappedGPULayer::takeInput(const fml* input, u32 numInputDims, u32 count)
     m_curCount = count;
 
     s_cudaCopyHostToDevice(m_gpu_input, input, numInputDims*count);
-    m_wrappedLayer->takeInput(m_gpu_input, numInputDims, count);
+    m_wrappedLayer->takeInput(m_gpu_input, numInputDims, count,
+                              isTrainMode, prevLayer);
 
     u32 retNumOutputDims = 0, retCount = 0;
     const fml* gpu_output = m_wrappedLayer->getOutput(retNumOutputDims, retCount);

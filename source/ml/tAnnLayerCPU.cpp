@@ -49,7 +49,8 @@ tAnnLayerCPU::~tAnnLayerCPU()
 }
 
 
-void tAnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tAnnLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count,
+                             bool isTrainMode, iLayer* prevLayer)
 {
     if (!input)
         throw eInvalidArgument("The input matrix may not be null.");

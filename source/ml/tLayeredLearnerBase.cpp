@@ -243,8 +243,8 @@ void tLayeredLearnerBase::m_pushInputForward(const fml* input, u32 numInputDims,
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot push input when there are no layers!");
 
-    m_layers[0]->takeInput(input, numInputDims,
-                           inputCount);
+    m_layers[0]->takeInput(input, numInputDims, inputCount,
+                           isTrainMode, NULL);
 
     u32 prevOutDims, prevCount;
     const fml* prevOutput = NULL;
@@ -252,7 +252,8 @@ void tLayeredLearnerBase::m_pushInputForward(const fml* input, u32 numInputDims,
     for (size_t i = 1; i < m_layers.size(); i++)
     {
         prevOutput = m_layers[i-1]->getOutput(prevOutDims, prevCount);
-        m_layers[i]->takeInput(prevOutput, prevOutDims, prevCount);
+        m_layers[i]->takeInput(prevOutput, prevOutDims, prevCount,
+                               isTrainMode, m_layers[i-1]);
     }
 
     prevOutput = m_layers.back()->getOutput(prevOutDims, prevCount);

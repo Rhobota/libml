@@ -36,7 +36,7 @@ void test(const tTest& t, u32 numInputDims, u32 numOutputDims, fml scaleFactor, 
                 for (u32 o = 0; o < numOutputDims; o++)
                     correctOutput[c*numOutputDims + o] = input[c*numOutputDims + o] * scaleFactor;
 
-            layer->takeInput(input, numInputDims, count);
+            layer->takeInput(input, numInputDims, count, false, NULL);
 
             u32 retNumOutputDims = 0, retCount = 0;
             const fml* output = layer->getOutput(retNumOutputDims, retCount);

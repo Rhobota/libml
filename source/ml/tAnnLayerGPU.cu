@@ -66,7 +66,8 @@ tAnnLayerGPU::~tAnnLayerGPU()
 }
 
 
-void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count,
+                             bool isTrainMode, iLayer* prevLayer)
 {
     cublasHandle_t* cublasHandle = (cublasHandle_t*)m_cublasContext;
 

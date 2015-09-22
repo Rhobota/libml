@@ -38,7 +38,8 @@ tDropoutLayerCPU::~tDropoutLayerCPU()
     delete [] m_dropMask;               m_dropMask = NULL;
 }
 
-void tDropoutLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tDropoutLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count,
+                                 bool isTrainMode, iLayer* prevLayer)
 {
     if (!input)
         throw eInvalidArgument("input may not be null!");
