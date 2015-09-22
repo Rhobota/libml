@@ -8,9 +8,8 @@ namespace ml
 static
 fml s_bernoulli(algo::iLCG& lcg, fml p)
 {
-    fml val = lcg.next();
-    val /= (lcg.randMax() + 1);
-    return (val < p) ? FML(1.0) : FML(0.0);
+    u64 cutoff = (u64) ceil(((fml)(lcg.randMax() + 1)) * p);
+    return (lcg.next() < cutoff) ? FML(1.0) : FML(0.0);
 }
 
 

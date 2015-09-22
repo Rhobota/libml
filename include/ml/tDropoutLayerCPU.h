@@ -3,6 +3,7 @@
 
 
 #include <ml/tDropoutLayerBase.h>
+#include <rho/algo/tLCG.h>
 
 
 namespace ml
