@@ -55,6 +55,7 @@ class tDropoutLayerBase : public iLayer, public bNonCopyable
         u32 m_numOutputDims;
 
         fml m_p;
+        bool m_trainMode;
 
         u32 m_curCount;
         u32 m_maxCount;

@@ -9,8 +9,7 @@ tDropoutLayerCPU::tDropoutLayerCPU()
     : tDropoutLayerBase(),
       m_output(NULL),
       m_inputErrorGradients(NULL),
-      m_dropMask(NULL),
-      m_trainMode(true)
+      m_dropMask(NULL)
 {
 }
 
@@ -18,8 +17,7 @@ tDropoutLayerCPU::tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, fml p)
     : tDropoutLayerBase(numInputDims, numOutputDims, p),
       m_output(NULL),
       m_inputErrorGradients(NULL),
-      m_dropMask(NULL),
-      m_trainMode(true)
+      m_dropMask(NULL)
 {
 }
 
@@ -165,7 +163,6 @@ u32 tDropoutLayerCPU::headerId() const
 void tDropoutLayerCPU::reset()
 {
     tDropoutLayerBase::reset();
-    m_trainMode = true;
 }
 
 void tDropoutLayerCPU::pack(iWritable* out) const
@@ -176,7 +173,6 @@ void tDropoutLayerCPU::pack(iWritable* out) const
 void tDropoutLayerCPU::unpack(iReadable* in)
 {
     tDropoutLayerBase::unpack(in);
-    m_trainMode = true;
 }
 
 
