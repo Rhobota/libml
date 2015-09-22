@@ -58,6 +58,8 @@ class tWrappedGPULayer : public iLayer, public bNonCopyable
 
         u32 headerId() const;
 
+        bool doesLearn() const { return m_wrappedLayer->doesLearn(); }
+
 
         ///////////////////////////////////////////////////////////////////////
         // The iPackable interface:

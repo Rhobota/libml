@@ -47,6 +47,8 @@ class tSplittingLayerBase : public iLayer, public bNonCopyable
 
         std::string layerInfoString() const;
 
+        bool doesLearn() const { for (size_t i = 0; i < m_layerRecords.size(); i++) if (m_layerRecords[i].layer->doesLearn()) return true; return false; }
+
 
         ///////////////////////////////////////////////////////////////////////
         // The iPackable interface:

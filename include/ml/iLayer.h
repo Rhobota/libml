@@ -115,6 +115,18 @@ class iLayer : public iPackable
          */
         virtual u32 headerId() const = 0;
 
+        /**
+         * This method should return true if this layer actually learns
+         * things. It should return false if this layer is static and
+         * never learns. E.g. A fully connected neural network layer
+         * would return true here. But a max-pooling layer would return
+         * false.
+         *
+         * This method is used to optimize the learning process so that
+         * non-learning layers can be skipped during learning (where possible).
+         */
+        virtual bool doesLearn() const = 0;
+
 
         //////////////////////////////////////////////////////////////////////
         //

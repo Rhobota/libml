@@ -58,6 +58,11 @@ class tNNLayer : public iLayer, public bNonCopyable
         static char        weightUpRuleToChar(nLayerWeightUpdateRule rule);
 
 
+    public:
+
+        bool doesLearn() const { return true; }
+
+
     private:
 
 };

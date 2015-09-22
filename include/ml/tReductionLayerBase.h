@@ -40,6 +40,8 @@ class tReductionLayerBase : public iLayer, public bNonCopyable
 
         std::string layerInfoString() const;
 
+        bool doesLearn() const { return false; }
+
 
         ///////////////////////////////////////////////////////////////////////
         // The iPackable interface:
