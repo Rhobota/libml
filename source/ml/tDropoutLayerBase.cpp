@@ -13,7 +13,7 @@ tDropoutLayerBase::tDropoutLayerBase()
     : m_numInputDims(0),
       m_numOutputDims(0),
       m_p(FML(0.0)),
-      m_trainMode(true),
+      m_trainMode(false),
       m_curCount(0),
       m_maxCount(0)
 {
@@ -23,7 +23,7 @@ tDropoutLayerBase::tDropoutLayerBase(u32 numInputDims, u32 numOutputDims, fml p)
     : m_numInputDims(numInputDims),
       m_numOutputDims(numOutputDims),
       m_p(p),
-      m_trainMode(true),
+      m_trainMode(false),
       m_curCount(0),
       m_maxCount(0)
 {
@@ -40,7 +40,7 @@ tDropoutLayerBase::~tDropoutLayerBase()
 
 void tDropoutLayerBase::reset()
 {
-    m_trainMode = true;
+    m_trainMode = false;
 }
 
 void tDropoutLayerBase::printLayerInfo(std::ostream& out) const
@@ -105,7 +105,7 @@ void tDropoutLayerBase::unpack(iReadable* in)
     rho::unpack(in, m_p);
     m_curCount = 0;
     m_maxCount = 0;
-    m_trainMode = true;
+    m_trainMode = false;
 }
 
 

@@ -65,6 +65,8 @@ void tDropoutLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count,
     if (m_numInputDims != m_numOutputDims)
         throw eInvalidArgument("Oops. It makes no sense for this kind of layer to have different input and output dimensionality.");
 
+    m_trainMode = isTrainMode;
+
     if (m_trainMode)   // <-- train mode
     {
         for (u32 i = 0; i < count; i++)
