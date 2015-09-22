@@ -67,6 +67,9 @@ class tDropoutLayerGPU : public tDropoutLayerBase
 
         fml* m_gpu_output;
         fml* m_gpu_inputErrorGradients;
+
+        void* m_curandGen;
+        fml* m_gpu_dropMask;
 };
 
 

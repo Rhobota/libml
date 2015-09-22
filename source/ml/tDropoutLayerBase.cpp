@@ -31,6 +31,8 @@ tDropoutLayerBase::tDropoutLayerBase(u32 numInputDims, u32 numOutputDims, fml p)
         throw eInvalidArgument("numInputDims must be positive!");
     if (numOutputDims == 0)
         throw eInvalidArgument("numOutputDims must be positive!");
+    if (m_p <= FML(0.0) || m_p > FML(1.0))
+        throw eInvalidArgument("p must be in (0,1]");
 }
 
 tDropoutLayerBase::~tDropoutLayerBase()

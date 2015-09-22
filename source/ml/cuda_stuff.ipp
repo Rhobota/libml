@@ -1,5 +1,6 @@
 #include <cuda.h>
 #include <cublas_v2.h>
+#include <curand.h>
 #include <thrust/device_ptr.h>
 #include <thrust/reduce.h>
 #include <thrust/tabulate.h>
@@ -40,6 +41,16 @@
         if ((expression) != CUBLAS_STATUS_SUCCESS) \
         { \
             std::cout << "cuBLAS error! " << what << std::endl; \
+            assert(false); \
+        } \
+    } while (false)
+
+
+#define curand_assert(expression, what) \
+    do { \
+        if ((expression) != CURAND_STATUS_SUCCESS) \
+        { \
+            std::cout << "cuRAND error! " << what << std::endl; \
             assert(false); \
         } \
     } while (false)
@@ -96,6 +107,36 @@ void s_destroyCublasContext(void*& ptr)
         cublasHandle_t* cublasHandle = (cublasHandle_t*)ptr;
         cublas_assert( cublasDestroy(*cublasHandle), "s_destroyCublasContext" );
         delete cublasHandle;
+        ptr = NULL;
+    }
+}
+
+
+void s_createCurandGenerator(void*& ptr, u64 seed)
+{
+    curandGenerator_t* gen = new curandGenerator_t;
+    curand_assert( curandCreateGenerator(gen, CURAND_RNG_PSEUDO_DEFAULT), "s_createCurandGenerator" );
+    curand_assert( curandSetPseudoRandomGeneratorSeed(*gen, seed), "s_createCurandGenerator__setSeed" );
+    ptr = gen;
+}
+
+
+void s_curandGenerateUniform(void* ptr, fml* buf, u32 size)
+{
+    if (!ptr)
+        throw eRuntimeError("Uninitialized cuRAND generator!");
+    curandGenerator_t* gen = (curandGenerator_t*)ptr;
+    curand_assert( curandGenerateUniform(gen, buf, size), "s_curandGenerateUniform" );
+}
+
+
+void s_destroyCurandGenerator(void*& ptr)
+{
+    if (ptr)
+    {
+        curandGenerator_t* gen = (curandGenerator_t*)ptr;
+        curand_assert( curandDestroyGenerator(*gen), "s_destroyCurandGenerator" );
+        delete gen;
         ptr = NULL;
     }
 }

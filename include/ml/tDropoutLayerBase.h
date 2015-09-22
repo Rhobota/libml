@@ -22,7 +22,7 @@ class tDropoutLayerBase : public iLayer, public bNonCopyable
         /**
          * Constructs a dropout layer with the given p value.
          */
-        tDropoutLayerBase(u32 numInputDims, u32 numOutputDims, fml p = FML(0.5));
+        tDropoutLayerBase(u32 numInputDims, u32 numOutputDims, fml p);
 
         /**
          * D'tor.
