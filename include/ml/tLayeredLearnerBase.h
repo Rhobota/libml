@@ -59,7 +59,8 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
         void m_clearMatrices();
 
         void m_pushInputForward(const fml* input, u32 numInputDims, u32 inputCount,
-                                const fml*& output, u32 expectedOutputDims, u32 expectedOutputCount);
+                                const fml*& output, u32 expectedOutputDims, u32 expectedOutputCount,
+                                bool isTrainMode);
 
         virtual
         void m_calculate_output_da(const fml* output, fml* target, u32 dims, u32 count) = 0;

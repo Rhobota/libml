@@ -34,7 +34,7 @@ tDropoutLayerGPU::tDropoutLayerGPU()
 {
 }
 
-tDropoutLayerGPU::tDropoutLayerGPU(u32 numInputDims, u32 numOutputDims, fml p)
+tDropoutLayerGPU::tDropoutLayerGPU(u32 numInputDims, u32 numOutputDims, u32 rndSeed, fml p)
     : tDropoutLayerBase(numInputDims, numOutputDims, p),
       m_gpu_output(NULL),
       m_gpu_inputErrorGradients(NULL)
@@ -47,7 +47,8 @@ tDropoutLayerGPU::~tDropoutLayerGPU()
     s_cudaFree(m_gpu_inputErrorGradients);
 }
 
-void tDropoutLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count)
+void tDropoutLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count,
+                                 bool isTrainMode, iLayer* prevLayer)
 {
     if (!input)
         throw eInvalidArgument("input may not be null!");

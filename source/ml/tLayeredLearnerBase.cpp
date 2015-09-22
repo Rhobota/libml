@@ -238,7 +238,8 @@ void tLayeredLearnerBase::m_clearMatrices()
 }
 
 void tLayeredLearnerBase::m_pushInputForward(const fml* input, u32 numInputDims, u32 inputCount,
-                                             const fml*& output, u32 expectedOutputDims, u32 expectedOutputCount)
+                                             const fml*& output, u32 expectedOutputDims, u32 expectedOutputCount,
+                                             bool isTrainMode)
 {
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot push input when there are no layers!");
@@ -338,7 +339,8 @@ void tLayeredLearnerBase::m_update(const fml* inputMatrix, u32 inputMatrixUsed, 
     u32 expectedOutputCount = inputCount;
 
     m_pushInputForward(input, numInputDims, inputCount,
-                       output, expectedOutputDims, expectedOutputCount);
+                       output, expectedOutputDims, expectedOutputCount,
+                       true);
 
     if (targetMatrixUsed == 0)
         throw eRuntimeError("Cannot update when there have been no example targets.");
@@ -368,7 +370,8 @@ void tLayeredLearnerBase::m_evaluate(const fml* inputMatrix, u32 inputMatrixUsed
     u32 inputCount = inputMatrixUsed / inputMatrixNumDims;
 
     m_pushInputForward(inputPtr, numInputDims, inputCount,
-                       output, expectedOutputDims, expectedOutputCount);
+                       output, expectedOutputDims, expectedOutputCount,
+                       false);
 }
 
 
