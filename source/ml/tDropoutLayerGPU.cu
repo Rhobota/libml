@@ -86,13 +86,14 @@ void tDropoutLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count,
 
     if (m_trainMode)   // <-- train mode
     {
+        thrust::device_ptr<const fml> inputItr(input);
+        thrust::device_ptr<      fml> dropMask(m_gpu_dropMask);
+        thrust::device_ptr<      fml> outputItr(m_gpu_output);
+
         s_curandGenerateUniform(m_curandGen, m_gpu_dropMask, numInputDims*count);
-        thrust::device_ptr<fml> dropMask(m_dropMask);
         tThreshFunc threshFunc(m_p);
         thrust::transform(dropMask, dropMask + numInputDims*count, dropMask, threshFunc);
 
-        thrust::device_ptr<const fml> inputItr(input);
-        thrust::device_ptr<      fml> outputItr(m_gpu_output);
         tMultFunc multFunc;
         thrust::transform(inputItr, inputItr + numInputDims*count, dropMask, outputItr, multFunc);
     }
@@ -147,7 +148,7 @@ void tDropoutLayerGPU::takeOutputErrorGradients(
         if (m_trainMode)
         {
             thrust::device_ptr<const fml> inputItr(outputErrorGradients);
-            thrust::device_ptr<      fml> dropMask(m_dropMask);
+            thrust::device_ptr<      fml> dropMask(m_gpu_dropMask);
             thrust::device_ptr<      fml> outputItr(m_gpu_inputErrorGradients);
             tMultFunc multFunc;
             thrust::transform(inputItr, inputItr + numInputDims*count, dropMask, outputItr, multFunc);
