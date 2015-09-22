@@ -271,7 +271,21 @@ void tLayeredLearnerBase::m_backpropagate(const fml* output_da, u32 numOutputDim
     if (m_layers.size() == 0)
         throw eRuntimeError("Cannot backpropagate when there are no layers!");
 
-    for (size_t i = (m_layers.size()-1); i > 0; i--)
+    size_t firstLearningLayer = 0;
+    bool foundFirstLearner = false;
+    for (size_t i = 0; i < m_layers.size(); i++)
+    {
+        if (m_layers[i]->doesLearn())
+        {
+            firstLearningLayer = i;
+            foundFirstLearner = true;
+            break;
+        }
+    }
+    if (!foundFirstLearner)
+        throw eRuntimeError("You're attempting to train a learner with no learning layers!");
+
+    for (size_t i = (m_layers.size()-1); i > firstLearningLayer; i--)
     {
         u32 prevOutDims, prevCount;
         const fml* prevOutput = m_layers[i-1]->getOutput(prevOutDims, prevCount);
@@ -281,9 +295,9 @@ void tLayeredLearnerBase::m_backpropagate(const fml* output_da, u32 numOutputDim
         output_da = m_layers[i]->getInputErrorGradients(numOutputDims, outputCount);
     }
 
-    m_layers[0]->takeOutputErrorGradients(output_da, numOutputDims, outputCount,
-                                          input, numInputDims, inputCount,
-                                          false);
+    m_layers[firstLearningLayer]->takeOutputErrorGradients(output_da, numOutputDims, outputCount,
+                                                           input, numInputDims, inputCount,
+                                                           false);
 }
 
 void tLayeredLearnerBase::m_putOutput(tIO& output, const fml* outputPtr, u32 numOutputDims, u32 outputCount)
