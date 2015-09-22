@@ -66,6 +66,10 @@ class tDropoutLayerCPU : public tDropoutLayerBase
 
         fml* m_output;
         fml* m_inputErrorGradients;
+
+        fml* m_dropMask;
+
+        bool m_trainMode;
 };
 
 

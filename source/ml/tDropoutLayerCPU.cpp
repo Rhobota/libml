@@ -8,14 +8,18 @@ namespace ml
 tDropoutLayerCPU::tDropoutLayerCPU()
     : tDropoutLayerBase(),
       m_output(NULL),
-      m_inputErrorGradients(NULL)
+      m_inputErrorGradients(NULL),
+      m_dropMask(NULL),
+      m_trainMode(true)
 {
 }
 
 tDropoutLayerCPU::tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, fml p)
     : tDropoutLayerBase(numInputDims, numOutputDims, p),
       m_output(NULL),
-      m_inputErrorGradients(NULL)
+      m_inputErrorGradients(NULL),
+      m_dropMask(NULL),
+      m_trainMode(true)
 {
 }
 
@@ -23,6 +27,7 @@ tDropoutLayerCPU::~tDropoutLayerCPU()
 {
     delete [] m_output;                 m_output = NULL;
     delete [] m_inputErrorGradients;    m_inputErrorGradients = NULL;
+    delete [] m_dropMask;               m_dropMask = NULL;
 }
 
 void tDropoutLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
@@ -40,19 +45,38 @@ void tDropoutLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
     {
         delete [] m_output;                 m_output = NULL;
         delete [] m_inputErrorGradients;    m_inputErrorGradients = NULL;
+        delete [] m_dropMask;               m_dropMask = NULL;
         m_output              = new fml[m_numOutputDims * count];
         m_inputErrorGradients = new fml[m_numInputDims * count];
+        m_dropMask            = new fml[m_numInputDims * count];
         m_maxCount = count;
     }
     m_curCount = count;
 
     if (m_numInputDims != m_numOutputDims)
         throw eInvalidArgument("Oops. It makes no sense for this kind of layer to have different input and output dimensionality.");
-    for (u32 i = 0; i < count; i++)
+
+    if (m_trainMode)   // <-- train mode
     {
-        for (u32 j = 0; j < numInputDims; j++)
+        for (u32 i = 0; i < count; i++)
         {
-            m_output[i*numInputDims + j] = input[i*numInputDims + j] * m_p;
+            for (u32 j = 0; j < numInputDims; j++)
+            {
+                fml drop = m_bernoulli();
+                m_dropMask[i*numInputDims + j] = drop;
+                m_output[i*numInputDims + j] = input[i*numInputDims + j] * drop;
+            }
+        }
+    }
+
+    else               // <-- test mode
+    {
+        for (u32 i = 0; i < count; i++)
+        {
+            for (u32 j = 0; j < numInputDims; j++)
+            {
+                m_output[i*numInputDims + j] = input[i*numInputDims + j] * m_p;
+            }
         }
     }
 }
@@ -87,19 +111,28 @@ void tDropoutLayerCPU::takeOutputErrorGradients(
     if (inputCount != m_curCount)
         throw eInvalidArgument("Unexpected inputCount");
 
-    if (m_curCount == 0 || !m_output || !m_inputErrorGradients)
+    if (m_curCount == 0 || !m_output || !m_inputErrorGradients || !m_dropMask)
         throw eRuntimeError("What gives?");
 
     if (calculateInputErrorGradients)
     {
         if (m_numInputDims != m_numOutputDims)
             throw eInvalidArgument("Oops. It makes no sense for this kind of layer to have different input and output dimensionality.");
-        for (u32 i = 0; i < inputCount; i++)
+
+        if (m_trainMode)
         {
-            for (u32 j = 0; j < numInputDims; j++)
+            for (u32 i = 0; i < inputCount; i++)
             {
-                m_inputErrorGradients[i*numInputDims + j] = outputErrorGradients[i*numInputDims + j] * m_p;
+                for (u32 j = 0; j < numInputDims; j++)
+                {
+                    m_inputErrorGradients[i*numInputDims + j] = outputErrorGradients[i*numInputDims + j] * m_dropMask[i*numInputDims + j];
+                }
             }
+        }
+
+        else
+        {
+            throw eRuntimeError("Why are you trying to train this layer while it's not in training mode!? Don't do that.");
         }
     }
 }
@@ -131,37 +164,19 @@ u32 tDropoutLayerCPU::headerId() const
 
 void tDropoutLayerCPU::reset()
 {
-    // Always call the superclass impl no matter what.
     tDropoutLayerBase::reset();
-
-    //
-    // And if this subclass has its own things that need reseting, do it here.
-    //
+    m_trainMode = true;
 }
 
 void tDropoutLayerCPU::pack(iWritable* out) const
 {
-    // Always call the superclass impl no matter what.
     tDropoutLayerBase::pack(out);
-
-    //
-    // Then, if this layer has its own things that need packed, do it here.
-    //
 }
 
 void tDropoutLayerCPU::unpack(iReadable* in)
 {
-    // Always call the superclass impl no matter what.
     tDropoutLayerBase::unpack(in);
-
-    //
-    // Then, if this layer packed its own things, unpack them here.
-    //
-
-    //
-    // Also, if there are other fields that need to be invalidated due to
-    // unpacking other values, invalidate/reset everything here.
-    //
+    m_trainMode = true;
 }
 
 
