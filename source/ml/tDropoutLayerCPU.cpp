@@ -5,18 +5,29 @@ namespace ml
 {
 
 
+static
+fml s_bernoulli(algo::iLCG& lcg, fml p)
+{
+    fml val = lcg.next();
+    val /= (lcg.randMax() + 1);
+    return (val < p) ? FML(1.0) : FML(0.0);
+}
+
+
 tDropoutLayerCPU::tDropoutLayerCPU()
     : tDropoutLayerBase(),
       m_output(NULL),
       m_inputErrorGradients(NULL),
+      m_lcg(),
       m_dropMask(NULL)
 {
 }
 
-tDropoutLayerCPU::tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, fml p)
+tDropoutLayerCPU::tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, u32 rndSeed, fml p)
     : tDropoutLayerBase(numInputDims, numOutputDims, p),
       m_output(NULL),
       m_inputErrorGradients(NULL),
+      m_lcg(rndSeed),
       m_dropMask(NULL)
 {
 }
@@ -60,7 +71,7 @@ void tDropoutLayerCPU::takeInput(const fml* input, u32 numInputDims, u32 count)
         {
             for (u32 j = 0; j < numInputDims; j++)
             {
-                fml drop = m_bernoulli();
+                fml drop = s_bernoulli(m_lcg, m_p);
                 m_dropMask[i*numInputDims + j] = drop;
                 m_output[i*numInputDims + j] = input[i*numInputDims + j] * drop;
             }
