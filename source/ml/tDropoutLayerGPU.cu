@@ -74,7 +74,7 @@ tDropoutLayerGPU::tDropoutLayerGPU()
 {
 }
 
-tDropoutLayerGPU::tDropoutLayerGPU(u32 numInputDims, u32 numOutputDims, u32 rndSeed, fml p)
+tDropoutLayerGPU::tDropoutLayerGPU(u32 numInputDims, u32 numOutputDims, u64 rndSeed, fml p)
     : tDropoutLayerBase(numInputDims, numOutputDims, p),
       m_gpu_output(NULL),
       m_gpu_inputErrorGradients(NULL),

@@ -22,7 +22,7 @@ class tDropoutLayerCPU : public tDropoutLayerBase
         /**
          * See tDropoutLayerBase::tDropoutLayerBase().
          */
-        tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, u32 rndSeed, fml p = FML(0.5));
+        tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, u64 rndSeed, fml p = FML(0.5));
 
         /**
          * D'tor.

@@ -21,7 +21,7 @@ class tDropoutLayerGPU : public tDropoutLayerBase
         /**
          * See tDropoutLayerBase::tDropoutLayerBase().
          */
-        tDropoutLayerGPU(u32 numInputDims, u32 numOutputDims, u32 rndSeed, fml p = FML(0.5));
+        tDropoutLayerGPU(u32 numInputDims, u32 numOutputDims, u64 rndSeed, fml p = FML(0.5));
 
         /**
          * D'tor.

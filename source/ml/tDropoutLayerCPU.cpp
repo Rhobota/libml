@@ -22,7 +22,7 @@ tDropoutLayerCPU::tDropoutLayerCPU()
 {
 }
 
-tDropoutLayerCPU::tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, u32 rndSeed, fml p)
+tDropoutLayerCPU::tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, u64 rndSeed, fml p)
     : tDropoutLayerBase(numInputDims, numOutputDims, p),
       m_output(NULL),
       m_inputErrorGradients(NULL),
