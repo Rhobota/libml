@@ -8,7 +8,7 @@ namespace ml
 static
 fml s_bernoulli(algo::iLCG& lcg, fml p)
 {
-    u64 cutoff = (u64) ceil(((fml)(lcg.randMax() + 1)) * p);
+    u64 cutoff = (u64) ceil(((f64)(lcg.randMax() + 1)) * ((f64)p));
     return (lcg.next() < cutoff) ? FML(1.0) : FML(0.0);
 }
 
@@ -26,7 +26,7 @@ tDropoutLayerCPU::tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, u64 rndS
     : tDropoutLayerBase(numInputDims, numOutputDims, p),
       m_output(NULL),
       m_inputErrorGradients(NULL),
-      m_lcg(rndSeed),
+      m_lcg(rndSeed+1),
       m_dropMask(NULL)
 {
 }

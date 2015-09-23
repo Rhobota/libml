@@ -69,7 +69,7 @@ class tDropoutLayerCPU : public tDropoutLayerBase
         fml* m_output;
         fml* m_inputErrorGradients;
 
-        algo::tLCG m_lcg;
+        algo::tKnuthLCG m_lcg;
         fml* m_dropMask;
 };
 

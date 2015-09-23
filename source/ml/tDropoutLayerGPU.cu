@@ -81,7 +81,7 @@ tDropoutLayerGPU::tDropoutLayerGPU(u32 numInputDims, u32 numOutputDims, u64 rndS
       m_curandGen(NULL),
       m_gpu_dropMask(NULL)
 {
-    s_createCurandGenerator(m_curandGen, rndSeed);
+    s_createCurandGenerator(m_curandGen, rndSeed+1);
 }
 
 tDropoutLayerGPU::~tDropoutLayerGPU()
