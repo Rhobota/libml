@@ -126,7 +126,7 @@ void s_curandGenerateUniform(void* ptr, fml* buf, u32 size)
     if (!ptr)
         throw eRuntimeError("Uninitialized cuRAND generator!");
     curandGenerator_t* gen = (curandGenerator_t*)ptr;
-    curand_assert( curandGenerateUniform(gen, buf, size), "s_curandGenerateUniform" );
+    curand_assert( curandGenerateUniform(*gen, buf, size), "s_curandGenerateUniform" );
 }
 
 

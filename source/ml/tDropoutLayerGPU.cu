@@ -7,6 +7,44 @@ namespace ml
 {
 
 
+class tThreshFunc
+{
+    public:
+
+        tThreshFunc(fml thresh)
+            : m_thresh(thresh)
+        { }
+
+        __host__ __device__
+        fml operator()(fml val)
+        {
+            return (val <= m_thresh) ? FML(1.0) : FML(0.0);
+        }
+
+    private:
+
+        fml m_thresh;
+};
+
+
+class tMultFunc
+{
+    public:
+
+        tMultFunc()
+        { }
+
+        __host__ __device__
+        fml operator()(fml a, fml b)
+        {
+            return a * b;
+        }
+
+    private:
+
+};
+
+
 class tScalarMultFunc
 {
     public:
@@ -90,7 +128,7 @@ void tDropoutLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count,
         thrust::device_ptr<      fml> dropMask(m_gpu_dropMask);
         thrust::device_ptr<      fml> outputItr(m_gpu_output);
 
-        s_curandGenerateUniform(m_curandGen, m_gpu_dropMask, numInputDims*count);
+        s_curandGenerateUniform(m_curandGen, m_gpu_dropMask, numInputDims*count);   // <-- generates in (0.0, 1.0]
         tThreshFunc threshFunc(m_p);
         thrust::transform(dropMask, dropMask + numInputDims*count, dropMask, threshFunc);
 
@@ -151,7 +189,7 @@ void tDropoutLayerGPU::takeOutputErrorGradients(
             thrust::device_ptr<      fml> dropMask(m_gpu_dropMask);
             thrust::device_ptr<      fml> outputItr(m_gpu_inputErrorGradients);
             tMultFunc multFunc;
-            thrust::transform(inputItr, inputItr + numInputDims*count, dropMask, outputItr, multFunc);
+            thrust::transform(inputItr, inputItr + numInputDims*inputCount, dropMask, outputItr, multFunc);
         }
 
         else
