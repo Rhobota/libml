@@ -37,7 +37,7 @@ CC_CUDA_FLAGS_LOCAL="$CC_FLAGS \
     -D_FILE_OFFSET_BITS=64 \
     $INCLUDE_FLAGS"
 CC_CUDA_LIB_FLAGS="$LIB_PATH \
-    -lcublas_static -lculibos -Xcompiler -fopenmp"
+    -lcublas_static -lculibos -lcurand_static -Xcompiler -fopenmp"
 
 if [ -n "$1" ]
 then

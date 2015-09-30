@@ -677,8 +677,8 @@ void evaluate(iLearner* learner, iInputTargetGenerator* generator,
  * Creates a visual of the learner processing the example provided.
  * The visual is stored as an image in 'dest'.
  */
-void visualize(iLearner* learner, const tIO& example,
-               bool color, u32 width, bool absolute,
+void visualize(iLearner* learner,
+               const tIO& example, u32 exampleWidth, u32 exampleNumComponents,
                img::tImage* dest);
 
 

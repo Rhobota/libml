@@ -1,5 +1,9 @@
 #include <ml/common.h>
 #include <ml/iLearner.h>
+#include <ml/tLayeredLearnerBase.h>
+#include <ml/tAnnLayerBase.h>
+#include <ml/tCnnLayerBase.h>
+#include <ml/tDropoutLayerBase.h>
 
 #include <rho/algo/stat_util.h>
 #include <rho/algo/vector_util.h>
@@ -13,6 +17,9 @@
 
 namespace ml
 {
+
+
+static const u32 kVisualizePadding = 15;
 
 
 tIO examplify(u32 highDimension, u32 numDimensions)
@@ -801,13 +808,107 @@ void deinterlace(const T* input, T* output, u32 arrayLen, u32 numComponents, u32
     }
 }
 
-void visualize(iLearner* learner, const tIO& example,
-               bool color, u32 width, bool absolute,
+static
+void s_visualize(tLayeredLearnerBase* learner,
+                 img::tCanvas& canvas,
+                 u32& yOffset)
+{
+    u32 numLayers = learner->numLayers();
+
+    for (u32 layerIndex = 0; layerIndex < numLayers; layerIndex++)
+    {
+        yOffset += kVisualizePadding;
+
+        iLayer* layer = learner->layerAtIndex(layerIndex);
+
+        tAnnLayerBase* annLayerBase = dynamic_cast<tAnnLayerBase*>(layer);
+        tCnnLayerBase* cnnLayerBase = dynamic_cast<tCnnLayerBase*>(layer);
+        tDropoutLayerBase* dropoutLayerBase = dynamic_cast<tDropoutLayerBase*>(layer);
+
+        if (annLayerBase)
+        {
+            // TODO
+        }
+        else if (cnnLayerBase)
+        {
+            // TODO
+        }
+        else if (dropoutLayerBase)
+        {
+            // TODO
+        }
+        else
+        {
+            // Skipping this layer.
+        }
+
+        yOffset += kVisualizePadding;
+        canvas.expandToIncludePoint(0, yOffset);
+    }
+}
+
+static
+void s_visualize(const tIO& example, u32 width, u32 numComponents,
+                 img::tCanvas& canvas, u32& yOffset)
+{
+    yOffset += kVisualizePadding;
+
+    if (numComponents == 3)
+    {
+        img::tImage image;
+        un_examplify(example, true, width, true, &image);
+        canvas.drawImage(&image, kVisualizePadding, yOffset);
+    }
+
+    else
+    {
+        tIO deinterlaced = example;
+        deinterlace(&example[0], &deinterlaced[0], (u32)example.size(), numComponents);
+        u32 height = (u32) (example.size() / numComponents / width);
+        u32 xOffset = 0;
+        for (u32 componentIndex = 0; componentIndex < numComponents; componentIndex++)
+        {
+            xOffset += kVisualizePadding;
+            tIO thisComponent(deinterlaced.begin() + componentIndex*width*height, deinterlaced.begin() + (componentIndex+1)*width*height);
+            img::tImage image;
+            un_examplify(thisComponent, false, width, true, &image);
+            canvas.drawImage(&image, xOffset, yOffset);
+            xOffset += kVisualizePadding;
+        }
+    }
+
+    yOffset += kVisualizePadding;
+    canvas.expandToIncludePoint(0, yOffset);
+}
+
+void visualize(iLearner* learner,
+               const tIO& example, u32 exampleWidth, u32 exampleNumComponents,
                img::tImage* dest)
 {
-    // TODO
-    u8 bgColor[3] = { 0, 0, 205 };    // "Medium Blue" from http://www.tayloredmktg.com/rgb/
+    if (example.size() == 0 || exampleWidth == 0 || exampleNumComponents == 0)
+        throw eInvalidArgument("Invalid example: something is zero that shouldn't be.");
+    if (example.size() % exampleNumComponents)
+        throw eInvalidArgument("Invalid example: (example.size() % exampleNumComponents) != 0");
+    if ((example.size() / exampleNumComponents) % exampleWidth)
+        throw eInvalidArgument("Invalid example: ((example.size() / exampleNumComponents) % exampleWidth) != 0");
+
+    u8 bgColor[3] = { 200, 200, 200 };    // Check http://www.tayloredmktg.com/rgb/
     img::tCanvas canvas(img::kRGB24, bgColor, 3);
+    u32 yOffset = 0;
+
+    s_visualize(example, exampleWidth, exampleNumComponents, canvas, yOffset);
+
+    tLayeredLearnerBase* layeredLearnerBase = dynamic_cast<tLayeredLearnerBase*>(learner);
+
+    if (layeredLearnerBase)
+    {
+        s_visualize(layeredLearnerBase, canvas, yOffset);
+    }
+    else
+    {
+        throw eRuntimeError("Unknown learner type.");
+    }
+
     canvas.genImage(dest);
 }
 
