@@ -1001,7 +1001,8 @@ class tLoggingWrapper : public tBestRememberingWrapper
          */
         tLoggingWrapper(u32 logInterval,
                         iEZTrainObserver* wrappedObserver = NULL,
-                        std::string fileprefix=std::string());
+                        std::string fileprefix = std::string(),
+                        bool logVisuals = false, u32 inputRows = 0, u32 inputCols = 0, u32 inputComponents = 0, tIO sampleInput = tIO());
 
         ~tLoggingWrapper();
 
@@ -1026,6 +1027,11 @@ class tLoggingWrapper : public tBestRememberingWrapper
 
         const u32 m_logInterval;
         std::string m_fileprefix;
+        bool m_logVisuals;
+        u32 m_inputRows;
+        u32 m_inputCols;
+        u32 m_inputComponents;
+        tIO m_sampleInput;
 
         std::ofstream m_logfile;
         std::ofstream m_datafile;

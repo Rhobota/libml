@@ -811,9 +811,22 @@ void deinterlace(const T* input, T* output, u32 arrayLen, u32 numComponents, u32
 
 static
 void s_visualize(const tIO& weights, fml bias, fml output,
-                 u32 inputRows, u32 inputCols, u32 inputComponents)
+                 u32 height, u32 width, u32 numComponents,
+                 img::tCanvas& canvas, u32 x, u32 y)
 {
-    // TODO
+    if (numComponents == 3)
+    {
+        img::tImage image;
+        un_examplify(weights, true, width, true, &image);
+        canvas.drawImage(&image, x, y);
+    }
+
+    else if (numComponents == 1)
+    {
+        img::tImage image;
+        un_examplify(weights, false, width, true, &image);
+        canvas.drawImage(&image, x, y);
+    }
 }
 
 static
@@ -845,7 +858,7 @@ void s_visualize(tAnnLayerBase* layer,
             fml  bias        = biases[currNeuron];
             fml  output      = outputs[currNeuron];
 
-            s_visualize(weightsHere, bias, output, inputRows, inputCols, inputComponents);
+            s_visualize(weightsHere, bias, output, inputRows, inputCols, inputComponents, canvas, xOffset, yOffset);
 
             yOffset += inputRows + kVisualizeMinorPadding;
 
@@ -1242,11 +1255,17 @@ void tBestRememberingWrapper::didFinishTraining(iLearner* learner,
 
 
 tLoggingWrapper::tLoggingWrapper(u32 logInterval,
-                iEZTrainObserver* wrappedObserver,
-                std::string fileprefix)
+                                 iEZTrainObserver* wrappedObserver,
+                                 std::string fileprefix,
+                                 bool logVisuals, u32 inputRows, u32 inputCols, u32 inputComponents, tIO sampleInput)
     : tBestRememberingWrapper(wrappedObserver),
       m_logInterval(logInterval),
       m_fileprefix(fileprefix),
+      m_logVisuals(logVisuals),
+      m_inputRows(inputRows),
+      m_inputCols(inputCols),
+      m_inputComponents(inputComponents),
+      m_sampleInput(sampleInput),
       m_logfile(),
       m_datafile()
 {
@@ -1263,7 +1282,6 @@ tLoggingWrapper::~tLoggingWrapper()
 bool tLoggingWrapper::didUpdate(iLearner* learner, const std::vector<tIO>& inputs,
                                                    const std::vector<tIO>& targets)
 {
-    // Nothing special to do here, so just call the super method.
     // The super method will call into the wrapped object.
     return tBestRememberingWrapper::didUpdate(learner, inputs, targets);
 }
@@ -1310,9 +1328,17 @@ bool tLoggingWrapper::didFinishEpoch(iLearner* learner,
     if ((epochsCompleted % m_logInterval) == 0)
     {
         std::ostringstream out;
-        out << m_fileprefix << learner->learnerInfoString() << "__epoch" << epochsCompleted << ".learner";
-        tFileWritable file(out.str());
+        out << m_fileprefix << learner->learnerInfoString() << "__epoch" << epochsCompleted;
+
+        tFileWritable file(out.str() + ".learner");
         iLearner::writeLearnerToStream(learner, &file);
+
+        if (m_logVisuals)
+        {
+            img::tImage image;
+            visualize(learner, m_sampleInput, m_inputCols, m_inputComponents, &image);
+            image.saveToFile(out.str() + "__viz.png");
+        }
     }
 
     return retVal;
@@ -1334,10 +1360,19 @@ void tLoggingWrapper::didFinishTraining(iLearner* learner,
         m_logfile << "Best test set performance of " << bestTestSetPerformance() << " "
                   << "found after epoch " << bestAfterEpochsCompleted() << "." << std::endl << std::endl;
         m_logfile << "Trained for a total " << epochsCompleted << " epochs; training lasted " << trainingTimeInSeconds << " seconds." << std::endl << std::endl;
+
         std::ostringstream out;
-        out << m_fileprefix << bestLearner->learnerInfoString() << "__best" << ".learner";
-        tFileWritable file(out.str());
+        out << m_fileprefix << bestLearner->learnerInfoString() << "__best";
+
+        tFileWritable file(out.str() + ".learner");
         iLearner::writeLearnerToStream(bestLearner, &file);
+
+        if (m_logVisuals)
+        {
+            img::tImage image;
+            visualize(bestLearner, m_sampleInput, m_inputCols, m_inputComponents, &image);
+            image.saveToFile(out.str() + "__viz.png");
+        }
     }
 
     // Delete the copy of the best learner.
