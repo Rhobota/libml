@@ -22,6 +22,10 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
 
         void addLayer(iLayer* layer);  // <-- takes ownership of the layer
 
+        u32 numLayers() const;
+
+        iLayer* layerAtIndex(u32 index) const;
+
         void setOutputPerformanceEvaluator(iOutputPerformanceEvaluator* evaluator); // <-- takes ownership
 
 

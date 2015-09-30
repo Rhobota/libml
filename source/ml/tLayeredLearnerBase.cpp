@@ -68,6 +68,16 @@ void tLayeredLearnerBase::addLayer(iLayer* layer)
     m_layers.push_back(layer);
 }
 
+u32 tLayeredLearnerBase::numLayers() const
+{
+    return (u32) m_layers.size();
+}
+
+iLayer* tLayeredLearnerBase::layerAtIndex(u32 index) const
+{
+    return m_layers[index];
+}
+
 void tLayeredLearnerBase::setOutputPerformanceEvaluator(iOutputPerformanceEvaluator* evaluator)
 {
     delete m_evaluator;
