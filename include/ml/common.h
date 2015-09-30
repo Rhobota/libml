@@ -6,6 +6,7 @@
 #include <ml/iLearner_pre.h>
 
 #include <rho/img/tImage.h>
+#include <rho/algo/vector_util.h>
 
 #include <algorithm>
 #include <cassert>
