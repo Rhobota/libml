@@ -893,8 +893,11 @@ void visualize(iLearner* learner,
         throw eInvalidArgument("Invalid example: ((example.size() / exampleNumComponents) % exampleWidth) != 0");
 
     {
-        tSingleGenerator generator;
-        tNullCollector collector;
+        std::vector<tIO> inputs, targets;
+        inputs.push_back(example);
+        targets.push_back(examplify(0, 1));  // <-- dummy value
+        tBasicInputTargetGenerator generator(inputs, targets);
+        tBasicOutputCollector collector;
         evaluate(learner, &generator, &collector, 1);
     }
 

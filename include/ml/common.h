@@ -418,6 +418,43 @@ class iOutputCollector
         virtual ~iOutputCollector() { }
 };
 
+class tBasicOutputCollector : public iOutputCollector
+{
+    public:
+
+        /**
+         * This output collector just records the output so that
+         * it can be retrieved when finished.
+         */
+        tBasicOutputCollector()
+        {
+        }
+
+        /**
+         * Retrieves the output. Only call this after all output has been
+         * collected.
+         */
+        const std::vector<tIO>& getOutputs() const
+        {
+            return m_outputs;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // iOutputCollector interface:
+        ///////////////////////////////////////////////////////////////////////
+
+        void receivedOutput(const std::vector<tIO>& inputs,
+                            const std::vector<tIO>& targets,
+                            const std::vector<tIO>& outputs)
+        {
+            m_outputs.insert(m_outputs.end(), outputs.begin(), outputs.end());
+        }
+
+    private:
+
+        std::vector<tIO> m_outputs;
+};
+
 class iOutputPerformanceEvaluator : public iOutputCollector
 {
     public:
