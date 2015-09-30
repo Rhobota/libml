@@ -809,6 +809,30 @@ void deinterlace(const T* input, T* output, u32 arrayLen, u32 numComponents, u32
 }
 
 static
+void s_visualize(tAnnLayerBase* layer,
+                 img::tCanvas& canvas,
+                 u32& yOffset)
+{
+    // TODO
+}
+
+static
+void s_visualize(tCnnLayerBase* layer,
+                 img::tCanvas& canvas,
+                 u32& yOffset)
+{
+    // TODO
+}
+
+static
+void s_visualize(tDropoutLayerBase* layer,
+                 img::tCanvas& canvas,
+                 u32& yOffset)
+{
+    // TODO
+}
+
+static
 void s_visualize(tLayeredLearnerBase* learner,
                  img::tCanvas& canvas,
                  u32& yOffset)
@@ -827,15 +851,15 @@ void s_visualize(tLayeredLearnerBase* learner,
 
         if (annLayerBase)
         {
-            // TODO
+            s_visualize(annLayerBase, canvas, yOffset);
         }
         else if (cnnLayerBase)
         {
-            // TODO
+            s_visualize(cnnLayerBase, canvas, yOffset);
         }
         else if (dropoutLayerBase)
         {
-            // TODO
+            s_visualize(dropoutLayerBase, canvas, yOffset);
         }
         else
         {
