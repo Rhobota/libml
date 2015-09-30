@@ -27,6 +27,9 @@ tAnnLayerBase::tAnnLayerBase()
       m_rule(kWeightUpRuleNone),
       m_alpha(FML(0.0)),
       m_viscosity(FML(0.0)),
+      m_inputRows(0),
+      m_inputCols(0),
+      m_inputComponents(0),
       m_numInputDims(0),
       m_numNeurons(0),
       m_curCount(0),
@@ -182,6 +185,9 @@ void tAnnLayerBase::pack(iWritable* out) const
     rho::pack(out, m_alpha);
     rho::pack(out, m_viscosity);
 
+    rho::pack(out, m_inputRows);
+    rho::pack(out, m_inputCols);
+    rho::pack(out, m_inputComponents);
     rho::pack(out, m_numInputDims);
     rho::pack(out, m_numNeurons);
 
@@ -201,6 +207,9 @@ void tAnnLayerBase::unpack(iReadable* in)
     rho::unpack(in, m_alpha);
     rho::unpack(in, m_viscosity);
 
+    rho::unpack(in, m_inputRows);
+    rho::unpack(in, m_inputCols);
+    rho::unpack(in, m_inputComponents);
     rho::unpack(in, m_numInputDims);
     rho::unpack(in, m_numNeurons);
 
@@ -226,6 +235,8 @@ void tAnnLayerBase::unpack(iReadable* in)
 
 void tAnnLayerBase::m_validate()
 {
+    if (m_inputRows * m_inputCols * m_inputComponents != m_numInputDims)
+        throw eInvalidArgument("Invalid set of inputRows, inputCols, inputComponents.");
     if (m_numInputDims == 0)
         throw eInvalidArgument("The number of input dimensions may not be zero.");
     if (m_numNeurons == 0)
