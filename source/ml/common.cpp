@@ -842,6 +842,12 @@ void s_visualize(tAnnLayerBase* layer,
     u32 displayRows = (u32) std::ceil(std::sqrt(numNeurons * 9 / 16));
     u32 displayCols = ((numNeurons % displayRows) > 0) ? ((numNeurons / displayRows) + 1) : (numNeurons / displayRows);
 
+    if (inputCols == 1)
+    {
+        displayRows = numNeurons;
+        displayCols = 1;
+    }
+
     std::vector<tIO> weights;
     tIO biases, outputs;
     layer->currentState(weights, biases, outputs);
@@ -861,6 +867,7 @@ void s_visualize(tAnnLayerBase* layer,
             s_visualize(weightsHere, bias, output, inputRows, inputCols, inputComponents, canvas, xOffset, yOffset);
 
             yOffset += inputRows + kVisualizeMinorPadding;
+            canvas.expandToIncludePoint(0, yOffset);
 
             ++currNeuron;
         }
@@ -953,7 +960,7 @@ void s_visualize(const tIO& example, u32 width, u32 numComponents,
         }
     }
 
-    xOffset += kVisualizeMajorPadding;
+    xOffset += width + kVisualizeMajorPadding;
     canvas.expandToIncludePoint(xOffset, 0);
 }
 
@@ -979,6 +986,7 @@ void visualize(iLearner* learner,
 
     u8 bgColor[3] = { 200, 200, 200 };    // Check http://www.tayloredmktg.com/rgb/
     img::tCanvas canvas(img::kRGB24, bgColor, 3);
+    canvas.expandToIncludePoint(0, 0);
     u32 xOffset = 0;
 
     s_visualize(example, exampleWidth, exampleNumComponents, canvas, xOffset);
