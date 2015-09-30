@@ -67,6 +67,35 @@ tAnnLayerGPU::~tAnnLayerGPU()
 }
 
 
+void tAnnLayerGPU::currentState(std::vector<tIO>& weights, tIO& biases, tIO& outputs) const
+{
+    if (m_curCount == 0)
+        throw eRuntimeError("This layer has never seen an input. This method cannot populate 'outputs'.");
+
+    u32 numNeurons = m_numNeurons;
+    u32 numInputDims = m_numInputDims;
+
+    weights.resize(numNeurons);
+    biases.resize(numNeurons);
+    outputs.resize(numNeurons);
+
+    m_syncWeights_deviceToHost();
+    u32 outputStart = (m_curCount - 1) * numNeurons;
+    s_cudaCopyDeviceToHost(&outputs[0], m_gpu_a + outputStart, numNeurons);
+
+    for (u32 nn = 0; nn < numNeurons; nn++)
+    {
+        tIO& weightsHere = weights[nn];
+        weightsHere.resize(numInputDims);
+
+        for (u32 ii = 0; ii < numInputDims; ii++)
+            weightsHere[ii] = m_w[ii*numNeurons + nn];
+
+        biases[nn] = m_b[nn];
+    }
+}
+
+
 void tAnnLayerGPU::takeInput(const fml* input, u32 numInputDims, u32 count,
                              bool isTrainMode, iLayer* prevLayer)
 {

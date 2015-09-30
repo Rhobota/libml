@@ -105,6 +105,18 @@ class tAnnLayerBase : public tNNLayer
 
 
         ///////////////////////////////////////////////////////////////////////
+        // Misc getters:
+        ///////////////////////////////////////////////////////////////////////
+
+        u32 inputRows()       const    { return m_inputRows; }
+        u32 inputCols()       const    { return m_inputCols; }
+        u32 inputComponents() const    { return m_inputComponents; }
+        u32 numNeurons()      const    { return m_numNeurons; }
+
+        virtual void currentState(std::vector<tIO>& weights, tIO& biases, tIO& outputs) const = 0;
+
+
+        ///////////////////////////////////////////////////////////////////////
         // The iLayer interface:   (partial interface only)
         ///////////////////////////////////////////////////////////////////////
 
