@@ -40,13 +40,17 @@ tAnnLayerBase::tAnnLayerBase()
 
 
 tAnnLayerBase::tAnnLayerBase(nLayerType type, nLayerWeightUpdateRule rule,
-                             u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                             fml randWeightMin, fml randWeightMax)
+                             u32 inputRows, u32 inputCols, u32 inputComponents,
+                             u32 numNeurons,
+                             algo::iLCG& lcg, fml randWeightMin, fml randWeightMax)
     : m_type(type),
       m_rule(rule),
       m_alpha(FML(0.0)),
       m_viscosity(FML(0.0)),
-      m_numInputDims(numInputDims),
+      m_inputRows(inputRows),
+      m_inputCols(inputCols),
+      m_inputComponents(inputComponents),
+      m_numInputDims(inputRows * inputCols * inputComponents),
       m_numNeurons(numNeurons),
       m_curCount(0),
       m_maxCount(0),

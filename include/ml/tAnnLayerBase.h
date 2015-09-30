@@ -51,10 +51,28 @@ class tAnnLayerBase : public tNNLayer
          *    - kWeightUpRuleARMS
          *         -- requires setAlpha()
          *         -- very similar to RMSPROP, but has an adaptive alpha
+         *
+         * A subsequent call to this object's takeInput() method should
+         * contain one or more images, where each image:
+         *   - is stored in row-major format,
+         *   - is 'inputCols'x'inputRows' in size, and
+         *   - has 'inputComponents' channels.
+         * Therefore, a subsequent call to this object's takeInput() method
+         * should have 'numInputDims' set to 'inputRows*inputCols*inputComponents',
+         * and should have 'count' set to the number of sequential images within
+         * the input vector.
+         *
+         * Note: The input doesn't have to actually be an image. You can input
+         * arbitrary data here, in which case you can set 'inputRows' equal to the
+         * dimensionality of the input, and set 'inputCols' and 'inputComponents'
+         * both equal to 1.
+         *
+         * The output of this layer will have dimensionality of 'numNeurons'.
          */
         tAnnLayerBase(nLayerType type, nLayerWeightUpdateRule rule,
-                      u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                      fml randWeightMin = -1.0, fml randWeightMax = 1.0);
+                      u32 inputRows, u32 inputCols, u32 inputComponents,
+                      u32 numNeurons,
+                      algo::iLCG& lcg, fml randWeightMin = -1.0, fml randWeightMax = 1.0);
 
         /**
          * D'tor.
@@ -122,6 +140,9 @@ class tAnnLayerBase : public tNNLayer
         fml m_alpha;
         fml m_viscosity;
 
+        u32  m_inputRows;
+        u32  m_inputCols;
+        u32  m_inputComponents;
         u32  m_numInputDims;
         u32  m_numNeurons;
 
