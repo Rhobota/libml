@@ -819,7 +819,7 @@ void s_visualize(const tIO& weights, fml bias, fml output,
 static
 void s_visualize(tAnnLayerBase* layer,
                  img::tCanvas& canvas,
-                 u32& yOffset)
+                 u32& xOffset)
 {
     u32 inputRows = layer->inputRows();
     u32 inputCols = layer->inputCols();
@@ -837,7 +837,7 @@ void s_visualize(tAnnLayerBase* layer,
 
     for (u32 row = 0; row < displayRows && currNeuron < numNeurons; row++)
     {
-        u32 xOffset = kVisualizeMajorPadding;
+        u32 yOffset = kVisualizeMajorPadding;
 
         for (u32 col = 0; col < displayCols && currNeuron < numNeurons; col++)
         {
@@ -847,19 +847,19 @@ void s_visualize(tAnnLayerBase* layer,
 
             s_visualize(weightsHere, bias, output, inputRows, inputCols, inputComponents);
 
-            xOffset += inputCols + kVisualizeMinorPadding;
+            yOffset += inputRows + kVisualizeMinorPadding;
 
             ++currNeuron;
         }
 
-        yOffset += inputRows + kVisualizeMinorPadding;
+        xOffset += inputCols + kVisualizeMinorPadding;
     }
 }
 
 static
 void s_visualize(tCnnLayerBase* layer,
                  img::tCanvas& canvas,
-                 u32& yOffset)
+                 u32& xOffset)
 {
     // TODO
 }
@@ -867,7 +867,7 @@ void s_visualize(tCnnLayerBase* layer,
 static
 void s_visualize(tDropoutLayerBase* layer,
                  img::tCanvas& canvas,
-                 u32& yOffset)
+                 u32& xOffset)
 {
     // TODO
 }
@@ -875,13 +875,13 @@ void s_visualize(tDropoutLayerBase* layer,
 static
 void s_visualize(tLayeredLearnerBase* learner,
                  img::tCanvas& canvas,
-                 u32& yOffset)
+                 u32& xOffset)
 {
     u32 numLayers = learner->numLayers();
 
     for (u32 layerIndex = 0; layerIndex < numLayers; layerIndex++)
     {
-        yOffset += kVisualizeMajorPadding;
+        xOffset += kVisualizeMajorPadding;
 
         iLayer* layer = learner->layerAtIndex(layerIndex);
 
@@ -891,37 +891,37 @@ void s_visualize(tLayeredLearnerBase* learner,
 
         if (annLayerBase)
         {
-            s_visualize(annLayerBase, canvas, yOffset);
+            s_visualize(annLayerBase, canvas, xOffset);
         }
         else if (cnnLayerBase)
         {
-            s_visualize(cnnLayerBase, canvas, yOffset);
+            s_visualize(cnnLayerBase, canvas, xOffset);
         }
         else if (dropoutLayerBase)
         {
-            s_visualize(dropoutLayerBase, canvas, yOffset);
+            s_visualize(dropoutLayerBase, canvas, xOffset);
         }
         else
         {
             // Skipping this layer.
         }
 
-        yOffset += kVisualizeMajorPadding;
-        canvas.expandToIncludePoint(0, yOffset);
+        xOffset += kVisualizeMajorPadding;
+        canvas.expandToIncludePoint(xOffset, 0);
     }
 }
 
 static
 void s_visualize(const tIO& example, u32 width, u32 numComponents,
-                 img::tCanvas& canvas, u32& yOffset)
+                 img::tCanvas& canvas, u32& xOffset)
 {
-    yOffset += kVisualizeMajorPadding;
+    xOffset += kVisualizeMajorPadding;
 
     if (numComponents == 3)
     {
         img::tImage image;
         un_examplify(example, true, width, true, &image);
-        canvas.drawImage(&image, kVisualizeMajorPadding, yOffset);
+        canvas.drawImage(&image, xOffset, kVisualizeMajorPadding);
     }
 
     else
@@ -929,20 +929,19 @@ void s_visualize(const tIO& example, u32 width, u32 numComponents,
         tIO deinterlaced = example;
         deinterlace(&example[0], &deinterlaced[0], (u32)example.size(), numComponents);
         u32 height = (u32) (example.size() / numComponents / width);
-        u32 xOffset = 0;
+        u32 yOffset = kVisualizeMajorPadding;
         for (u32 componentIndex = 0; componentIndex < numComponents; componentIndex++)
         {
-            xOffset += kVisualizeMajorPadding;
             tIO thisComponent(deinterlaced.begin() + componentIndex*width*height, deinterlaced.begin() + (componentIndex+1)*width*height);
             img::tImage image;
             un_examplify(thisComponent, false, width, true, &image);
             canvas.drawImage(&image, xOffset, yOffset);
-            xOffset += kVisualizeMajorPadding;
+            yOffset += height + kVisualizeMinorPadding;
         }
     }
 
-    yOffset += kVisualizeMajorPadding;
-    canvas.expandToIncludePoint(0, yOffset);
+    xOffset += kVisualizeMajorPadding;
+    canvas.expandToIncludePoint(xOffset, 0);
 }
 
 void visualize(iLearner* learner,
@@ -967,15 +966,15 @@ void visualize(iLearner* learner,
 
     u8 bgColor[3] = { 200, 200, 200 };    // Check http://www.tayloredmktg.com/rgb/
     img::tCanvas canvas(img::kRGB24, bgColor, 3);
-    u32 yOffset = 0;
+    u32 xOffset = 0;
 
-    s_visualize(example, exampleWidth, exampleNumComponents, canvas, yOffset);
+    s_visualize(example, exampleWidth, exampleNumComponents, canvas, xOffset);
 
     tLayeredLearnerBase* layeredLearnerBase = dynamic_cast<tLayeredLearnerBase*>(learner);
 
     if (layeredLearnerBase)
     {
-        s_visualize(layeredLearnerBase, canvas, yOffset);
+        s_visualize(layeredLearnerBase, canvas, xOffset);
     }
     else
     {
