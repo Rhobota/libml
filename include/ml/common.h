@@ -322,6 +322,87 @@ class iInputTargetGenerator
         virtual ~iInputTargetGenerator() { }
 };
 
+class tBasicInputTargetGenerator : public iInputTargetGenerator
+{
+    public:
+
+        /*
+         * Provides a basic generator that just regurgitates
+         * inputs and targets as is.
+         *
+         * The inputs and targets are kept as references, so
+         * make sure they don't go out of scope before this
+         * object.
+         */
+        tBasicInputTargetGenerator(const std::vector<tIO>& inputs,
+                                   const std::vector<tIO>& targets)
+            : m_inputs(inputs),
+              m_targets(targets),
+              m_indexes(),
+              m_currIndex(0),
+              m_lcg()
+        {
+            assert(inputs.size() == targets.size());
+            for (size_t i = 0; i < inputs.size(); i++)
+                m_indexes.push_back(i);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // iInputTargetGenerator interface:
+        ///////////////////////////////////////////////////////////////////////
+
+        void generate(u32 count, std::vector<tIO>& fillmeInputs,
+                                 std::vector<tIO>& fillmeTargets)
+        {
+            size_t rem = std::min((size_t)count, m_indexes.size()-m_currIndex);
+
+            fillmeInputs.resize(rem);
+            fillmeTargets.resize(rem);
+
+            for (size_t i = 0; i < rem; i++)
+            {
+                fillmeInputs[i] = m_inputs[m_indexes[m_currIndex+i]];
+                fillmeTargets[i] = m_targets[m_indexes[m_currIndex+i]];
+            }
+
+            m_currIndex += rem;
+        }
+
+        void generate(u32 count, std::vector<tIO>& fillmeInputs)
+        {
+            size_t rem = std::min((size_t)count, m_indexes.size()-m_currIndex);
+
+            fillmeInputs.resize(rem);
+
+            for (size_t i = 0; i < rem; i++)
+            {
+                fillmeInputs[i] = m_inputs[m_indexes[m_currIndex+i]];
+            }
+
+            m_currIndex += rem;
+        }
+
+        void shuffle()
+        {
+            algo::shuffle(m_indexes, m_lcg);
+            m_currIndex = 0;
+        }
+
+        void restart()
+        {
+            m_currIndex = 0;
+        }
+
+    private:
+
+        const std::vector<tIO>& m_inputs;
+        const std::vector<tIO>& m_targets;
+
+        std::vector<size_t> m_indexes;
+        size_t m_currIndex;
+        algo::tKnuthLCG m_lcg;
+};
+
 class iOutputCollector
 {
     public:

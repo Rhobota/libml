@@ -892,6 +892,12 @@ void visualize(iLearner* learner,
     if ((example.size() / exampleNumComponents) % exampleWidth)
         throw eInvalidArgument("Invalid example: ((example.size() / exampleNumComponents) % exampleWidth) != 0");
 
+    {
+        tSingleGenerator generator;
+        tNullCollector collector;
+        evaluate(learner, &generator, &collector, 1);
+    }
+
     u8 bgColor[3] = { 200, 200, 200 };    // Check http://www.tayloredmktg.com/rgb/
     img::tCanvas canvas(img::kRGB24, bgColor, 3);
     u32 yOffset = 0;
