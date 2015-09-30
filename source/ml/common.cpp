@@ -19,7 +19,8 @@ namespace ml
 {
 
 
-static const u32 kVisualizePadding = 15;
+static const u32 kVisualizeMajorPadding = 15;
+static const u32 kVisualizeMinorPadding = 5;
 
 
 tIO examplify(u32 highDimension, u32 numDimensions)
@@ -809,11 +810,50 @@ void deinterlace(const T* input, T* output, u32 arrayLen, u32 numComponents, u32
 }
 
 static
+void s_visualize(const tIO& weights, fml bias, fml output,
+                 u32 inputRows, u32 inputCols, u32 inputComponents)
+{
+    // TODO
+}
+
+static
 void s_visualize(tAnnLayerBase* layer,
                  img::tCanvas& canvas,
                  u32& yOffset)
 {
-    // TODO
+    u32 inputRows = layer->inputRows();
+    u32 inputCols = layer->inputCols();
+    u32 inputComponents = layer->inputComponents();
+
+    u32 numNeurons = layer->numNeurons();
+    u32 displayRows = (u32) std::ceil(std::sqrt(numNeurons * 9 / 16));
+    u32 displayCols = ((numNeurons % displayRows) > 0) ? ((numNeurons / displayRows) + 1) : (numNeurons / displayRows);
+
+    std::vector<tIO> weights;
+    tIO biases, outputs;
+    layer->currentState(weights, biases, outputs);
+
+    u32 currNeuron = 0;
+
+    for (u32 row = 0; row < displayRows && currNeuron < numNeurons; row++)
+    {
+        u32 xOffset = kVisualizeMajorPadding;
+
+        for (u32 col = 0; col < displayCols && currNeuron < numNeurons; col++)
+        {
+            tIO& weightsHere = weights[currNeuron];
+            fml  bias        = biases[currNeuron];
+            fml  output      = outputs[currNeuron];
+
+            s_visualize(weightsHere, bias, output, inputRows, inputCols, inputComponents);
+
+            xOffset += inputCols + kVisualizeMinorPadding;
+
+            ++currNeuron;
+        }
+
+        yOffset += inputRows + kVisualizeMinorPadding;
+    }
 }
 
 static
@@ -841,7 +881,7 @@ void s_visualize(tLayeredLearnerBase* learner,
 
     for (u32 layerIndex = 0; layerIndex < numLayers; layerIndex++)
     {
-        yOffset += kVisualizePadding;
+        yOffset += kVisualizeMajorPadding;
 
         iLayer* layer = learner->layerAtIndex(layerIndex);
 
@@ -866,7 +906,7 @@ void s_visualize(tLayeredLearnerBase* learner,
             // Skipping this layer.
         }
 
-        yOffset += kVisualizePadding;
+        yOffset += kVisualizeMajorPadding;
         canvas.expandToIncludePoint(0, yOffset);
     }
 }
@@ -875,13 +915,13 @@ static
 void s_visualize(const tIO& example, u32 width, u32 numComponents,
                  img::tCanvas& canvas, u32& yOffset)
 {
-    yOffset += kVisualizePadding;
+    yOffset += kVisualizeMajorPadding;
 
     if (numComponents == 3)
     {
         img::tImage image;
         un_examplify(example, true, width, true, &image);
-        canvas.drawImage(&image, kVisualizePadding, yOffset);
+        canvas.drawImage(&image, kVisualizeMajorPadding, yOffset);
     }
 
     else
@@ -892,16 +932,16 @@ void s_visualize(const tIO& example, u32 width, u32 numComponents,
         u32 xOffset = 0;
         for (u32 componentIndex = 0; componentIndex < numComponents; componentIndex++)
         {
-            xOffset += kVisualizePadding;
+            xOffset += kVisualizeMajorPadding;
             tIO thisComponent(deinterlaced.begin() + componentIndex*width*height, deinterlaced.begin() + (componentIndex+1)*width*height);
             img::tImage image;
             un_examplify(thisComponent, false, width, true, &image);
             canvas.drawImage(&image, xOffset, yOffset);
-            xOffset += kVisualizePadding;
+            xOffset += kVisualizeMajorPadding;
         }
     }
 
-    yOffset += kVisualizePadding;
+    yOffset += kVisualizeMajorPadding;
     canvas.expandToIncludePoint(0, yOffset);
 }
 
