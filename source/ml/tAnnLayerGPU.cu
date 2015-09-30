@@ -33,10 +33,11 @@ tAnnLayerGPU::tAnnLayerGPU()
 
 
 tAnnLayerGPU::tAnnLayerGPU(nLayerType type, nLayerWeightUpdateRule rule,
-                           u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                           fml randWeightMin, fml randWeightMax)
-    : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
-                    randWeightMin, randWeightMax),
+                           u32 inputRows, u32 inputCols, u32 inputComponents,
+                           u32 numNeurons,
+                           algo::iLCG& lcg, fml randWeightMin, fml randWeightMax)
+    : tAnnLayerBase(type, rule, inputRows, inputCols, inputComponents,
+                    numNeurons, lcg, randWeightMin, randWeightMax),
       m_cublasContext(NULL),
       m_gpu_w(NULL),
       m_gpu_b(NULL),

@@ -24,10 +24,11 @@ tAnnLayerCPU::tAnnLayerCPU()
 
 
 tAnnLayerCPU::tAnnLayerCPU(nLayerType type, nLayerWeightUpdateRule rule,
-                           u32 numInputDims, u32 numNeurons, algo::iLCG& lcg,
-                           fml randWeightMin, fml randWeightMax)
-    : tAnnLayerBase(type, rule, numInputDims, numNeurons, lcg,
-                    randWeightMin, randWeightMax),
+                           u32 inputRows, u32 inputCols, u32 inputComponents,
+                           u32 numNeurons,
+                           algo::iLCG& lcg, fml randWeightMin, fml randWeightMax);
+    : tAnnLayerBase(type, rule, inputRows, inputCols, inputComponents,
+                    numNeurons, lcg, randWeightMin, randWeightMax),
       m_dw_accum(NULL),
       m_db_accum(NULL),
       m_A(NULL),

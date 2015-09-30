@@ -60,6 +60,10 @@ class tNNLayer : public iLayer, public bNonCopyable
 
     public:
 
+        ///////////////////////////////////////////////////////////////////////
+        // The iLayer interface:   (partial interface only)
+        ///////////////////////////////////////////////////////////////////////
+
         bool doesLearn() const { return true; }
 
 
