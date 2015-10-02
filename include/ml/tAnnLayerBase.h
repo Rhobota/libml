@@ -103,10 +103,28 @@ class tAnnLayerBase : public tNNLayer
          */
         void setViscosity(fml viscosity);
 
+        /**
+         * Resets the layer type. See tAnnLayerBase::tAnnLayerBase() for
+         * details.
+         */
+        void setLayerType(nLayerType type)                           { m_type = type; }
+
+        /**
+         * Resets the layer weight update rule. See tAnnLayerBase::tAnnLayerBase()
+         * for details.
+         */
+        void setLayerWeightUpdateRule(nLayerWeightUpdateRule rule)   { m_rule = rule; }
+
 
         ///////////////////////////////////////////////////////////////////////
         // Misc getters:
         ///////////////////////////////////////////////////////////////////////
+
+        nLayerType              layerType()              const   { return m_type; }
+        nLayerWeightUpdateRule  layerWeightUpdateRule()  const   { return m_rule; }
+
+        fml alpha()      const    { return m_alpha; }
+        fml viscosity()  const    { return m_viscosity; }
 
         u32 inputRows()       const    { return m_inputRows; }
         u32 inputCols()       const    { return m_inputCols; }
