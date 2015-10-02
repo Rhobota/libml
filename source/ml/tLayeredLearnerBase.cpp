@@ -63,6 +63,22 @@ tLayeredLearnerBase::~tLayeredLearnerBase()
     m_layers.clear();
 }
 
+void tLayeredLearnerBase::setNumInputDims(u32 numInputDims)
+{
+    if (numInputDims == 0)
+        throw eInvalidArgument("The number of input dimensions may not be zero.");
+    m_numInputDims = numInputDims;
+    m_clearMatrices();
+}
+
+void tLayeredLearnerBase::setNumOutputDims(u32 numOutputDims)
+{
+    if (m_numOutputDims == 0)
+        throw eInvalidArgument("The number of output dimensions may not be zero.");
+    m_numOutputDims = numOutputDims;
+    m_clearMatrices();
+}
+
 void tLayeredLearnerBase::addLayer(iLayer* layer)
 {
     m_layers.push_back(layer);

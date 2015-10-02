@@ -20,6 +20,9 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
 
         ~tLayeredLearnerBase();
 
+        void setNumInputDims(u32 numInputDims);
+        void setNumOutputDims(u32 numOutputDims);
+
         void addLayer(iLayer* layer);                    // <-- takes ownership of the layer
         void addLayerAtIndex(iLayer* layer, u32 index);  // <-- takes ownership of the layer
 
