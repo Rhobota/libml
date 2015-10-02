@@ -23,7 +23,7 @@ tDropoutLayerCPU::tDropoutLayerCPU()
 }
 
 tDropoutLayerCPU::tDropoutLayerCPU(u32 numInputDims, u32 numOutputDims, u64 rndSeed, fml p)
-    : tDropoutLayerBase(numInputDims, numOutputDims, p),
+    : tDropoutLayerBase(numInputDims, numOutputDims, rndSeed, p),
       m_output(NULL),
       m_inputErrorGradients(NULL),
       m_lcg(rndSeed+1),
@@ -176,6 +176,7 @@ u32 tDropoutLayerCPU::headerId() const
 void tDropoutLayerCPU::reset()
 {
     tDropoutLayerBase::reset();
+    m_lcg.reset(m_rndSeed+1);
 }
 
 void tDropoutLayerCPU::pack(iWritable* out) const
@@ -186,6 +187,7 @@ void tDropoutLayerCPU::pack(iWritable* out) const
 void tDropoutLayerCPU::unpack(iReadable* in)
 {
     tDropoutLayerBase::unpack(in);
+    reset();
 }
 
 

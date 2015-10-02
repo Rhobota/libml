@@ -75,7 +75,7 @@ tDropoutLayerGPU::tDropoutLayerGPU()
 }
 
 tDropoutLayerGPU::tDropoutLayerGPU(u32 numInputDims, u32 numOutputDims, u64 rndSeed, fml p)
-    : tDropoutLayerBase(numInputDims, numOutputDims, p),
+    : tDropoutLayerBase(numInputDims, numOutputDims, rndSeed, p),
       m_gpu_output(NULL),
       m_gpu_inputErrorGradients(NULL),
       m_curandGen(NULL),
@@ -227,6 +227,8 @@ u32 tDropoutLayerGPU::headerId() const
 void tDropoutLayerGPU::reset()
 {
     tDropoutLayerBase::reset();
+    s_destroyCurandGenerator(m_curandGen);
+    s_createCurandGenerator(m_curandGen, m_rndSeed+1);
 }
 
 void tDropoutLayerGPU::pack(iWritable* out) const
@@ -237,6 +239,7 @@ void tDropoutLayerGPU::pack(iWritable* out) const
 void tDropoutLayerGPU::unpack(iReadable* in)
 {
     tDropoutLayerBase::unpack(in);
+    reset();
 }
 
 
