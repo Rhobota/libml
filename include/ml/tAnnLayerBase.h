@@ -80,6 +80,18 @@ class tAnnLayerBase : public tNNLayer
         ~tAnnLayerBase();
 
         /**
+         * Resets the layer type. See tAnnLayerBase::tAnnLayerBase() for
+         * details.
+         */
+        void setLayerType(nLayerType type)                           { m_type = type; }
+
+        /**
+         * Resets the layer weight update rule. See tAnnLayerBase::tAnnLayerBase()
+         * for details.
+         */
+        void setLayerWeightUpdateRule(nLayerWeightUpdateRule rule)   { m_rule = rule; }
+
+        /**
          * Sets the alpha parameter for this layer. The alpha parameter is
          * the "fixed learning rate" parameter, used when the weight update
          * rule is kWeightUpRuleFixedLearningRate.
@@ -102,18 +114,6 @@ class tAnnLayerBase : public tNNLayer
          * the momentum weight update rule (kWeightUpRuleMomentum).
          */
         void setViscosity(fml viscosity);
-
-        /**
-         * Resets the layer type. See tAnnLayerBase::tAnnLayerBase() for
-         * details.
-         */
-        void setLayerType(nLayerType type)                           { m_type = type; }
-
-        /**
-         * Resets the layer weight update rule. See tAnnLayerBase::tAnnLayerBase()
-         * for details.
-         */
-        void setLayerWeightUpdateRule(nLayerWeightUpdateRule rule)   { m_rule = rule; }
 
 
         ///////////////////////////////////////////////////////////////////////
