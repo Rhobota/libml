@@ -260,7 +260,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
         {
             if (m_alpha <= FML(0.0))
                 throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
-            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            fml mult = (FML(1000.0) / batchSize) * m_alpha;
             w -= mult * dw_accum;
             b -= mult * db_accum;
             break;
@@ -279,7 +279,7 @@ void tCnnLayerCPU::takeOutputErrorGradients(
                 for (u32 i = 0; i < numWeights; i++)
                     m_vel[i] = FML(0.0);
             }
-            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            fml mult = (FML(1000.0) / batchSize) * m_alpha;
             {
                 // Update w:
                 Map vel(m_vel, m_kernelRows*m_kernelCols*m_inputComponents, m_numKernels);

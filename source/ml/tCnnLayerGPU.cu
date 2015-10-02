@@ -271,7 +271,7 @@ void tCnnLayerGPU::takeOutputErrorGradients(
         {
             if (m_alpha <= FML(0.0))
                 throw eLogicError("When using the fixed learning rate rule, alpha must be set.");
-            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            fml mult = (FML(1000.0) / batchSize) * m_alpha;
             tSubWithScalarMult func(mult);
             thrust::transform(w, w + numWeights, dw_accum, w, func);
             thrust::transform(b, b + numBiases, db_accum, b, func);
@@ -290,7 +290,7 @@ void tCnnLayerGPU::takeOutputErrorGradients(
                 thrust::device_ptr<fml> vel(m_gpu_vel);
                 thrust::fill(vel, vel + numWeights + numBiases, FML(0.0));
             }
-            fml mult = (FML(10.0) / batchSize) * m_alpha;
+            fml mult = (FML(1000.0) / batchSize) * m_alpha;
             tVelUpdateFunc velUpdateFunc(m_viscosity, mult);
             {
                 // Update w:
