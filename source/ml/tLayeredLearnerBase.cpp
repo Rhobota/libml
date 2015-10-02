@@ -68,6 +68,13 @@ void tLayeredLearnerBase::addLayer(iLayer* layer)
     m_layers.push_back(layer);
 }
 
+void tLayeredLearnerBase::addLayerAtIndex(iLayer* layer, u32 index)
+{
+    if (((size_t)index) > m_layers.size())
+        throw eInvalidArgument("Index is out of range.");
+    m_layers.insert(m_layers.begin() + index, layer);
+}
+
 u32 tLayeredLearnerBase::numLayers() const
 {
     return (u32) m_layers.size();
@@ -75,7 +82,16 @@ u32 tLayeredLearnerBase::numLayers() const
 
 iLayer* tLayeredLearnerBase::layerAtIndex(u32 index) const
 {
+    if (((size_t)index) >= m_layers.size())
+        throw eInvalidArgument("Index is out of range.");
     return m_layers[index];
+}
+
+iLayer* tLayeredLearnerBase::removeLayerAtIndex(u32 index)
+{
+    iLayer* layer = layerAtIndex(index);
+    m_layers.erase(m_layers.begin() + index);
+    return layer;
 }
 
 void tLayeredLearnerBase::setOutputPerformanceEvaluator(iOutputPerformanceEvaluator* evaluator)

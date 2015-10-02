@@ -20,11 +20,13 @@ class tLayeredLearnerBase : public iLearner, public bNonCopyable
 
         ~tLayeredLearnerBase();
 
-        void addLayer(iLayer* layer);  // <-- takes ownership of the layer
+        void addLayer(iLayer* layer);                    // <-- takes ownership of the layer
+        void addLayerAtIndex(iLayer* layer, u32 index);  // <-- takes ownership of the layer
 
         u32 numLayers() const;
-
         iLayer* layerAtIndex(u32 index) const;
+
+        iLayer* removeLayerAtIndex(u32 index);  // <-- returns the removed layer, and the caller takes ownership of this layer
 
         void setOutputPerformanceEvaluator(iOutputPerformanceEvaluator* evaluator); // <-- takes ownership
 
