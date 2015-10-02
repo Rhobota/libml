@@ -12,6 +12,7 @@ namespace ml
 tDropoutLayerBase::tDropoutLayerBase()
     : m_numInputDims(0),
       m_numOutputDims(0),
+      m_rndSeed(0),
       m_p(FML(0.0)),
       m_trainMode(false),
       m_curCount(0),
@@ -19,9 +20,10 @@ tDropoutLayerBase::tDropoutLayerBase()
 {
 }
 
-tDropoutLayerBase::tDropoutLayerBase(u32 numInputDims, u32 numOutputDims, fml p)
+tDropoutLayerBase::tDropoutLayerBase(u32 numInputDims, u32 numOutputDims, u64 rndSeed, fml p)
     : m_numInputDims(numInputDims),
       m_numOutputDims(numOutputDims),
+      m_rndSeed(rndSeed),
       m_p(p),
       m_trainMode(false),
       m_curCount(0),
@@ -97,6 +99,7 @@ void tDropoutLayerBase::pack(iWritable* out) const
 {
     rho::pack(out, m_numInputDims);
     rho::pack(out, m_numOutputDims);
+    rho::pack(out, m_rndSeed);
     rho::pack(out, m_p);
 }
 
@@ -104,6 +107,7 @@ void tDropoutLayerBase::unpack(iReadable* in)
 {
     rho::unpack(in, m_numInputDims);
     rho::unpack(in, m_numOutputDims);
+    rho::unpack(in, m_rndSeed);
     rho::unpack(in, m_p);
     m_curCount = 0;
     m_maxCount = 0;
