@@ -23,7 +23,6 @@ ifeq ($(shell uname),Linux)
 else
 ifeq ($(shell uname),Darwin)
 	# OSX stuff:
-	CC_FLAGS_LOCAL += -mmacosx-version-min=10.6
 else
 	# Mingw and Cygwin stuff:
 endif
